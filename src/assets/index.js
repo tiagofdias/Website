@@ -4,6 +4,7 @@ import creator from "./creator.png";
 import mobile from "./mobile.png";
 import web from "./web.png";
 import github from "./github.png";
+import webs from "./webs.png";
 import menu from "./menu.svg";
 import close from "./close.svg";
 
@@ -23,15 +24,22 @@ import threejs from "./tech/threejs.svg";
 
 import meta from "./company/meta.png";
 import shopify from "./company/shopify.png";
-import starbucks from "./company/starbucks.png";
+import junta from "./company/junta.gif";
+import Consulteware from "./company/Consulteware.png";
 import tesla from "./company/tesla.png";
 
 import carrent from "./carrent.png";
 import jobit from "./jobit.png";
+import StickHero from "./StickHero.png";
 import tripguide from "./tripguide.png";
+import Condomix from "./Condomix.png";
+import Automix from "./Automix.jpg";
+import tax from "./tax.jpg";
+import tucano from "./tucano.png";
 
 export {
   logo,
+  tax,
   backend,
   creator,
   mobile,
@@ -54,9 +62,15 @@ export {
   threejs,
   meta,
   shopify,
-  starbucks,
+  junta,
   tesla,
   carrent,
   jobit,
   tripguide,
+  webs,
+  Consulteware,
+  StickHero,
+  Condomix,
+  Automix,
+  tucano,
 };
