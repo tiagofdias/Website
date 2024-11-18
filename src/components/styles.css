@@ -172,30 +172,35 @@
   gap: 1.5rem; /* Space between buttons */
 }
 
-@media (max-width: 640px) {
-  .button-container {
-    left: 50%;
-    top: 73%;
-    position: relative;
-    transform: translateX(-50%); /* Center the buttons horizontally */
-    flex-direction: row;
-    gap: 1rem;
-    justify-content: center;
-  }
 
-  .rounded-btn {
-    width: 45%;
-    height: 50px;
-    font-size: 14px;
-  }
-
-  .decorative-image {
-    height: 135px;
-    width: 500px;
-    position: relative;
-    left: -115%;
-    top: -50px;
+  @media (max-width: 640px) {
+    .button-container {
+      left: 50%;
+      top: 70%;
+      position: relative;
+      transform: translateX(-50%); /* Center the buttons horizontally */
+      flex-direction: row;
+      gap: 1rem;
+      justify-content: center;
+    }
+  
+    .rounded-btn {
+      width: 45%;
+      height: 50px;
+      font-size: 14px;
+    }
+  
+    .decorative-image {
+      height: 200px; /* Increased height */
+      width: 200px;  /* Increased width */
+      max-width: none; /* Prevents the width from being capped */
+      flex-shrink: 0;  /* Prevents shrinking in flexbox layouts */
+      object-fit: contain; /* Ensures the image scales proportionally */
+      position: relative;
+      left: -86%;
+      top: -10px;
+    }
+    
   }
   
-}
 

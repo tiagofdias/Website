@@ -81,17 +81,18 @@ const Feedbacks = () => {
             modules={[Pagination, Autoplay, Navigation]}
             className="mySwiper"
           >
+           
             {testimonials.map((testimonial, index) => (
               <SwiperSlide key={index}>
-                   <div className="testimonial-rate">
+                {/*    <div className="testimonial-rate">
                   {[...Array(5)].map((_, i) => (
                     <i
                       key={i}
                       className="fa-solid fa-star"
-                      style={{ color: 'rgb(0, 136, 180)' }}
+                      style={{ color: 'rgb(0, 136, 180)'}}
                     > &nbsp;&nbsp;&nbsp;</i>
                   ))}
-                </div> 
+                </div>  */}
 
                 <blockquote className="testimonial-quote">
                   "{testimonial.testimonial}"

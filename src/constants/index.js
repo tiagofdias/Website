@@ -197,7 +197,7 @@ import {
       company_name: "Consulteware ",
       icon: Consulteware,
       iconBg: "#383E56",
-      date: "Jan 2022 - Jan 2023",
+      date: "Mar 2019 - Aug 2019",
       points: [
         "Focused on developing a time clock management system for small businesses.",
         "Utilized Visual Basic, C#, and T-SQL within the .NET framework to design a robust, user-friendly solution tailored for small enterprises.",

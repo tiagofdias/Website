@@ -4,12 +4,15 @@ import { TypeAnimation } from "react-type-animation";
 import * as React from "react";
 import tiago from "../assets/tiago.png";
 import cv from "../components/CV.pdf";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import { faLaptopCode } from "@fortawesome/free-solid-svg-icons";
 
 const Hero = () => {
   return (
     <section className={`relative w-full h-screen mx-auto`}>
       <div
-        className={`absolute inset-0 top-[120px] max-w-7xl mx-auto ${styles.paddingX} flex flex-row items-start gap-5`}
+        className={`absolute inset-0 top-[120px] left-[-10px] max-w-7xl mx-auto ${styles.paddingX} flex flex-row items-start gap-5`}
       >
         <div className="flex flex-col justify-center items-center mt-5">
           <div className="w-5 h-5 rounded-full bg-[#915EFF]" />
@@ -20,12 +23,15 @@ const Hero = () => {
           <h1 className={`${styles.heroHeadText} text-white`}>
             Hi, I'm <span className="text-[#915EFF]">Tiago</span>
           </h1>
-          <p className={`${styles.heroSubText} mt-2 text-white-100`}>
-            I'm a Junior Software Developer <br className="sm:block hidden" />
+          <p
+            className={`${styles.heroSubText} mt-2 text-white-100`}
+            style={{ marginLeft: "0px" }} // Adjust the value as needed
+          >
+            I'm a Junior Software Developer
           </p>
-          <p className={`${styles.heroSubText} mt-2 text-white-100`}>
-            I live in Póvoa de Santa Iria, Lisbon, Portugal{" "}
-            <br className="sm:block hidden" />
+
+          <p className={`${styles.heroSubText} text-white-100`}>
+            Póvoa de Santa Iria, Lisbon, Portugal
           </p>
           <TypeAnimation
             sequence={[
