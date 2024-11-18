@@ -3,6 +3,7 @@ import { styles } from "../styles";
 import { TypeAnimation } from "react-type-animation";
 import * as React from "react";
 import tiago from "../assets/tiago.png";
+import cv from "../components/CV.pdf";
 
 const Hero = () => {
   return (
@@ -126,7 +127,7 @@ const Hero = () => {
 
         {/* Button for Download CV */}
         <motion.a
-          href="src\components\CV.pdf"
+          href={cv}
           download
           className="rounded-btn"
           whileHover={{
