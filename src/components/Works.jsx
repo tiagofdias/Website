@@ -18,7 +18,7 @@ const ProjectCard = ({
   source_code_link2,
   showSecondLink,
 }) => (
-  <motion.div variants={fadeIn("up", "spring", index * 0.5, 0.75)}>
+  <div variants={fadeIn("up", "spring", index * 0.5, 0.75)}>
     <Tilt
       options={{ max: 45, scale: 1, speed: 450 }}
       className='bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full'
@@ -60,15 +60,15 @@ const ProjectCard = ({
         ))}
       </div>
     </Tilt>
-  </motion.div>
+  </div>
 );
 
 const Works = () => (
   <>
-    <motion.div variants={textVariant()}>
+    <div variants={textVariant()}>
       <p className={`${styles.sectionSubText} `}>My work</p>
       <h2 className={`${styles.sectionHeadText}`}>Projects.</h2>
-    </motion.div>
+    </div>
 
     <div className='w-full flex'>
       <motion.p

@@ -21,25 +21,6 @@
   align-items: center;
 }
 
-.indicator-wrapper {
-  width: 35px; 
-  height: 64px; 
-  border-radius: 1.5rem; 
-  border: 4px solid #ffffff; 
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 0.5rem; 
-}
-
-.indicator-circle {
-  width: 12px; 
-  height: 12px; 
-  border-radius: 50%; 
-  background-color: #ffffff; 
-  margin-bottom: 0.25rem; 
-  transition: transform 0.3s ease;
-}
 
 .decorative-image {
   width: 30rem; 
@@ -215,29 +196,6 @@
     left: -115%;
     top: -50px;
   }
-
-  .indicator-wrapper {
-    width: 35px;
-    height: 64px;
-    border-radius: 1.5rem;
-    border: 4px solid #ffffff;
-    display: flex;
-    justify-content: center;
-    align-items: center; /* Center content vertically */
-    padding: 0.5rem;
-    position: absolute;
-    left: 207px;
-    transform: translateX(-50%); /* Center the indicator horizontally */
-    bottom: 0px; /* Adjust this value based on your design */
-  }
-
-  .indicator-circle {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #ffffff;
-    margin-bottom: 0.25rem;
-    transition: transform 0.3s ease;
-  }
+  
 }
 

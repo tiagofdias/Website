@@ -43,39 +43,37 @@ const Hero = () => {
       </div>
 
       <motion.div
-  style={{
-    bottom: "35%", // Responsive positioning
-    left: "70%", // Center horizontally
-    transform: "translateX(-50%)", // Ensure proper centering
-    position: "absolute",
-    cursor: "pointer",
-  }}
-  initial={{ opacity: 0, y: -30 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 1 }}
->
-  <motion.img
-    src = {tiago}
-    alt="Decorative"
-    className="decorative-image"
-    whileHover={{
-      scale: 1.1,
-      rotate: 5,
-      borderImage: "#915EFF",
-      boxShadow: "0 0 20px 5px rgba(135, 5, 255, 0.6)", // Glow effect
-    }}
-    transition={{
-      scale: { type: "spring", stiffness: 300, damping: 20 },
-      rotate: { type: "spring", stiffness: 200, damping: 20 },
-      borderImage: { duration: 0.3 },
-      boxShadow: { duration: 0.3 }, // Smooth transition for the box-shadow (glow)
-    }}
-  />
-</motion.div>
-
+        style={{
+          bottom: "35%", // Responsive positioning
+          left: "70%", // Center horizontally
+          transform: "translateX(-50%)", // Ensure proper centering
+          position: "absolute",
+          cursor: "pointer",
+        }}
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1 }}
+      >
+        <motion.img
+          src={tiago}
+          alt="Decorative"
+          className="decorative-image"
+          whileHover={{
+            scale: 1.1,
+            rotate: 5,
+            borderImage: "#915EFF",
+            boxShadow: "0 0 20px 5px rgba(135, 5, 255, 0.6)", // Glow effect
+          }}
+          transition={{
+            scale: { type: "spring", stiffness: 300, damping: 20 },
+            rotate: { type: "spring", stiffness: 200, damping: 20 },
+            borderImage: { duration: 0.3 },
+            boxShadow: { duration: 0.3 }, // Smooth transition for the box-shadow (glow)
+          }}
+        />
+      </motion.div>
 
       <div className="button-container">
-
         {/* Button for LinkedIn */}
         <motion.a
           href="https://www.linkedin.com/in/tiagofdias/"
@@ -142,7 +140,7 @@ const Hero = () => {
         </motion.a>
       </div>
 
-      <div className="bottom-indicator-container">
+      {/* <div className="bottom-indicator-container">
         <a href="#about">
           <div className="indicator-wrapper">
             <motion.div
@@ -158,7 +156,7 @@ const Hero = () => {
             />
           </div>
         </a>
-      </div>
+      </div> */}
     </section>
   );
 };
