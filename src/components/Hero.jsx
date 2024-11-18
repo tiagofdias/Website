@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { styles } from "../styles";
 import { TypeAnimation } from "react-type-animation";
 import * as React from "react";
+import tiago from "../assets/tiago.png";
 
 const Hero = () => {
   return (
@@ -53,7 +54,7 @@ const Hero = () => {
   transition={{ duration: 1 }}
 >
   <motion.img
-    src="src/assets/tiago.png"
+    src = {tiago}
     alt="Decorative"
     className="decorative-image"
     whileHover={{
