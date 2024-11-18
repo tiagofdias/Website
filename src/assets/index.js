@@ -36,8 +36,23 @@ import Condomix from "./Condomix.png";
 import Automix from "./Automix.jpg";
 import tax from "./tax.jpg";
 import tucano from "./tucano.png";
+import memorygame from "./memorygame.png";
+import weather from "./weather.png";
+
+import arco from "./arco.png";
+import currency from "./currency.png";
+import DIGI from "./DIGI.png";
+import investorcalculator from "./investorcalculator.png";
+import rockpaperscissors from "./rockpaperscissors.png";
+import typing from "./typing.png";
 
 export {
+  arco,
+  currency,
+  DIGI,
+  investorcalculator,
+  rockpaperscissors,
+  typing,
   logo,
   tax,
   backend,
@@ -73,4 +88,6 @@ export {
   Condomix,
   Automix,
   tucano,
+  memorygame,
+  weather,
 };

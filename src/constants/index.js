@@ -29,6 +29,14 @@ import {
     Automix,
     tax,
     tucano,
+    memorygame,
+    weather,
+    arco,
+    currency,
+    DIGI,
+    investorcalculator,
+    rockpaperscissors,
+    typing
   } from "../assets";
   
   export const navLinks = [
@@ -37,12 +45,12 @@ import {
       title: "About",
     },
     {
-      id: "projects",
-      title: "Projects",
-    },
-    {
       id: "work",
       title: "Timeline",
+    },
+    {
+      id: "projects",
+      title: "Projects",
     },
     {
       id: "testimonials",
@@ -277,7 +285,7 @@ import {
       tags: [
         {
           name: "html",
-          color: "blue-text-gradient",
+          color: "orange-text-gradient",
         },
         {
           name: "css",
@@ -299,7 +307,7 @@ import {
       tags: [
         {
           name: "html",
-          color: "blue-text-gradient",
+          color: "orange-text-gradient",
         },
         {
           name: "css",
@@ -315,13 +323,186 @@ import {
       source_code_link2: "https://tiagofdias.github.io/Stick-Hero/",
     },
     {
+      name: "Memory Game",
+      description:
+        "The Memory Game is a interactive game that challenges players to match pairs of cards. Players flip two cards at a time, aiming to find matching pairs, with solved cards remaining flipped. The game automatically detects when all pairs are solved, displaying a You Won! message and offering a replay option.",
+      tags: [
+        {
+          name: "react.js",
+          color: "blue-text-gradient",
+        },
+        {
+          name: "tailwind",
+          color: "pink-text-gradient",
+        },
+
+      ],
+      image: memorygame,
+      source_code_link: "https://github.com/tiagofdias/MemoryGame",
+      source_code_link2: "https://tiagofdias.github.io/MemoryGame/",
+    },
+    {
+      name: "Rock Paper Scissors",
+      description:
+        "The Rock Paper Scissors game lets you play the classic game against the computer. The computer makes random choices, and the game determines if you win, lose, or draw based on standard rules. It also keeps track of both your score and the computer's score. If you want to start over, there's a reset button to restart the game. Simple, fun, and easy to play!",
+      tags: [
+        {
+          name: "html",
+          color: "orange-text-gradient",
+        },
+        {
+          name: "css",
+          color: "pink-text-gradient",
+        },
+        {
+          name: "javascript",
+          color: "yellow-text-gradient",
+        },
+      ],
+      image: rockpaperscissors,
+      source_code_link: "https://github.com/tiagofdias/Rock-Paper-Scissors",
+      source_code_link2: "https://tiagofdias.github.io/Rock-Paper-Scissors/",
+    },
+    {
+      name: "Interest Calculator",
+      description:
+        "A web application that calculates compound interest based on user inputs, providing an interactive and user-friendly interface for estimating returns over time. The app also includes a responsive design and displays results in a clear chart format.",
+      tags: [
+        {
+          name: "html",
+          color: "orange-text-gradient",
+        },
+        {
+          name: "css",
+          color: "pink-text-gradient",
+        },
+        {
+          name: "javascript",
+          color: "yellow-text-gradient",
+        },
+      ],
+      image: investorcalculator,
+      source_code_link: "https://github.com/tiagofdias/Investor-Calculator",
+      source_code_link2: "https://tiagofdias.github.io/Investor-Calculator/",
+    },
+    {
+      name: "Typing Game",
+      description:
+        "This web-based game is designed to help you improve your typing speed and accuracy with randomly generated quotes. Test your skills, track your typing speed in words per minute (WPM) and characters per minute (CPM), and try to minimize your mistakes.",
+      tags: [
+        {
+          name: "html",
+          color: "orange-text-gradient",
+        },
+        {
+          name: "css",
+          color: "pink-text-gradient",
+        },
+        {
+          name: "javascript",
+          color: "yellow-text-gradient",
+        },
+      ],
+      image: typing,
+      source_code_link: "https://github.com/tiagofdias/Typing-Game",
+      source_code_link2: "https://tiagofdias.github.io/Typing-Game/",
+    },
+    {
+      name: "Currency Converter",
+      description:
+        "This web app allows users to convert an amount from one currency to another, with real-time exchange rate data.",
+      tags: [
+        {
+          name: "html",
+          color: "orange-text-gradient",
+        },
+        {
+          name: "css",
+          color: "pink-text-gradient",
+        },
+        {
+          name: "javascript",
+          color: "yellow-text-gradient",
+        },
+      ],
+      image: currency,
+      source_code_link: "https://github.com/tiagofdias/Currency-Converter",
+      source_code_link2: "https://tiagofdias.github.io/Currency-Converter/",
+    },
+    {
+      name: "Archery Game",
+      description:
+        "Put your aim and precision to the test with the Archery Game! Challenge yourself to hit the target, rack up points, and reach 20 to win.",
+      tags: [
+        {
+          name: "html",
+          color: "orange-text-gradient",
+        },
+        {
+          name: "css",
+          color: "pink-text-gradient",
+        },
+        {
+          name: "javascript",
+          color: "yellow-text-gradient",
+        },
+      ],
+      image: arco,
+      source_code_link: "https://github.com/tiagofdias/Archery-Game",
+      source_code_link2: "https://tiagofdias.github.io/Archery-Game/",
+    },
+    {
+      name: "Comparador DIGI",
+      description:
+        "A comparison tool to help Portuguese consumers calculate potential savings when switching to DIGI Portugal.",
+      tags: [
+        {
+          name: "html",
+          color: "orange-text-gradient",
+        },
+        {
+          name: "css",
+          color: "pink-text-gradient",
+        },
+        {
+          name: "javascript",
+          color: "yellow-text-gradient",
+        },
+      ],
+      image: DIGI,
+      source_code_link: "https://github.com/tiagofdias/Comparador-DIGI",
+      source_code_link2: "https://tiagofdias.github.io/Comparador-DIGI/",
+    },
+    {
+      name: "Weather Forecast",
+      description:
+        "This is a web application that provides a 5-day weather forecast for any city. The app uses the WeatherAPI to fetch weather data and display it dynamically. By default, the app shows the weather for Lisbon when the page loads.",
+      tags: [
+        {
+          name: "html",
+          color: "orange-text-gradient",
+        },
+        {
+          name: "css",
+          color: "pink-text-gradient",
+        },
+        {
+          name: "javascript",
+          color: "yellow-text-gradient",
+        },
+      ],
+      image: weather,
+      source_code_link: "https://github.com/tiagofdias/Weather-Forecast",
+      source_code_link2: "https://tiagofdias.github.io/Weather-Forecast/",
+    },
+    {
       name: "Password Generator",
       description:
         "This Password Generator is a tool designed to create strong, secure passwords, minimizing the risk of unauthorized access to sensitive accounts. It offers users customizable options to generate passwords of varying lengths including uppercase and lowercase letters, numbers, and special characters.",
       tags: [
         {
           name: "html",
-          color: "blue-text-gradient",
+          color: "orange-text-gradient",
         },
         {
           name: "css",
@@ -335,6 +516,18 @@ import {
       image: tripguide,
       source_code_link: "https://github.com/tiagofdias/Password-Generator",
       source_code_link2: "https://tiagofdias.github.io/Password-Generator/",
+    },    {
+      name: "Tax IRS",
+      description:
+        "A C# application developed to accurately calculate and convert payments for precise tax reporting. This tool handles complex payment processing by automating calculations and convertions between different currencies. Built for accuracy and efficiency, it reduces manual effort in financial reporting and minimizes potential errors in tax-related documentation.",
+      tags: [
+        {
+          name: "C#",
+          color: "green-text-gradient",
+        },
+      ],
+      image: tax,
+      source_code_link: "https://github.com/tiagofdias/TaxIRS",
     },
     {
       name: "Condomix",
@@ -353,7 +546,6 @@ import {
       image: Condomix,
       source_code_link: "https://github.com/tiagofdias/Condomix",
     },
-
     {
       name: "Automix",
       description:
@@ -366,19 +558,6 @@ import {
       ],
       image: Automix,
       source_code_link: "https://github.com/tiagofdias/Condomix",
-    },
-    {
-      name: "Tax IRS",
-      description:
-        "A C# application developed to accurately calculate and convert payments for precise tax reporting. This tool handles complex payment processing by automating calculations and convertions between different currencies. Built for accuracy and efficiency, it reduces manual effort in financial reporting and minimizes potential errors in tax-related documentation.",
-      tags: [
-        {
-          name: "C#",
-          color: "green-text-gradient",
-        },
-      ],
-      image: tax,
-      source_code_link: "https://github.com/tiagofdias/TaxIRS",
     },
     {
       name: "Tucano Discord Bot",

@@ -18,16 +18,6 @@ import "./styles.css";
 // import required modules
 import { Pagination, Navigation, Autoplay } from "swiper/modules";
 
-const data = [
-  {
-    id: "1",
-    image:
-      "https://t3.ftcdn.net/jpg/05/85/86/44/360_F_585864419_kgIYUcDQ0yiLOCo1aRjeu7kRxndcoitz.jpg",
-  },
-  { id: "2", image: "https://randomuser.me/api/portraits/men/31.jpg" },
-  { id: "3", image: "https://randomuser.me/api/portraits/women/64.jpg" },
-];
-
 /* const FeedbackCard = ({
   index,
   testimonial,
@@ -69,22 +59,16 @@ const Feedbacks = () => {
   return (
     <>
       <div className={`mt-12 bg-black-100 rounded-[20px]`}>
-        <div className={`bg-blue rounded-2xl ${styles.padding} min-h-[200px]`}>
+        <div className={`bg-blue rounded-2xl ${styles.padding} min-h-[150px]`}>
           <motion.div variants={textVariant()}>
             <p className={styles.sectionSubText}>What others say about me.</p>
             <h2 className={styles.sectionHeadText}>Testimonials.</h2>
           </motion.div>
         </div>
-        {/*  <div className={`-mt-20 pb-14 ${styles.paddingX} flex flex-wrap gap-7`}>
-        {testimonials.map((testimonial, index) => (
-          <FeedbackCard key={testimonial.name} index={index} {...testimonial} />
-        ))}
-      </div> */}
 
         <div>
           <Swiper
             slidesPerView={1}
-            spaceBetween={30}
             loop={true}
             navigation={true}
             autoplay={{
@@ -99,15 +83,15 @@ const Feedbacks = () => {
           >
             {testimonials.map((testimonial, index) => (
               <SwiperSlide key={index}>
-                {/*   <div className="testimonial-rate">
+                   <div className="testimonial-rate">
                   {[...Array(5)].map((_, i) => (
                     <i
                       key={i}
                       className="fa-solid fa-star"
                       style={{ color: 'rgb(0, 136, 180)' }}
-                    > &nbsp;</i>
+                    > &nbsp;&nbsp;&nbsp;</i>
                   ))}
-                </div> */}
+                </div> 
 
                 <blockquote className="testimonial-quote">
                   "{testimonial.testimonial}"

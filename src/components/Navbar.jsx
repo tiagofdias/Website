@@ -63,7 +63,7 @@ const Navbar = () => {
                     // Trigger download if nav.key is "cv"
                     const link = document.createElement("a");
                     link.href = cv;
-                    link.download = "CV.pdf"; // Optional, specify the download file name
+                    link.download = "CV.pdf";
                     link.click();
                     break;
                   case 'LinkedIn':
