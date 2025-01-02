@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { styles } from "../styles";
 import { navLinks } from "../constants";
 import { menu, close } from "../assets";
-import cv from "./CV.pdf";
 
 const Navbar = () => {
   const [active, setActive] = useState("");
@@ -28,12 +27,6 @@ const Navbar = () => {
 
   const handleNavClick = (nav) => {
     setActive(nav.title);
-    if (nav.title === "Download CV") {
-      const link = document.createElement("a");
-      link.href = cv;
-      link.download = "Tiago_Dias_CV.pdf";
-      link.click();
-    }
   };
 
   return (
