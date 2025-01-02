@@ -7,7 +7,7 @@ import { styles } from "../styles";
 
 const Hero = () => {
   const downloadCV = () => {
-    const cv = "public/CV.pdf";
+    const cv = "Website/public/CV.pdf";
     const link = document.createElement("a");
     link.href = cv;
     link.download = "Tiago_Dias_CV.pdf";
