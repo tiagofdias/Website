@@ -34,7 +34,7 @@ import StickHero from "./StickHero.png";
 import tripguide from "./tripguide.png";
 import Condomix from "./Condomix.png";
 import Automix from "./Automix.jpg";
-import tax from "./tax.jpg";
+import tax from "./tax.png";
 import tucano from "./tucano.png";
 import memorygame from "./memorygame.png";
 import weather from "./weather.png";
@@ -45,8 +45,50 @@ import DIGI from "./DIGI.png";
 import investorcalculator from "./investorcalculator.png";
 import rockpaperscissors from "./rockpaperscissors.png";
 import typing from "./typing.png";
+import specialistmaster2016 from "./specialistmaster2016.png";
+import access2013 from "./access2013.png";
+import access2016 from "./access2016.png";
+import excel2013 from "./excel2013.png";
+import excel2016 from "./excel2016.png";
+import excel2019 from "./excel2019.png";
+import excelexpert2016 from "./excelexpert2016.png";
+import powerpoint2016 from "./powerpoint2016.png";
+import word2013 from "./word2013.png";
+import word2016 from "./word2016.png";
+import word2019 from "./word2019.png";
+import wordexpert2016 from "./wordexpert2016.png";
+import mtadatabaseadministration from "./mtadatabaseadministration.png";
+import mtahtml5 from "./mtahtml5.png";
+import mtahtmlandcss from "./mtahtmlandcss.png";
+import mtanetworkingfundamentals from "./mtanetworkingfundamentals.png";
+import mtasecurityfundamentals from "./mtasecurityfundamentals.png";
+import mtasoftwarefundamentals from "./mtasoftwarefundamentals.png";
+import mtawindowsos from "./mtawindowsos.png";
+import mtawindowsserver from "./mtawindowsserver.png";
+import digitalmarketing from "./digitalmarketing.png";
 
 export {
+  digitalmarketing,
+  specialistmaster2016,
+  access2013,
+  access2016,
+  excel2013,
+  excel2016,
+  excel2019,
+  excelexpert2016,
+  powerpoint2016,
+  word2013,
+  word2016,
+  word2019,
+  wordexpert2016,
+  mtadatabaseadministration,
+  mtahtml5,
+  mtahtmlandcss,
+  mtanetworkingfundamentals,
+  mtasecurityfundamentals,
+  mtasoftwarefundamentals,
+  mtawindowsos,
+  mtawindowsserver,
   arco,
   currency,
   DIGI,

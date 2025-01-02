@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 
 import { styles } from "../styles";
-import { github, webs } from "../assets";
+import { webs } from "../assets";
 import { SectionWrapper } from "../hoc";
-import { projects } from "../constants";
+import { certifications } from "../constants";
 
 const ProjectCard = ({
   index,
@@ -11,7 +11,6 @@ const ProjectCard = ({
   description,
   tags,
   image,
-  source_code_link,
   source_code_link2,
   showSecondLink,
   isMobile,
@@ -37,16 +36,6 @@ const ProjectCard = ({
               />
             </div>
           )}
-          <div
-            onClick={() => window.open(source_code_link, "_blank")}
-            className="black-gradient w-10 h-10 rounded-full flex justify-center items-center cursor-pointer"
-          >
-            <img
-              src={github}
-              alt="source code"
-              className="w-1/2 h-1/2 object-contain"
-            />
-          </div>
         </div>
       </div>
 
@@ -57,16 +46,22 @@ const ProjectCard = ({
 
       <div className="mt-4 flex flex-wrap gap-2">
         {tags.map((tag, index) => (
-          <p key={`${name}-${index}`} className={`text-[14px] ${tag.color}`}>
+          <a
+            key={`${name}-${index}`}
+            href={tag.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`text-[14px] ${tag.color || ""}`}
+          >
             {tag.name}
-          </p>
+          </a>
         ))}
       </div>
     </div>
   );
 };
 
-const Works = () => {
+const Certifications = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -83,24 +78,23 @@ const Works = () => {
   return (
     <>
       <div>
-        <p className={`${styles.sectionSubText}`}>My work</p>
-        <h2 className={`${styles.sectionHeadText}`}>Projects.</h2>
+        <h2 className={`${styles.sectionHeadText}`}>Certifications.</h2>
       </div>
 
       <div className="w-full flex">
         <p className="mt-3 text-secondary text-[17px] max-w-3xl leading-[30px]">
-          Things I've been working on.
+          Things I've earned.
         </p>
       </div>
 
       <div className="mt-20 flex flex-wrap gap-7 justify-center">
-        {projects.map((project, index) => (
+        {certifications.map((certification, index) => (
           <ProjectCard
-            key={`project-${index}`}
+            key={`certification-${index}`}
             index={index}
-            {...project}
-            showSecondLink={project.name !== "Condomix"}
-            isMobile={isMobile}
+            {...certification}
+            showSecondLink={certification.name !== "Condomix"}
+            isMobile={isMobile} // Pass isMobile to ProjectCard
           />
         ))}
       </div>
@@ -108,10 +102,7 @@ const Works = () => {
   );
 };
 
-export default SectionWrapper(Works, "projects");
-
-
-
+export default SectionWrapper(Certifications, "certifications");
 
 
 

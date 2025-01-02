@@ -21,9 +21,8 @@
   align-items: center;
 }
 
-
 .decorative-image {
-  width: 30rem; 
+  width: 30rem;
   height: 30rem;
   border-radius: 50%;
   object-fit: cover;
@@ -36,99 +35,6 @@
   transform: scale(1.1) rotate(5deg);
   border-image: linear-gradient(45deg, #915eff, #915eff) 1;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-.swiper-slide img {
-  display: block;
-  width: 30%;
-  height: 30%;
-  object-fit: cover;
-}
-
-.swiper {
-  width: 95%;
-  height: 500px;
-  padding-bottom: 60px;
-}
-
-.swiper-slide {
-  text-align: center;
-  align-items: center;
-  background-color: #100d2550;
-  display: flex;
-  flex-direction: column;
-  gap: 60px;
-  justify-content: center;
-  padding: 34px;
-}
-
-.testimonial-quote {
-  color: #ffffff;
-  font-size: 20px;
-}
-
-.testimonial-author {
-  display: flex;
-  align-items: left;
-  gap: 10px;
-}
-
-.author-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; 
-}
-
-.author-info h3 {
-  font-weight: 600;
-  font-size: 18px;
-  color: #f7f7f7;
-}
-
-.author-info p {
-  font-size: 16px;
-  color: #fdfdfd7a;
-}
-
-.swiper-button-prev,
-.swiper-button-next {
-  background-color: #ffffff;
-  width: 25px;
-  height: 25px;
-  color: rgb(0, 0, 0);
-  border: 1px solid #f9fafb;
-  border-radius: 100%;
-  box-shadow: 0px 0px 20px 0px rgba(7, 84, 236, 0.2);
-}
-
-.swiper-button-prev::after {
-  content: "\f053";
-  font-family: "Font Awesome 5 free";
-  font-weight: 900;
-  font-size: 14px;
-}
-
-.swiper-button-next::after {
-  content: "\f054";
-  font-family: "Font Awesome 5 free";
-  font-weight: 900;
-  font-size: 14px;
-}
-
-.swiper-button-prev {
-  left: 3px;
-}
-
-.swiper-button-next {
-  right: 3px;
-}
-
-.swiper-pagination-bullet {
-  background-color: rgb(255, 255, 255) !important;
-}
-
-.swiper-pagination-bullet-active {
-  background-color: rgb(255, 255, 255) !important;
 }
 
 .rounded-btn {
@@ -172,35 +78,103 @@
   gap: 1.5rem; /* Space between buttons */
 }
 
-
-  @media (max-width: 640px) {
-    .button-container {
-      left: 50%;
-      top: 70%;
-      position: relative;
-      transform: translateX(-50%); /* Center the buttons horizontally */
-      flex-direction: row;
-      gap: 1rem;
-      justify-content: center;
-    }
-  
-    .rounded-btn {
-      width: 45%;
-      height: 50px;
-      font-size: 14px;
-    }
-  
-    .decorative-image {
-      height: 200px; /* Increased height */
-      width: 200px;  /* Increased width */
-      max-width: none; /* Prevents the width from being capped */
-      flex-shrink: 0;  /* Prevents shrinking in flexbox layouts */
-      object-fit: contain; /* Ensures the image scales proportionally */
-      position: relative;
-      left: -86%;
-      top: -10px;
-    }
-    
+@media (max-width: 640px) {
+  .button-container {
+    left: 50%;
+    top: 70%;
+    position: relative;
+    transform: translateX(-50%); /* Center the buttons horizontally */
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: center;
   }
-  
 
+  .rounded-btn {
+    width: 45%;
+    height: 50px;
+    font-size: 14px;
+  }
+
+  .decorative-image {
+    height: 117px; /* Increased height */
+    width: 120px; /* Increased width */
+    position: relative;
+    left: -115%;
+    top: -60px;
+  }
+}
+
+.swiper-slide img {
+  display: block;
+  width: 30%;
+  height: 30%;
+  object-fit: cover;
+}
+
+.swiper {
+  width: 95%;
+  height: 500px;
+  padding-bottom: 60px;
+}
+
+.swiper-slide {
+  text-align: center;
+  align-items: center;
+  background-color: #100d2550;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  justify-content: center;
+  padding: 34px;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  background-color: #ffffff;
+  width: 25px;
+  height: 25px;
+  color: rgb(0, 0, 0);
+  border: 1px solid #f9fafb;
+  border-radius: 100%;
+  box-shadow: 0px 0px 20px 0px rgba(7, 84, 236, 0.2);
+}
+
+.swiper-button-prev::after {
+  content: "\f053";
+  font-family: "Font Awesome 5 free";
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.swiper-button-next::after {
+  content: "\f054";
+  font-family: "Font Awesome 5 free";
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.swiper-button-prev {
+  left: 3px;
+}
+
+.swiper-button-next {
+  right: 3px;
+}
+
+.swiper-pagination-bullet {
+  background-color: rgb(255, 255, 255) !important;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: rgb(255, 255, 255) !important;
+}
+
+.custom-toast .Toastify__toast {
+  background-color: white !important;
+  color: black !important;
+  padding: 1rem !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  font-weight: bold;
+
+}
