@@ -7,7 +7,7 @@ import { styles } from "../styles";
 
 const Hero = () => {
   const downloadCV = () => {
-    const cv = "/CV.pdf";
+    const cv = "./CV.pdf";
     const link = document.createElement("a");
     link.href = cv;
     link.download = "Tiago_Dias_CV.pdf";
@@ -15,23 +15,23 @@ const Hero = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-[#050816] p-5">
+    <div className="flex justify-center items-center h-[calc(95vh)] bg-[#050816] py-6">
     <div className="flex flex-col justify-between h-[95%] w-full max-w-[1900px] purple-500 text-white rounded-2xl p-8 box-border overflow-hidden">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2 bg-[#ffffff] px-2 py-2 rounded-full hover:scale-110 transition-transform duration-300 cursor-pointer">
-          <ScrollLink
-            to="contact"
-            smooth={true}
-            duration={500}
-            className="text-[#1E1E1E] font-bold uppercase"
-          >
-            OPEN TO WORK
-          </ScrollLink>
+      <div className="flex justify-between items-center gap-4">
+        <div className="flex items-center bg-[#ffffff] px-2 py-2 rounded-full hover:scale-110 transition-transform duration-300 cursor-pointer">
+        <ScrollLink
+    to="contact"
+    smooth={true}
+    duration={500}
+    className="text-[#1E1E1E] text-sm font-bold uppercase"
+  >
+    OPEN TO WORK &nbsp;
+  </ScrollLink>
           <div className="w-2.5 h-2.5 rounded-full bg-[#000000] animate-blink"></div>
         </div>
         <button
           onClick={downloadCV}
-          className="bg-white text-[#1E1E1E] px-3 py-2 rounded-full font-bold uppercase transition-transform duration-300 transform hover:scale-110"
+          className="bg-white text-[#1E1E1E] text-sm px-3 py-2 rounded-full font-bold uppercase transition-transform duration-300 transform hover:scale-110"
         >
           DOWNLOAD CV
         </button>
@@ -82,7 +82,7 @@ const Hero = () => {
               to="projects"
               smooth={true}
               duration={500}
-              className="bg-white text-[#1E1E1E] px-3 py-2 rounded-full font-bold uppercase transition-transform duration-300 transform hover:scale-110 cursor-pointer"
+              className="bg-white text-[#1E1E1E] text-sm px-3 py-2 rounded-full font-bold uppercase transition-transform duration-300 transform hover:scale-110 cursor-pointer"
             >
               PROJECTS
             </ScrollLink>
