@@ -32,7 +32,7 @@ import carrent from "./carrent.png";
 import jobit from "./jobit.png";
 import StickHero from "./StickHero.png";
 import tripguide from "./tripguide.png";
-import Condomix from "./Condomix.png";
+import Condomix from "./condomix.png";
 import Automix from "./Automix.jpg";
 import tax from "./tax.png";
 import tucano from "./tucano.png";

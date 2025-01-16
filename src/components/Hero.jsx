@@ -16,7 +16,7 @@ const Hero = () => {
 
   return (
     <div className="flex justify-center items-center h-[calc(95vh)] bg-[#050816] py-6">
-    <div className="flex flex-col justify-between h-[95%] w-full max-w-[1900px] purple-500 text-white rounded-2xl p-8 box-border overflow-hidden">
+    <div className="flex flex-col justify-between h-[85%] w-full max-w-[1900px] purple-500 text-white rounded-2xl p-8 box-border overflow-hidden">
       <div className="flex justify-between items-center gap-4">
         <div className="flex items-center bg-[#ffffff] px-2 py-2 rounded-full hover:scale-110 transition-transform duration-300 cursor-pointer">
         <ScrollLink

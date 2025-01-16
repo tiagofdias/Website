@@ -666,7 +666,7 @@ const projects = [
     source_code_link2: "https://tiagofdias.github.io/Password-Generator/",
   },
   {
-    name: "Tax IRS",
+    name: "Non Invested Money Interest Calculator",
     description:
       "An app that automates payment calculations and currency conversions for accurate tax reporting on your non-invested money, reducing errors and manual effort.",
     tags: [
@@ -681,7 +681,8 @@ const projects = [
       },
     ],
     image: tax,
-    source_code_link: "https://github.com/tiagofdias/TaxIRS",
+    source_code_link: "https://github.com/tiagofdias/Non-Invested-Money-Interest-Calculator",
+    source_code_link2: "https://tiagofdias.github.io/Non-Invested-Money-Interest-Calculator/",
   },
   {
     name: "Automix",
