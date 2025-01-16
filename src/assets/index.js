@@ -25,7 +25,7 @@ import threejs from "./tech/threejs.svg";
 import meta from "./company/meta.png";
 import shopify from "./company/shopify.png";
 import junta from "./company/junta.gif";
-import Consulteware from "./company/Consulteware.png";
+import Consulteware from "./company/consulteware.png";
 import tesla from "./company/tesla.png";
 
 import carrent from "./carrent.png";
@@ -66,8 +66,10 @@ import mtasoftwarefundamentals from "./mtasoftwarefundamentals.png";
 import mtawindowsos from "./mtawindowsos.png";
 import mtawindowsserver from "./mtawindowsserver.png";
 import digitalmarketing from "./digitalmarketing.png";
+import LADrivingSchool from "./LADrivingSchool.png";
 
 export {
+  LADrivingSchool,
   digitalmarketing,
   specialistmaster2016,
   access2013,

@@ -49,6 +49,7 @@ import {
   word2016,
   word2019,
   wordexpert2016,
+  LADrivingSchool,
   mtadatabaseadministration,
   mtahtml5,
   mtahtmlandcss,
@@ -360,13 +361,16 @@ const proexp = [
     date: "Mar 2019 - Aug 2019",
     points: [
       {
-        text: "Focused on developing a time clock management system for small businesses.",
+        text: "Engineered a robust time clock management system using the .NET Framework, streamlining operations for over 50 employees. Amplified data retrieval efficiency by 30% through optimized SQL queries.",
       },
       {
-        text: "Utilized Visual Basic, C#, and T-SQL within the .NET framework to design a robust, user-friendly solution tailored for small enterprises.",
+        text: "Implemented CRUD operations to effectively track employee work hours, overtime, and shifts, ensuringreal-time monitoring and accurate management of over 5,000 logged hours monthly.",
       },
       {
-        text: "Gained valuable experience in relational databases, optimizing queries for efficient data management.",
+        text: "Enforced precise business logic and data validation in C#, ensuring accurate time entries and achieving 100% reporting accuracy.",
+      },
+      {
+        text: "Optimized database interactions with async/await in C#, slashing query response times by 40%.",
       },
     ],
   },
@@ -380,13 +384,16 @@ const proexp = [
     date: "Apr 2017 - Jul 2017",
     points: [
       {
-        text: "Collaborated with Capgemini professionals to resolve complex IT tickets.",
+        text: "Resolved an average of 15 IT tickets daily in collaboration with Capgemini is professionals.",
       },
       {
-        text: "Performed Windows OS formatting and configuration.",
+        text: "Set up more than 100 Windows OS installations and PC formatting.",
       },
       {
-        text: "Gained hands-on experience in hardware repairs, broadening technical expertise.",
+        text: "Collected and analyzed technical requirements for over 200 systems, identifying key improvements that enhanced the IT infrastructure.",
+      },
+      {
+        text: "Repaired over 20 machines by strengthening technical expertise through hands-on troubleshooting.",
       },
     ],
   },
@@ -397,12 +404,10 @@ const proexp = [
     companyLink: "https://jf-povoaforte.pt/",
     date: "May 2016 - Jun 2016",
     points: [
-      { text: "Contributed to the development of the local parish council's website" },
-      { text: "Ensured cross-browser compatibility and seamless user experiences" },
-      { text: "Reviewed code and provided constructive feedback to team members." },
-      { text: "Designed and implemented user-friendly interfaces with HTML and CSS." },
-      { text: "Used JavaScript to enhance functionality and interactivity." },
-      { text: "Strengthened problem-solving and teamwork through collaboration." },
+      { text: "Revitalized the local parish council’s website with responsive design and interactive features, benefiting over 40,000 residents." },
+      { text: "Enhanced site engagement by 20% through improved navigation and interactive elements like form validation and user notifications, reducing submission errors by 50%" },
+      { text: "Accelerated page load times by 15% through efficient CSS styling and minimized render-blocking resources" },
+      { text: "Integrated advanced features by leveraging third-party JavaScript libraries like jQuery and Chart.js, expediting development by 20%." },
     ],
   },
 ]; 
@@ -465,10 +470,49 @@ const testimonials = [
 ];
 
 const projects = [
+   {
+    name: "LA Driving School",
+    description:
+      "A visually striking and user-friendly landing page for a Los Angeles driving school, expertly designed to showcase your driving lessons, highlight your experienced instructors, and provide easy navigation for prospective students to enroll, book lessons, and start their journey toward becoming confident, safe drivers.",
+    tags: [
+      {
+        name: "#html",
+      },
+      {
+        name: "#css",
+      },
+      {
+        name: "#javascript",
+      },
+    ],
+    image: LADrivingSchool,
+    source_code_link: "https://github.com/tiagofdias/LA-Driving-School",
+    source_code_link2: "https://la-driving-school.vercel.app/",
+  },
   {
+    name: "Non Invested Money Interest Calculator",
+    description:
+      "An app designed to automate payment calculations, currency conversions, and tax reporting for your non-invested money, providing a solution to ensure precise calculations. By reducing human errors and eliminating effort, it simplifies math tasks.",
+    tags: [
+      {
+        name: "#html",
+      },
+      {
+        name: "#css",
+      },
+      {
+        name: "#javascript",
+      },
+    ],
+    image: tax,
+    source_code_link: "https://github.com/tiagofdias/Non-Invested-Money-Interest-Calculator",
+    source_code_link2: "https://tiagofdias.github.io/Non-Invested-Money-Interest-Calculator/",
+  },
+  {
+    
     name: "Flappy Bird",
     description:
-      "Control a small bird by tapping to flap and fly through green pipes. Earn points for each set of pipes passed. Simple and addictive!",
+      "Guide a small, determined bird through a series of green pipes by tapping to make it flap its wings and fly. Each time the bird successfully passes through a gap in the pipes, you score points. The game is simple but highly addictive, offering a challenging test of your timing and coordination. Every second, the game becomes more intense.",
     tags: [
       {
         name: "#html",
@@ -595,7 +639,7 @@ const projects = [
         name: "#javascript",
       },
       {
-        name: "#exchange rate api",
+        name: "#exchange api",
       },
     ],
     image: currency,
@@ -605,7 +649,7 @@ const projects = [
   {
     name: "Typing Game",
     description:
-      "Improve your typing speed and accuracy with random quotes and performance tracking.",
+      "Boost your typing speed and accuracy with a variety of random quotes, all while tracking your progress and performance to ensure continuous improvement.",
     tags: [
       {
         name: "#html",
@@ -617,7 +661,7 @@ const projects = [
         name: "#javascript",
       },
       {
-        name: "#random quotes api",
+        name: "#quotes api",
       },
     ],
     image: typing,
@@ -666,28 +710,9 @@ const projects = [
     source_code_link2: "https://tiagofdias.github.io/Password-Generator/",
   },
   {
-    name: "Non Invested Money Interest Calculator",
-    description:
-      "An app that automates payment calculations and currency conversions for accurate tax reporting on your non-invested money, reducing errors and manual effort.",
-    tags: [
-      {
-        name: "#html",
-      },
-      {
-        name: "#css",
-      },
-      {
-        name: "#javascript",
-      },
-    ],
-    image: tax,
-    source_code_link: "https://github.com/tiagofdias/Non-Invested-Money-Interest-Calculator",
-    source_code_link2: "https://tiagofdias.github.io/Non-Invested-Money-Interest-Calculator/",
-  },
-  {
     name: "Automix",
     description:
-      "Automix for driving schools was designed to track student progress and organize lesson planning for students, instructors, and exam routes.",
+      "Automix for driving schools is a comprehensive platform designed to track student progress, optimize lesson planning, and effectively organize exam routes, providing seamless coordination between students, instructors, and school administrators for a more efficient and personalized learning experience.",
     tags: [
       {
         name: "#c#",
