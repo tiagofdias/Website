@@ -31,24 +31,16 @@ import {
   tucano,
   memorygame,
   weather,
-  arco,
   currency,
   DIGI,
   investorcalculator,
   rockpaperscissors,
   typing,
   specialistmaster2016,
-  access2013,
   access2016,
-  excel2013,
-  excel2016,
   excel2019,
-  excelexpert2016,
   powerpoint2016,
-  word2013,
-  word2016,
   word2019,
-  wordexpert2016,
   LADrivingSchool,
   mtadatabaseadministration,
   mtahtml5,
@@ -59,6 +51,31 @@ import {
   mtawindowsos,
   mtawindowsserver,
   digitalmarketing,
+  SonarLogin,
+  SonarChat,
+  SonarProfile,
+  SonarSettings,
+  LAclasses,
+  LAFAQ,
+  LAcontacts,
+  LAtestimonials,
+  CondomixSettingssecurity,
+  CondomixSettingsprofile,
+  CondomixSearchworkers,
+  CondomixRoles,
+  CondomixMainpage,
+  CondomixFluxograma,
+  CondomixEmail,
+  CondomixCondominios,
+  CondomixAddfuncionario,
+  Condomix2faOFF,
+  excel2016,
+  excelexpert2016,
+  word2016,
+  wordexpert2016,
+  excel2013,
+  word2013,
+  access2013,
 } from "../assets";
 
 export const navLinks = [
@@ -287,7 +304,7 @@ const experiences = [
     ],
   },
 ];
- const education = [
+const education = [
   {
     title: "Master's degree in Computer Science",
     titleLink: "https://www.istec.pt/index.php/en/master-in-computer-science/",
@@ -305,7 +322,8 @@ const experiences = [
   },
   {
     title: "Bachelor's degree in Computer Science",
-    titleLink: "https://www.istec.pt/index.php/en/eng_licenciatura-em-informatica/",
+    titleLink:
+      "https://www.istec.pt/index.php/en/eng_licenciatura-em-informatica/",
     company_name: "ISTEC - Higher Institute of Advanced Technologies",
     companyLink: "https://www.istec.pt/",
     icon: shopify,
@@ -320,7 +338,8 @@ const experiences = [
   },
   {
     title: "Superior Vocational Course in Computer Science Management",
-    titleLink: "https://www.istec.pt/index.php/en/ctesp-management-informatics/",
+    titleLink:
+      "https://www.istec.pt/index.php/en/ctesp-management-informatics/",
     company_name: "ISTEC - Higher Institute of Advanced Technologies",
     companyLink: "https://www.istec.pt/",
     icon: shopify,
@@ -361,16 +380,19 @@ const proexp = [
     date: "Mar 2019 - Aug 2019",
     points: [
       {
-        text: "Engineered a robust time clock management system using the .NET Framework, streamlining operations for over 50 employees. Amplified data retrieval efficiency by 30% through optimized SQL queries.",
+        text: "Architected a time clock system with the IT team, slashing data retrieval times by 30% via SQL queries.",
       },
       {
-        text: "Implemented CRUD operations to effectively track employee work hours, overtime, and shifts, ensuringreal-time monitoring and accurate management of over 5,000 logged hours monthly.",
+        text: "Engineered CRUD operations for real-time tracking of 5,000+ monthly employee hours and shifts.",
       },
       {
-        text: "Enforced precise business logic and data validation in C#, ensuring accurate time entries and achieving 100% reporting accuracy.",
+        text: "Achieved 100% reporting accuracy by enforcing precise business logic and data validation in C#.",
       },
       {
-        text: "Optimized database interactions with async/await in C#, slashing query response times by 40%.",
+        text: "Spearheaded cross-functional database optimizations using C#, guiding junior developers in strategic query refinements that reduced response times by 40% while aligning with team-driven goals.",
+      },
+      {
+        text: "Teamed with the QA department to integrate C# and SQL time clock logic, eliminating discrepanciesthrough collaborative testing and feedback loops.",
       },
     ],
   },
@@ -384,16 +406,22 @@ const proexp = [
     date: "Apr 2017 - Jul 2017",
     points: [
       {
-        text: "Resolved an average of 15 IT tickets daily in collaboration with Capgemini is professionals.",
+        text: "Collaborated with Capgemini IT professionals to resolve an average of 15 IT tickets daily.",
       },
       {
-        text: "Set up more than 100 Windows OS installations and PC formatting.",
+        text: "Led an IT initiative to deploy 100+ Windows OS installations and PC formatting upgrades, analyzing user needs to streamline workflows and mentor other junior technicians in best practices.",
       },
       {
-        text: "Collected and analyzed technical requirements for over 200 systems, identifying key improvements that enhanced the IT infrastructure.",
+        text: "Diagnosed and resolved hardware failures for over 20 machines through hands-on troubleshooting.",
       },
       {
-        text: "Repaired over 20 machines by strengthening technical expertise through hands-on troubleshooting.",
+        text: "Automated IT ticket tracking and trend analysis in Excel via VBA and macros, boosting efficiency by 50%.",
+      },
+      {
+        text: "Co-developed a shared Excel dashboard with Capgemini technicians to track recurring hardware/software issues, enabling real-time team collaboration and cutting resolution time by 25%",
+      },
+      {
+        text: "Led 2 business analysts to automate repetitive process flows using Excel Macros / VBA and reduce analysis time by 2+ hours per week.",
       },
     ],
   },
@@ -404,13 +432,21 @@ const proexp = [
     companyLink: "https://jf-povoaforte.pt/",
     date: "May 2016 - Jun 2016",
     points: [
-      { text: "Revitalized the local parish council’s website with responsive design and interactive features, benefiting over 40,000 residents." },
-      { text: "Enhanced site engagement by 20% through improved navigation and interactive elements like form validation and user notifications, reducing submission errors by 50%" },
-      { text: "Accelerated page load times by 15% through efficient CSS styling and minimized render-blocking resources" },
-      { text: "Integrated advanced features by leveraging third-party JavaScript libraries like jQuery and Chart.js, expediting development by 20%." },
+      {
+        text: "Partnered with parish council members to redesign the website using HTML5 and responsive design, improving accessibility for 40,000+ residents.",
+      },
+      {
+        text: "Upgraded site navigation and form validation, lifting engagement by 20% and halving submission errors",
+      },
+      {
+        text: "Boosted page speed 15% via optimized CSS and reduced render-blocking elements.",
+      },
+      {
+        text: "Integrated jQuery and Chart.js to accelerate feature development by 20%.",
+      },
     ],
   },
-]; 
+];
 
 const testimonials = [
   {
@@ -470,24 +506,92 @@ const testimonials = [
 ];
 
 const projects = [
-   {
+  {
+    name: "Sonar",
+    description:
+      "Sonar is a real-time chat app designed for instant, secure messaging with live user status and a sleek, responsive UI. It ensures a smooth experience with fast updates and reliable performance.",
+    tags: [
+      {
+        name: "node",
+      },
+      {
+        name: "express",
+      },
+      {
+        name: "react",
+      },
+      {
+        name: "tailwind",
+      },
+            {
+        name: "mongodb",
+      },
+      {
+        name: "socket.io",
+      },
+      {
+        name: "json web token",
+      },
+      {
+        name: "bcrypt",
+      },
+       {
+        name: "daisy ui",
+      },
+    ],
+    images: [SonarChat, SonarLogin, SonarProfile, SonarSettings],
+    source_code_link: "https://github.com/tiagofdias/Sonar",
+    source_code_link2: "https://sonar-3n5z.onrender.com/",
+    WebsiteText: "Play Typing Game",
+  },
+  {
     name: "LA Driving School",
     description:
       "A visually striking and user-friendly landing page for a Los Angeles driving school, expertly designed to showcase your driving lessons, highlight your experienced instructors, and provide easy navigation for prospective students to enroll, book lessons, and start their journey toward becoming confident, safe drivers.",
     tags: [
       {
-        name: "#html",
+        name: "react",
       },
       {
-        name: "#css",
+        name: "tailwind",
       },
       {
-        name: "#javascript",
+        name: "shadcn",
       },
     ],
-    image: LADrivingSchool,
+    images: [LADrivingSchool, LAclasses, LAcontacts, LAFAQ, LAtestimonials],
     source_code_link: "https://github.com/tiagofdias/LA-Driving-School",
     source_code_link2: "https://la-driving-school.vercel.app/",
+  },
+  {
+    name: "Condomix",
+    description:
+      "A WinForms-based condominium management system built with .NET, integrating the Portuguese Citizen Card API. It features nine modules: clients, suppliers, employees, condominiums, units, incidents, inspections, payments, and contracts, each with CRUD operations and validations for smooth operation.",
+    tags: [
+      {
+        name: "c#",
+      },
+      {
+        name: "t-sql",
+      },
+      {
+        name: "winforms",
+      },
+    ],
+    images: [
+      Condomix,
+      CondomixCondominios,
+      CondomixMainpage,
+      CondomixSettingsprofile,
+      CondomixSettingssecurity,
+      Condomix2faOFF,
+      CondomixEmail,
+      CondomixAddfuncionario,
+      CondomixFluxograma,
+      CondomixRoles,
+      CondomixSearchworkers,
+    ],
+    source_code_link: "https://github.com/tiagofdias/Condomix",
   },
   {
     name: "Non Invested Money Interest Calculator",
@@ -495,39 +599,58 @@ const projects = [
       "An app designed to automate payment calculations, currency conversions, and tax reporting for your non-invested money, providing a solution to ensure precise calculations. By reducing human errors and eliminating effort, it simplifies math tasks.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
     ],
-    image: tax,
-    source_code_link: "https://github.com/tiagofdias/Non-Invested-Money-Interest-Calculator",
-    source_code_link2: "https://tiagofdias.github.io/Non-Invested-Money-Interest-Calculator/",
+    images: [tax],
+    source_code_link:
+      "https://github.com/tiagofdias/Non-Invested-Money-Interest-Calculator",
+    source_code_link2:
+      "https://tiagofdias.github.io/Non-Invested-Money-Interest-Calculator/",
   },
   {
-    
     name: "Flappy Bird",
     description:
       "Guide a small, determined bird through a series of green pipes by tapping to make it flap its wings and fly. Each time the bird successfully passes through a gap in the pipes, you score points. The game is simple but highly addictive, offering a challenging test of your timing and coordination. Every second, the game becomes more intense.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
     ],
-    image: jobit,
+    images: [jobit],
     source_code_link:
       "https://github.com/tiagofdias/FlappyBird?tab=readme-ov-file",
     source_code_link2: "https://tiagofdias.github.io/FlappyBird/",
+  },
+  {
+    name: "Automix",
+    description:
+      "Automix for driving schools is a comprehensive platform designed to track student progress, optimize lesson planning, and effectively organize exam routes, providing seamless coordination between students, instructors, and school administrators for a more efficient and personalized learning experience.",
+    tags: [
+      {
+        name: "c#",
+      },
+      {
+        name: "asp.net core",
+      },
+      {
+        name: "entity framework",
+      },
+    ],
+    images: [Automix],
+    source_code_link: "https://github.com/tiagofdias/Condomix",
   },
   {
     name: "Stick Hero",
@@ -535,16 +658,16 @@ const projects = [
       "Control a character by building bridges across platforms. Tap to stretch a stick and release to reach the next platform.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
     ],
-    image: StickHero,
+    images: [StickHero],
     source_code_link: "https://github.com/tiagofdias/Stick-Hero",
     source_code_link2: "https://tiagofdias.github.io/Stick-Hero/",
   },
@@ -554,13 +677,13 @@ const projects = [
       "Flip cards to find matching pairs and complete the board. Replay anytime to challenge your memory skills!",
     tags: [
       {
-        name: "#react",
+        name: "react",
       },
       {
-        name: "#tailwind",
+        name: "tailwind",
       },
     ],
-    image: memorygame,
+    images: [memorygame],
     source_code_link: "https://github.com/tiagofdias/MemoryGame",
     source_code_link2: "https://tiagofdias.github.io/MemoryGame/",
   },
@@ -570,16 +693,16 @@ const projects = [
       "Play the classic game against the computer, with random choices and score tracking. A reset button lets you start fresh anytime.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
     ],
-    image: rockpaperscissors,
+    images: [rockpaperscissors],
     source_code_link: "https://github.com/tiagofdias/Rock-Paper-Scissors",
     source_code_link2: "https://tiagofdias.github.io/Rock-Paper-Scissors/",
   },
@@ -589,19 +712,19 @@ const projects = [
       "A responsive web app that calculates compound interest and displays results in an interactive chart.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
       {
-        name: "#chart.js",
+        name: "chart.js",
       },
     ],
-    image: investorcalculator,
+    images: [investorcalculator],
     source_code_link: "https://github.com/tiagofdias/Investor-Calculator",
     source_code_link2: "https://tiagofdias.github.io/Investor-Calculator/",
   },
@@ -611,16 +734,16 @@ const projects = [
       "A comparison tool to help Portuguese consumers calculate potential savings when switching to DIGI Portugal.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
     ],
-    image: DIGI,
+    images: [DIGI],
     source_code_link: "https://github.com/tiagofdias/Comparador-DIGI",
     source_code_link2: "https://tiagofdias.github.io/Comparador-DIGI/",
   },
@@ -630,19 +753,19 @@ const projects = [
       "This web app allows users to convert an amount from one currency to another, with real-time exchange rate data.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
       {
-        name: "#exchange api",
+        name: "exchange api",
       },
     ],
-    image: currency,
+    images: [currency],
     source_code_link: "https://github.com/tiagofdias/Currency-Converter",
     source_code_link2: "https://tiagofdias.github.io/Currency-Converter/",
   },
@@ -652,19 +775,19 @@ const projects = [
       "Boost your typing speed and accuracy with a variety of random quotes, all while tracking your progress and performance to ensure continuous improvement.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
       {
-        name: "#quotes api",
+        name: "quotes api",
       },
     ],
-    image: typing,
+    images: [typing],
     source_code_link: "https://github.com/tiagofdias/Typing-Game",
     source_code_link2: "https://tiagofdias.github.io/Typing-Game/",
   },
@@ -674,19 +797,19 @@ const projects = [
       "This is a web application that provides a 5-day weather forecast for any city. The app uses the WeatherAPI to fetch weather data and display it dynamically.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
       {
-        name: "#weather api",
+        name: "weather api",
       },
     ],
-    image: weather,
+    images: [weather],
     source_code_link: "https://github.com/tiagofdias/Weather-Forecast",
     source_code_link2: "https://tiagofdias.github.io/Weather-Forecast/",
   },
@@ -696,36 +819,18 @@ const projects = [
       "Create strong, secure passwords with customizable options for length, uppercase and lowercase letters, numbers, and special characters.",
     tags: [
       {
-        name: "#html",
+        name: "html",
       },
       {
-        name: "#css",
+        name: "css",
       },
       {
-        name: "#javascript",
+        name: "javascript",
       },
     ],
-    image: tripguide,
+    images: [tripguide],
     source_code_link: "https://github.com/tiagofdias/Password-Generator",
     source_code_link2: "https://tiagofdias.github.io/Password-Generator/",
-  },
-  {
-    name: "Automix",
-    description:
-      "Automix for driving schools is a comprehensive platform designed to track student progress, optimize lesson planning, and effectively organize exam routes, providing seamless coordination between students, instructors, and school administrators for a more efficient and personalized learning experience.",
-    tags: [
-      {
-        name: "#c#",
-      },
-      {
-        name: "#asp.net core",
-      },
-      {
-        name: "#entity framework",
-      },
-    ],
-    image: Automix,
-    source_code_link: "https://github.com/tiagofdias/Condomix",
   },
   {
     name: "Tucano Discord Bot",
@@ -733,35 +838,17 @@ const projects = [
       "A bot designed to optimize server management with automated message deletion, role management, and member engagement. Key features include an XP system, rank rewards, automated role assignments, suggestions, birthday reminders, and content publishing, enhancing user experience.",
     tags: [
       {
-        name: "#node.js",
+        name: "node.js",
       },
       {
-        name: "#discord.js",
+        name: "discord.js",
       },
       {
-        name: "#sqlite",
+        name: "sqlite",
       },
     ],
-    image: tucano,
+    images: [tucano],
     source_code_link: "https://github.com/tiagofdias/TucanoBot",
-  },
-  {
-    name: "Condomix",
-    description:
-      "A WinForms-based condominium management system built with .NET, integrating the Portuguese Citizen Card API. It features nine modules: clients, suppliers, employees, condominiums, units, incidents, inspections, payments, and contracts, each with CRUD operations and validations for smooth operation.",
-    tags: [
-      {
-        name: "#c#",
-      },
-      {
-        name: "#t-sql",
-      },
-      {
-        name: "#winforms",
-      },
-    ],
-    image: Condomix,
-    source_code_link: "https://github.com/tiagofdias/Condomix",
   },
 ];
 
@@ -776,30 +863,35 @@ const certifications = [
       `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#excel",
+        name: "excel",
         link: "https://drive.google.com/file/d/1iEaTr_lKmB7GlFzgNHnOV7zq_o7WnMoL/view?usp=sharing",
         color: "green-text-gradient",
       },
       {
-        name: "#word",
+        name: "word",
         link: "https://drive.google.com/file/d/1qDrIv2nmWvFJoCVBMDIrjIhJEZ74AcQs/view?usp=sharing",
         color: "blue-text-gradient",
       },
       {
-        name: "#powerpoint",
+        name: "powerpoint",
         link: "https://drive.google.com/file/d/1XQOhmjX7nyrPv2Nhi2AJxgOJElpjcQEF/view?usp=sharing",
         color: "orange-text-gradient",
       },
       {
-        name: "#access",
+        name: "access",
         link: "https://drive.google.com/file/d/1rFbUrKL_ZnohFBv6cd1eciWlXt73Hbe5/view?usp=sharing",
         color: "red-text-gradient",
       },
     ],
-    image: specialistmaster2016,
+    images: [
+      specialistmaster2016,
+      excel2016,
+      excelexpert2016,
+      word2016,
+      wordexpert2016,
+      access2016,
+      powerpoint2016,
+    ],
     source_code_link2:
       "https://drive.google.com/file/d/10fee_UgHNOMvfjSL_P-caikbvzNZJYey/view",
   },
@@ -811,30 +903,32 @@ const certifications = [
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#2019",
+        name: "2019",
         link: "https://drive.google.com/file/d/1npc4Y8dkm48ZS72HrqawMm4-asygr0Sj/view?usp=sharing",
         color: "green-text-gradient",
       },
       {
-        name: "#2016 expert ",
+        name: "2016 expert ",
         link: "https://drive.google.com/file/d/1iEaTr_lKmB7GlFzgNHnOV7zq_o7WnMoL/view?usp=sharing",
         color: "green-text-gradient",
       },
       {
-        name: "#2016",
+        name: "2016",
         link: "https://drive.google.com/file/d/1XUx1wge-OLKh1a2l8Pjhwt5isCvTJuLV/view?usp=sharing",
         color: "green-text-gradient",
       },
       {
-        name: "#2013",
+        name: "2013",
         link: "https://drive.google.com/file/d/1yD6kgvWWZfY5cWIDRPoZ5jGz85SbcnEH/view?usp=sharing",
         color: "green-text-gradient",
       },
     ],
-    image: excel2019,
+    images: [
+      excel2019,
+      excelexpert2016,
+      excel2016,
+      excel2013,
+    ],
     source_code_link2:
       "https://drive.google.com/file/d/1npc4Y8dkm48ZS72HrqawMm4-asygr0Sj/view?usp=sharing",
   },
@@ -847,30 +941,32 @@ const certifications = [
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#2019",
+        name: "2019",
         link: "https://drive.google.com/file/d/1LA1C7Z9V9LbrxTLel64NbL1jN4NbWYJd/view",
         color: "blue-text-gradient",
       },
       {
-        name: "#2016 expert ",
+        name: "2016 expert ",
         link: "https://drive.google.com/file/d/1qDrIv2nmWvFJoCVBMDIrjIhJEZ74AcQs/view",
         color: "blue-text-gradient",
       },
       {
-        name: "#2016",
+        name: "2016",
         link: "https://drive.google.com/file/d/1RtiNalvr9_Eg8YbSJJQWmKuG4p06jmd8/view",
         color: "blue-text-gradient",
       },
       {
-        name: "#2013",
+        name: "2013",
         link: "https://drive.google.com/file/d/1JmBN0fMKaDFGol6iESmO53m-f7cAMImu/view",
         color: "blue-text-gradient",
       },
     ],
-    image: word2019,
+    images: [
+      word2019,
+      wordexpert2016,
+      word2016,
+      word2013,
+    ],
     source_code_link2:
       "https://drive.google.com/file/d/1LA1C7Z9V9LbrxTLel64NbL1jN4NbWYJd/view",
   },
@@ -882,20 +978,20 @@ const certifications = [
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#2016",
+        name: "2016",
         link: "https://drive.google.com/file/d/1XUx1wge-OLKh1a2l8Pjhwt5isCvTJuLV/view?usp=sharing",
         color: "red-text-gradient",
       },
       {
-        name: "#2013 ",
+        name: "2013 ",
         link: "https://drive.google.com/file/d/1JyJnbyudwVdpNsQqVdCUgxfDa4UeUIP2/view?usp=sharing",
         color: "red-text-gradient",
       },
     ],
-    image: access2016,
+    images: [
+      access2016,
+      access2013,
+    ],
     source_code_link2:
       "https://drive.google.com/file/d/1rFbUrKL_ZnohFBv6cd1eciWlXt73Hbe5/view?usp=sharing",
   },
@@ -906,7 +1002,9 @@ const certifications = [
     Earners are able to create, edit, enhance and transform PowerPoint presentations, including professional grade sales presentations, employee training, instructional materials, and kiosk slideshows.
   `,
     tags: [],
-    image: powerpoint2016,
+    images: [
+      powerpoint2016,
+    ],
     source_code_link2:
       "https://drive.google.com/file/d/1XQOhmjX7nyrPv2Nhi2AJxgOJElpjcQEF/view?usp=sharing",
   },
@@ -918,15 +1016,12 @@ const certifications = [
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#certification skills measured",
+        name: "certification skills measured",
         link: "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RWIdXK",
         color: "cyan-text-gradient",
       },
     ],
-    image: mtasoftwarefundamentals,
+    images: mtasoftwarefundamentals,
     source_code_link2:
       "https://drive.google.com/file/d/1TtUN6xc21vHlNnJNjHjOu2hr-oECF0Jh/view?usp=sharing",
   },
@@ -939,15 +1034,12 @@ This certification validates skills essential for managing databases, demonstrat
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#certification skills measured",
+        name: "certification skills measured",
         link: "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4tnJq",
         color: "cyan-text-gradient",
       },
     ],
-    image: mtadatabaseadministration,
+    images: mtadatabaseadministration,
     source_code_link2:
       "https://drive.google.com/file/d/1uuaTo3F61KaylXdTU9oLV5TFCVYQThYX/view?usp=sharing",
   },
@@ -960,15 +1052,12 @@ This certification validates skills essential for managing databases, demonstrat
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#certification skills measured",
+        name: "certification skills measured",
         link: "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4t7k1",
         color: "cyan-text-gradient",
       },
     ],
-    image: mtasecurityfundamentals,
+    images: mtasecurityfundamentals,
     source_code_link2:
       "https://drive.google.com/file/d/1keD5GsddG9_kFuny1wyEmg-qiQ4HpyRQ/view?usp=sharing",
   },
@@ -981,15 +1070,12 @@ This certification validates skills essential for managing databases, demonstrat
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#certification skills measured",
+        name: "certification skills measured",
         link: "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4tnJr",
         color: "cyan-text-gradient",
       },
     ],
-    image: mtanetworkingfundamentals,
+    images: mtanetworkingfundamentals,
     source_code_link2:
       "https://drive.google.com/file/d/10XUDO2fYiK3g6J-9lt2TsIVF0Ifm_d3z/view?usp=sharing",
   },
@@ -1002,15 +1088,12 @@ This certification validates skills essential for managing databases, demonstrat
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#certification skills measured",
+        name: "certification skills measured",
         link: "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4tiy8",
         color: "cyan-text-gradient",
       },
     ],
-    image: mtawindowsos,
+    images: mtawindowsos,
     source_code_link2:
       "https://drive.google.com/file/d/1CtTOydnPJiNu7kYpwlAiBhCBAc3tJuVZ/view?usp=sharing",
   },
@@ -1023,15 +1106,12 @@ This certification validates skills essential for managing databases, demonstrat
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#certification skills measured",
+        name: "certification skills measured",
         link: "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4trjL",
         color: "cyan-text-gradient",
       },
     ],
-    image: mtawindowsserver,
+    images: mtawindowsserver,
     source_code_link2:
       "https://drive.google.com/file/d/19ESTqQ5S7SBvzntfeuhcn-UIVRbDJ2T7/view?usp=sharing",
   },
@@ -1044,15 +1124,12 @@ This certification validates skills essential for managing databases, demonstrat
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#certification skills measured",
+        name: "certification skills measured",
         link: "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4tnJs",
         color: "cyan-text-gradient",
       },
     ],
-    image: mtahtml5,
+    images: mtahtml5,
     source_code_link2:
       "https://drive.google.com/file/d/1MZrcEpjvfxiiKcCJJ12_rRwQdxNmcnyG/view?usp=sharing",
   },
@@ -1064,15 +1141,12 @@ This certification validates skills essential for managing databases, demonstrat
   `,
     tags: [
       {
-        name: "links:",
-      },
-      {
-        name: "#certification skills measured",
+        name: "certification skills measured",
         link: "https://query.prod.cms.rt.microsoft.com/cms/api/am/binary/RE4tkyQ",
         color: "cyan-text-gradient",
       },
     ],
-    image: mtahtmlandcss,
+    images: mtahtmlandcss,
     source_code_link2:
       "https://drive.google.com/file/d/1vHdP5yokvOFP_bK5FCjEQAB-eED2zJLp/view?usp=sharing",
   },
@@ -1084,7 +1158,7 @@ This certification validates skills essential for managing databases, demonstrat
      It includes practical exercises and real-world examples, enabling learners to apply knowledge effectively in digital marketing.
   `,
     tags: [],
-    image: digitalmarketing,
+    images: digitalmarketing,
     source_code_link2:
       "https://drive.google.com/file/d/1npaaS2NJC53KCGVmi-8SKmiIi98mqY7s/view?usp=sharing",
   },

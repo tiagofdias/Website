@@ -4,13 +4,15 @@ import { education, proexp } from "../constants";
 import { SectionWrapper } from "../hoc";
 
 const TimelineItem = ({ item }) => (
-  <div className="mb-6">
+  <div className="bg-tertiary p-5 rounded-2xl relative shadow-lg">
+    {/* Timeline Dot */}
+    <div className="absolute top-5 left-[-34px] w-4 h-4 bg-purple-500 rounded-full border-2 border-purple-500"></div>
 
-    <div className="absolute -left-[0.56rem] w-4 h-4 bg-purple-500 rounded-full border-2 border-purple-500"></div>
-
+    {/* Date */}
     <p className="text-sm text-gray-400">{item.date}</p>
 
-    <h3 className="text-lg font-semibold">
+    {/* Title with Link */}
+    <h3 className="text-white font-bold text-[18px]">
       {item.titleLink ? (
         <a
           href={item.titleLink}
@@ -24,8 +26,8 @@ const TimelineItem = ({ item }) => (
         item.title
       )}
     </h3>
-
-    {/* Company Name with optional link */}
+    {<br></br>}
+    {/* Company Name with Link */}
     {item.company_name && (
       <p className="text-sm text-gray-400">
         {item.companyLink ? (
@@ -45,23 +47,22 @@ const TimelineItem = ({ item }) => (
 
     {/* Bullet Points */}
     {item.points?.length > 0 && (
-      <div className="text-sm text-secondary mt-2 space-y-2">
+      <ul className="text-sm text-secondary mt-2 space-y-2">
         {item.points.map((point, idx) => (
-          <div key={idx} className="flex items-start">
-            <span className="mr-2 text-[14px] text-secondary">•</span>
-            <span className="mr-2 text-[14px] text-secondary"> {point.text}</span>
-          </div>
+          <li key={idx} className="flex items-start">
+            <span className="mr-2 text-purple-500">•</span>
+            {point.text}
+          </li>
         ))}
-      </div>
+      </ul>
     )}
   </div>
 );
 
-// Container for a timeline section
 const TimelineSection = ({ items, sectionTitle }) => (
   <div className="mb-8">
-    <h2 className="text-4xl font-bold mb-4">{sectionTitle}</h2>
-    <div className="relative border-l-2 border-purple-500 pl-6">
+    <h2 className="text-4xl font-bold text-white mb-4">{sectionTitle}</h2>
+    <div className="relative border-l-4 border-purple-500 pl-6 space-y-6">
       {items.map((item, index) => (
         <TimelineItem key={index} item={item} />
       ))}
@@ -77,6 +78,3 @@ const Timeline = () => (
 );
 
 export default SectionWrapper(Timeline, "work");
-
-
-

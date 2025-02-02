@@ -1,13 +1,50 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import emailjs from "@emailjs/browser";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import toast CSS
 import { motion } from "framer-motion"; // Import framer-motion
+import { Canvas } from "@react-three/fiber";
+import { useGLTF, useAnimations, OrbitControls } from "@react-three/drei"; // Import for 3D model loading
 
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
-import StormtrooperCanvas from "./canvas/Stormtrooper";
 
+// 3D Model Component
+const StormtrooperModel = () => {
+  const { scene, animations } = useGLTF("./models/dancing_stormtrooper.glb");
+  const modelRef = useRef(); // Reference to the model
+
+  const { actions } = useAnimations(animations, scene);
+
+  useEffect(() => {
+    if (actions) {
+      // Play the animation
+      actions[Object.keys(actions)[0]]?.play();
+    }
+  }, [actions]);
+
+  // Apply rotation
+  useEffect(() => {
+    if (modelRef.current) {
+      modelRef.current.rotation.y = 7;
+    }
+  }, []);
+
+  return (
+    <>
+      <ambientLight intensity={3} />
+      <pointLight position={[10, 10, 10]} />
+      <primitive
+        ref={modelRef}
+        object={scene}
+        scale={1}
+        rotation={[0, Math.PI / 12, 0]} // This applies rotation directly
+      />
+    </>
+  );
+};
+
+// Contact Component
 const Contact = () => {
   const formRef = useRef();
   const [form, setForm] = useState({
@@ -28,9 +65,19 @@ const Contact = () => {
     });
   };
 
-  // Enhanced form validation function
   const validateForm = () => {
-    // Validation logic here...
+    if (!form.name) {
+      toast.error("Name is required.");
+      return false;
+    }
+    if (!form.email || !/\S+@\S+\.\S+/.test(form.email)) {
+      toast.error("Please enter a valid email.");
+      return false;
+    }
+    if (!form.message) {
+      toast.error("Message is required.");
+      return false;
+    }
     return true;
   };
 
@@ -96,81 +143,91 @@ const Contact = () => {
       </motion.h3>
 
       <div className="mt-12 flex flex-col lg:flex-row gap-12 items-start w-full">
-  <form
-    ref={formRef}
-    onSubmit={handleSubmit}
-    className="flex-1 flex flex-col gap-8 w-full lg:max-w-xl"
-  >
-    {/* Input Fields */}
-    <motion.label
-      className="flex flex-col"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1, delay: 0.1 }}
-    >
-      <span className="text-white font-medium mb-4">
-        <b>Name</b>
-      </span>
-      <input
-        type="text"
-        name="name"
-        value={form.name}
-        onChange={handleChange}
-        placeholder="What's your name?"
-        className="bg-tertiary py-4 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium w-full"
-      />
-    </motion.label>
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          className="flex-1 flex flex-col gap-8 w-full lg:max-w-xl"
+        >
+          {/* Form Fields */}
+          <motion.label
+            className="flex flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.1 }}
+          >
+            <span className="text-white font-medium mb-4">
+              <b>Name</b>
+            </span>
+            <input
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="What's your name?"
+              className="bg-tertiary py-4 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium w-full"
+            />
+          </motion.label>
 
-    <motion.label
-      className="flex flex-col"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1, delay: 0.2 }}
-    >
-      <span className="text-white font-medium mb-4">
-        <b>Email</b>
-      </span>
-      <input
-        type="email"
-        name="email"
-        value={form.email}
-        onChange={handleChange}
-        placeholder="What's your email address?"
-        className="bg-tertiary py-4 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium w-full"
-      />
-    </motion.label>
+          <motion.label
+            className="flex flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.2 }}
+          >
+            <span className="text-white font-medium mb-4">
+              <b>Email</b>
+            </span>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="What's your email address?"
+              className="bg-tertiary py-4 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium w-full"
+            />
+          </motion.label>
 
-    <motion.label
-      className="flex flex-col"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1, delay: 0.3 }}
-    >
-      <span className="text-white font-medium mb-4">
-        <b>Message</b>
-      </span>
-      <textarea
-        rows={5}
-        name="message"
-        value={form.message}
-        onChange={handleChange}
-        placeholder="What you want to say?"
-        className="bg-tertiary py-3 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium w-full"
-      />
-    </motion.label>
+          <motion.label
+            className="flex flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.3 }}
+          >
+            <span className="text-white font-medium mb-4">
+              <b>Message</b>
+            </span>
+            <textarea
+              rows={5}
+              name="message"
+              value={form.message}
+              onChange={handleChange}
+              placeholder="What you want to say?"
+              className="bg-tertiary py-3 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium w-full"
+            />
+          </motion.label>
 
-    <motion.button
-      type="submit"
-      className="bg-tertiary py-3 px-8 rounded-xl outline-none w-fit text-white font-bold shadow-md shadow-primary"
-      initial={{ scale: 1 }}
-      whileHover={{ scale: 1.05 }}
-      transition={{ duration: 0.2 }}
-    >
-      {loading ? "Sending..." : "Send"}
-    </motion.button>
-  </form>
-</div>
+          <motion.button
+            type="submit"
+            className="bg-tertiary py-3 px-8 rounded-xl outline-none w-fit text-white font-bold shadow-md shadow-primary"
+            initial={{ scale: 1 }}
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.2 }}
+          >
+            {loading ? "Sending..." : "Send"}
+          </motion.button>
+        </form>
 
+        {/* 3D Model Canvas (Stormtrooper) */}
+        <div className="flex justify-end mt-8 ml-25 lg:block hidden">
+          <Canvas
+            style={{ width: "700px", height: "800px" }}
+            camera={{ position: [5, 5, 5], fov: 50 }}
+          >
+            {/* Increased size and adjusted camera */}
+            <StormtrooperModel />
+          </Canvas>
+        </div>
+      </div>
 
       <ToastContainer
         className="custom-toast"

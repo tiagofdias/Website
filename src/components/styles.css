@@ -10,6 +10,15 @@
   }
 }
 
+.fade-image {
+  transition: opacity 0.5s ease-in-out;
+  opacity: 0;
+}
+
+.fade-image.visible {
+  opacity: 1;
+}
+
 .bottom-indicator-container {
   position: absolute;
   bottom: 2rem; /* Equivalent to bottom-32 */

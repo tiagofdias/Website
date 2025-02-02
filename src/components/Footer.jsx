@@ -21,30 +21,45 @@ const Footer = () => {
           <div className="flex justify-between items-center mt-5">
             <div className="flex items-center gap-5">
               <div className="flex gap-5">
-                <a
-                  href="https://www.linkedin.com/in/tiagofdias/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white text-2xl transition-transform duration-300 transform hover:scale-110"
-                >
-                  <FontAwesomeIcon icon={faLinkedin} />
-                </a>
-                <a
-                  href="https://github.com/tiagofdias"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white text-2xl transition-transform duration-300 transform hover:scale-110"
-                >
-                  <FontAwesomeIcon icon={faGithub} />
-                </a>
-                <a
-                  href="https://medium.com/@tiagofdias"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-white text-2xl transition-transform duration-300 transform hover:scale-110"
-                >
-                  <FontAwesomeIcon icon={faMedium} />
-                </a>
+                {/* LinkedIn Button */}
+                <div className="relative inline-block group">
+                  <a
+                    href="https://www.linkedin.com/in/tiagofdias/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="LinkedIn"
+                    className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
+                  >
+                    <FontAwesomeIcon icon={faLinkedin} />
+                    <span className="sr-only">LinkedIn</span>
+                  </a>
+                </div>
+                {/* GitHub Button */}
+                <div className="relative inline-block group">
+                  <a
+                    href="https://github.com/tiagofdias"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="GitHub"
+                    className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
+                  >
+                    <FontAwesomeIcon icon={faGithub} />
+                    <span className="sr-only">GitHub</span>
+                  </a>
+                </div>
+                {/* Medium Button */}
+                <div className="relative inline-block group">
+                  <a
+                    href="https://medium.com/@tiagofdias"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Medium"
+                    className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
+                  >
+                    <FontAwesomeIcon icon={faMedium} />
+                    <span className="sr-only">Medium</span>
+                  </a>
+                </div>
               </div>
             </div>
             <ScrollLink
@@ -74,6 +89,7 @@ const Footer = () => {
 };
 
 export default SectionWrapper(Footer, "footer");
+
 
 
 

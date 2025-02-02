@@ -3,7 +3,6 @@ import { BrowserRouter } from "react-router-dom";
 import { About, Contact, Experience, Feedbacks, Hero, Navbar, Tech,  Works, StarsCanvas, Footer } from "./components";
 import Certifications from "./components/Certifications";
 import { SnowOverlay } from 'react-snow-overlay';
-import { Stormtrooper } from "./components/canvas";
 
 const App = () => {
   return (
@@ -17,16 +16,12 @@ const App = () => {
           <Navbar />
           <Hero />
         </div>
-        <About />
-        <Experience />
         <Works /> 
         <Certifications />
+        <About />
+        <Experience />
         <Contact />
         <Footer />
-       {/*  <Stormtrooper /> */}
-       {/*  <Feedbacks /> */}
-        <div className='relative z-0'>
-        </div>
       </div>
     </BrowserRouter>
   );

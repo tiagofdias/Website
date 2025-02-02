@@ -5,6 +5,26 @@ import { Link as ScrollLink } from "react-scroll";
 import { SectionWrapper } from "../hoc";
 import { styles } from "../styles";
 
+const IconWithTooltip = ({ icon, href, tooltip }) => (
+  <div className="relative inline-block group">
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={tooltip}
+      className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
+    >
+      <FontAwesomeIcon icon={icon} />
+      <span className="sr-only">{tooltip}</span>
+    </a>
+    <div
+      className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none transition-all duration-300 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
+    >
+      {tooltip}
+    </div>
+  </div>
+);
+
 const Hero = () => {
   const downloadCV = () => {
     const cv = "./CV.pdf";
@@ -16,26 +36,26 @@ const Hero = () => {
 
   return (
     <div className="flex justify-center items-center h-[calc(95vh)] bg-[#050816] py-6">
-    <div className="flex flex-col justify-between h-[85%] w-full max-w-[1900px] purple-500 text-white rounded-2xl p-8 box-border overflow-hidden">
-      <div className="flex justify-between items-center gap-4">
-        <div className="flex items-center bg-[#ffffff] px-2 py-2 rounded-full hover:scale-110 transition-transform duration-300 cursor-pointer">
-        <ScrollLink
-    to="contact"
-    smooth={true}
-    duration={500}
-    className="text-[#1E1E1E] text-sm font-bold uppercase"
-  >
-    OPEN TO WORK &nbsp;
-  </ScrollLink>
-          <div className="w-2.5 h-2.5 rounded-full bg-[#000000] animate-blink"></div>
+      <div className="flex flex-col justify-between h-[85%] w-full max-w-[1900px] purple-500 text-white rounded-2xl p-8 box-border overflow-hidden">
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex items-center bg-[#ffffff] px-2 py-2 rounded-full hover:scale-110 transition-transform duration-300 cursor-pointer">
+            <ScrollLink
+              to="contact"
+              smooth={true}
+              duration={500}
+              className="text-[#1E1E1E] text-sm font-bold uppercase"
+            >
+              OPEN TO WORK &nbsp;
+            </ScrollLink>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#000000] animate-blink"></div>
+          </div>
+          <button
+            onClick={downloadCV}
+            className="bg-white text-[#1E1E1E] text-sm px-3 py-2 rounded-full font-bold uppercase transition-transform duration-300 transform hover:scale-110"
+          >
+            DOWNLOAD CV
+          </button>
         </div>
-        <button
-          onClick={downloadCV}
-          className="bg-white text-[#1E1E1E] text-sm px-3 py-2 rounded-full font-bold uppercase transition-transform duration-300 transform hover:scale-110"
-        >
-          DOWNLOAD CV
-        </button>
-      </div>
 
         <div className="text-center mt-5">
           <h2 className={styles.sectionHeadText}>
@@ -52,39 +72,30 @@ const Hero = () => {
         <div className="flex justify-between items-center mt-5">
           <div className="flex items-center gap-5">
             <div className="flex gap-5">
-              <a
+              <IconWithTooltip
                 href="https://www.linkedin.com/in/tiagofdias/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white text-2xl transition-transform duration-300 transform hover:scale-110"
-              >
-                <FontAwesomeIcon icon={faLinkedin} />
-              </a>
-              <a
+                icon={faLinkedin}
+                tooltip="LinkedIn"
+              />
+              <IconWithTooltip
                 href="https://github.com/tiagofdias"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white text-2xl transition-transform duration-300 transform hover:scale-110"
-              >
-                <FontAwesomeIcon icon={faGithub} />
-              </a>
-              <a
+                icon={faGithub}
+                tooltip="GitHub"
+              />
+              <IconWithTooltip
                 href="https://medium.com/@tiagofdias"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white text-2xl transition-transform duration-300 transform hover:scale-110"
-              >
-                <FontAwesomeIcon icon={faMedium} />
-              </a>
+                icon={faMedium}
+                tooltip="Medium"
+              />
             </div>
 
             <ScrollLink
-              to="projects"
+              to="about"
               smooth={true}
               duration={500}
               className="bg-white text-[#1E1E1E] text-sm px-3 py-2 rounded-full font-bold uppercase transition-transform duration-300 transform hover:scale-110 cursor-pointer"
             >
-              PROJECTS
+              ABOUT ME
             </ScrollLink>
           </div>
           <ScrollLink
@@ -112,5 +123,10 @@ const Hero = () => {
     </div>
   );
 };
+
 export default SectionWrapper(Hero, "hero");
+
+
+
+
 
