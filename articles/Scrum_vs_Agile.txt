@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Comparative Analysis of Scrum and Agile Methodologies</title>
+  <style>
+    pre {
+      background: #000;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <br>
+  
+  <!-- Abstract Section -->
+  <h2>Abstract</h2>
+  <br>
+  <p>
+    This article presents a detailed examination of Agile methodologies with a focus on Scrum — a widely adopted framework within the Agile spectrum. The analysis explores the core principles, operational dynamics, and key differences between Scrum and broader Agile practices. It aims to provide both researchers and practitioners with an in-depth understanding of how these approaches facilitate project management and software development.
+  </p>
+  <br><br>
+  
+  <!-- Introduction Section -->
+  <h2>Introduction</h2>
+  <br>
+  <p>
+    In recent decades, Agile methodologies have revolutionized project management and software development by emphasizing flexibility, iterative progress, and customer collaboration. Among these, Scrum has emerged as one of the most popular frameworks. Although often mentioned interchangeably, Agile and Scrum are not synonymous; Scrum is a specific implementation that operates under Agile principles. This article investigates the fundamental differences and interrelationships between these approaches.
+  </p>
+  <br><br>
+  
+  <!-- Definition Section -->
+  <h2>Defining Agile Methodologies</h2>
+  <br>
+  <p>
+    Agile methodologies comprise a group of frameworks and practices that promote adaptive planning, evolutionary development, and continuous improvement. At its core, Agile emphasizes:
+  </p>
+  <br>
+  <ul>
+    <li><strong>Iterative Development:</strong> Delivering work in small, incremental releases.</li>
+    <br>
+    <li><strong>Collaboration:</strong> Encouraging close cooperation between cross-functional teams and stakeholders.</li>
+    <br>
+    <li><strong>Flexibility:</strong> Embracing change and adapting project scopes as necessary.</li>
+    <br>
+    <li><strong>Customer Focus:</strong> Prioritizing client feedback and satisfaction throughout the development process.</li>
+  </ul>
+  <br><br>
+  
+  <!-- Scrum as a Framework Section -->
+  <h2>Understanding Scrum as a Framework within Agile</h2>
+  <br>
+  <p>
+    Scrum is a lightweight framework designed to help teams work together effectively in an Agile environment. It structures work in fixed-length iterations known as sprints, typically lasting two to four weeks. Scrum incorporates clearly defined roles, events, and artifacts to ensure accountability and transparency:
+  </p>
+  <br>
+  <ul>
+    <li><strong>Roles:</strong> Scrum Master, Product Owner, and Development Team.</li>
+    <br>
+    <li><strong>Events:</strong> Sprint Planning, Daily Scrum, Sprint Review, and Sprint Retrospective.</li>
+    <br>
+    <li><strong>Artifacts:</strong> Product Backlog, Sprint Backlog, and Increment.</li>
+  </ul>
+  <br><br>
+  
+  <!-- Comparative Analysis Section -->
+  <h2>Comparative Analysis: Scrum vs. Agile Methodologies</h2>
+  <br>
+  <p>
+    While Scrum adheres to Agile principles, there are notable differences in scope and implementation:
+  </p>
+  <br>
+  <ol>
+    <li>
+      <strong>Scope and Flexibility:</strong>
+      <br>
+      Agile is an umbrella term that encompasses various methodologies (including Scrum, Kanban, Extreme Programming, etc.), whereas Scrum is a prescriptive framework with defined roles and ceremonies.
+    </li>
+    <br>
+    <li>
+      <strong>Structure and Roles:</strong>
+      <br>
+      Agile approaches promote a general mindset of collaboration and adaptation. In contrast, Scrum explicitly defines roles such as the Scrum Master and Product Owner, establishing clear boundaries and responsibilities.
+    </li>
+    <br>
+    <li>
+      <strong>Process and Iteration:</strong>
+      <br>
+      Agile methodologies encourage iterative development. Scrum operationalizes this through time-boxed sprints, regular meetings, and a strong focus on retrospective improvement.
+    </li>
+    <br>
+    <li>
+      <strong>Documentation and Artifacts:</strong>
+      <br>
+      Agile in general may not mandate extensive documentation; Scrum, however, requires specific artifacts (e.g., Product Backlog, Sprint Backlog) to ensure transparency and progress tracking.
+    </li>
+  </ol>
+  <br><br>
+  
+  <!-- Advantages and Limitations Section -->
+  <h2>Advantages and Limitations</h2>
+  <br>
+  <p>
+    Both Agile and Scrum offer significant benefits:
+  </p>
+  <br>
+  <ul>
+    <li><strong>Enhanced Adaptability:</strong> Both methods accommodate changes in project requirements and market demands.</li>
+    <br>
+    <li><strong>Improved Team Collaboration:</strong> Regular feedback and iterative development foster a collaborative environment.</li>
+    <br>
+    <li><strong>Customer-Centric Focus:</strong> Continuous stakeholder engagement ensures that the final product aligns with user needs.</li>
+  </ul>
+  <br>
+  <p>
+    However, challenges exist. Agile’s broad scope may lead to inconsistent practices across teams, while Scrum’s rigid structure might not be suitable for projects that require less formality or have rapidly changing priorities.
+  </p>
+  <br><br>
+  
+  <!-- Conclusion Section -->
+  <h2>Conclusion</h2>
+  <br>
+  <p>
+    In conclusion, while Scrum and Agile methodologies share a common foundation in iterative development and flexibility, they differ in their implementation and operational structures. Agile represents a broader philosophy applicable to various frameworks, and Scrum serves as a specific, structured approach within that philosophy. Understanding these distinctions is crucial for practitioners seeking to optimize project management practices and deliver high-quality software products.
+  </p>
+  <br><br>
+  
+</body>
+</html>
