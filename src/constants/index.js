@@ -3,28 +3,14 @@ import {
   backend,
   creator,
   web,
-  javascript,
-  typescript,
-  html,
-  css,
-  reactjs,
-  redux,
-  tailwind,
-  nodejs,
-  mongodb,
-  git,
-  figma,
-  docker,
   meta,
   junta,
   tesla,
   shopify,
   Consulteware,
-  carrent,
   jobit,
   StickHero,
   tripguide,
-  threejs,
   Condomix,
   Automix,
   tax,
@@ -80,16 +66,20 @@ import {
 
 export const navLinks = [
   {
-    id: "about",
-    title: "About Me",
-  },
-  {
     id: "projects",
     title: "Projects",
   },
   {
     id: "certifications",
     title: "Certifications",
+  },
+  {
+    id: "about",
+    title: "About Me",
+  },
+  {
+    id: "blog",
+    title: "Blog",
   },
   {
     id: "contact",
@@ -118,58 +108,42 @@ const services = [
   },
 ];
 
-const technologies = [
+const articles = [
   {
-    name: "HTML 5",
-    icon: html,
+    title: "A Beginner-Friendly Guide to REST APIs",
+    contentFile: "articles/rest_api_guide.txt",
+    image:
+      "articles/images/rest.jpg",
   },
   {
-    name: "CSS 3",
-    icon: css,
+    title: "Understanding the MVC Architecture: A Comprehensive Guide",
+    contentFile: "articles/MVC_Architecture.txt",
+    image:
+      "articles/images/mvc.jpg",
   },
   {
-    name: "JavaScript",
-    icon: javascript,
+    title: "Agile vs Scrum Methodologies",
+    contentFile: "articles/Scrum_vs_Agile.txt",
+    image:
+      "articles/images/avss.jpg",
   },
   {
-    name: "TypeScript",
-    icon: typescript,
+    title: "Introduction to Docker and Its Practical Usage",
+    contentFile: "articles/Docker.txt",
+    image:
+      "articles/images/docker.jpg",
   },
   {
-    name: "React JS",
-    icon: reactjs,
+    title: "Git and Its Essential Commands",
+    contentFile: "articles/git.txt",
+    image:
+      "articles/images/git.png",
   },
   {
-    name: "Redux Toolkit",
-    icon: redux,
-  },
-  {
-    name: "Tailwind CSS",
-    icon: tailwind,
-  },
-  {
-    name: "Node JS",
-    icon: nodejs,
-  },
-  {
-    name: "MongoDB",
-    icon: mongodb,
-  },
-  {
-    name: "Three JS",
-    icon: threejs,
-  },
-  {
-    name: "git",
-    icon: git,
-  },
-  {
-    name: "figma",
-    icon: figma,
-  },
-  {
-    name: "docker",
-    icon: docker,
+    title: "Examination of JSON Web Tokens (JWT)",
+    contentFile: "articles/jwt.txt",
+    image:
+      "articles/images/jwt.png",
   },
 ];
 
@@ -448,68 +422,11 @@ const proexp = [
   },
 ];
 
-const testimonials = [
-  {
-    testimonial:
-      "Throughout our time in classes, Tiago consistently stood out for his technical expertise and eagerness to assist others. He’s always ready to share insights and help the team succeed.",
-    name: "João Teixeira",
-    designation: "Smart Consultant",
-    company: "Merkle",
-    image:
-      "https://media.licdn.com/dms/image/v2/D4D03AQF_azJqJgNe3Q/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1701457769359?e=1735171200&v=beta&t=WJIsN813Zv0379yPNviB715Nvz-Ye07VKgfP_EgEVy0",
-  },
-  {
-    testimonial:
-      "Tiago’s skills in ASP.NET Core and Entity Framework greatly improved our project’s backend efficiency, and his collaborative approach kept the team aligned and engaged.",
-    name: "Miguel Reis",
-    designation: "IT Consultant",
-    company: "Trigénius",
-    image:
-      "https://media.licdn.com/dms/image/v2/D4D03AQF_azJqJgNe3Q/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1701457769359?e=1735171200&v=beta&t=WJIsN813Zv0379yPNviB715Nvz-Ye07VKgfP_EgEVy0",
-  },
-  {
-    testimonial:
-      "Whether working with SQL queries or learning ASP.NET Core, Tiago always took the time to understand the material. He consistently strives to improve himself and those around him.",
-    name: "Ruben Brito",
-    designation: "Business Manager",
-    company: "Bee Engineering",
-    image:
-      "https://media.licdn.com/dms/image/v2/D4D03AQF_azJqJgNe3Q/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1701457769359?e=1735171200&v=beta&t=WJIsN813Zv0379yPNviB715Nvz-Ye07VKgfP_EgEVy0",
-  },
-  {
-    testimonial:
-      "What sets Tiago apart is his talent for simplifying complex tasks. His impressive problem-solving skills enabled him to step up during challenges, keeping our group on track.",
-    name: "Rodrigo Courela",
-    designation: "IT Technician",
-    company: "Luz Saúde",
-    image:
-      "https://media.licdn.com/dms/image/v2/D4D03AQF_azJqJgNe3Q/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1701457769359?e=1735171200&v=beta&t=WJIsN813Zv0379yPNviB715Nvz-Ye07VKgfP_EgEVy0",
-  },
-  {
-    testimonial:
-      "Tiago is one of the most dedicated and hardworking individuals I’ve met. He's always up for a challenge and consistently contributes to the success of group projects.",
-    name: "Filipe Vital",
-    designation: "Senior RPA Developer",
-    company: "Devoteam",
-    image:
-      "https://media.licdn.com/dms/image/v2/D4D03AQF_azJqJgNe3Q/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1701457769359?e=1735171200&v=beta&t=WJIsN813Zv0379yPNviB715Nvz-Ye07VKgfP_EgEVy0",
-  },
-  {
-    testimonial:
-      "In group projects, Tiago was always collaborative and his ability to foster open communication and align the team’s efforts made a significant difference in achieving our goals efficiently.",
-    name: "Pedro Santos",
-    designation: "Business Analyst",
-    company: "Mercer Portugal",
-    image:
-      "https://media.licdn.com/dms/image/v2/D4D03AQF_azJqJgNe3Q/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1701457769359?e=1735171200&v=beta&t=WJIsN813Zv0379yPNviB715Nvz-Ye07VKgfP_EgEVy0",
-  },
-];
-
 const projects = [
   {
     name: "Sonar",
     description:
-      "Sonar is a real-time chat app designed for instant, secure messaging with live user status and a sleek, responsive UI. It ensures a smooth experience with fast updates and reliable performance.",
+      "Sonar is a real-time chat app for secure messaging, live user status, and a sleek, responsive UI with fast, reliable performance.",
     tags: [
       {
         name: "node",
@@ -523,7 +440,7 @@ const projects = [
       {
         name: "tailwind",
       },
-            {
+      {
         name: "mongodb",
       },
       {
@@ -531,12 +448,6 @@ const projects = [
       },
       {
         name: "json web token",
-      },
-      {
-        name: "bcrypt",
-      },
-       {
-        name: "daisy ui",
       },
     ],
     images: [SonarChat, SonarLogin, SonarProfile, SonarSettings],
@@ -547,7 +458,7 @@ const projects = [
   {
     name: "LA Driving School",
     description:
-      "A visually striking and user-friendly landing page for a Los Angeles driving school, expertly designed to showcase your driving lessons, highlight your experienced instructors, and provide easy navigation for prospective students to enroll, book lessons, and start their journey toward becoming confident, safe drivers.",
+      "A user-friendly landing page for a Los Angeles driving school, showcasing expert and confident instructors, detailed lessons, and a seamless enrollment process for easy lesson booking.",
     tags: [
       {
         name: "react",
@@ -566,7 +477,7 @@ const projects = [
   {
     name: "Condomix",
     description:
-      "A WinForms-based condominium management system built with .NET, integrating the Portuguese Citizen Card API. It features nine modules: clients, suppliers, employees, condominiums, units, incidents, inspections, payments, and contracts, each with CRUD operations and validations for smooth operation.",
+      "A .NET WinForms condominium management system built by using the Portuguese Citizen Card API integration, featuring nine different modules with full CRUD operations and validations.",
     tags: [
       {
         name: "c#",
@@ -856,30 +767,27 @@ const certifications = [
   {
     name: "MOS: 2016 Master",
     description: `
-        Microsoft Office Specialist Master earners masterfully use the basic and advanced features of MOS 2016 applications. 
-        MOS 2016 Master is the highest MOS Certification.
-        Master candidates demonstrate a broader and deeper expertise of Excel, Word, PowerPoint, and Access. 
-        They have achieved an elite certificate recognized worldwide.
+        MOS 2016 Master is the highest Microsoft Office certification, demonstrating advanced expertise in Excel, Word, PowerPoint, and Access. It is globally recognized.
       `,
     tags: [
       {
         name: "excel",
-        link: "https://drive.google.com/file/d/1iEaTr_lKmB7GlFzgNHnOV7zq_o7WnMoL/view?usp=sharing",
+        link: "certifications/Microsoft Office Excel® 2016 Expert.pdf",
         color: "green-text-gradient",
       },
       {
         name: "word",
-        link: "https://drive.google.com/file/d/1qDrIv2nmWvFJoCVBMDIrjIhJEZ74AcQs/view?usp=sharing",
+        link: "certifications/Microsoft Office Word 2016 Expert.pdf",
         color: "blue-text-gradient",
       },
       {
         name: "powerpoint",
-        link: "https://drive.google.com/file/d/1XQOhmjX7nyrPv2Nhi2AJxgOJElpjcQEF/view?usp=sharing",
+        link: "certifications/Microsoft Office PowerPoint® 2016.pdf",
         color: "orange-text-gradient",
       },
       {
         name: "access",
-        link: "https://drive.google.com/file/d/1rFbUrKL_ZnohFBv6cd1eciWlXt73Hbe5/view?usp=sharing",
+        link: "certifications/Microsoft Office Access 2016.pdf",
         color: "red-text-gradient",
       },
     ],
@@ -893,82 +801,68 @@ const certifications = [
       powerpoint2016,
     ],
     source_code_link2:
-      "https://drive.google.com/file/d/10fee_UgHNOMvfjSL_P-caikbvzNZJYey/view",
+      "certifications/Microsoft Office Specialist 2016 Master.pdf",
   },
   {
     name: "MOS: Excel",
     description: `
-    Microsoft Excel certification earners have an advanced understanding of Excel and the ability to complete tasks independently. 
-    Earners have proven they can create and edit a workbook with multiple sheets, and use graphic elements to represent data visually including professional budgets, financial statements and performance charts.
+    MOS Excel certification earners demonstrate advanced Excel skills, including managing multi-sheet workbooks and visualizing data with budgets, financial statements, charts...
   `,
     tags: [
       {
         name: "2019",
-        link: "https://drive.google.com/file/d/1npc4Y8dkm48ZS72HrqawMm4-asygr0Sj/view?usp=sharing",
+        link: "certifications/Excel Associate 2019.pdf",
         color: "green-text-gradient",
       },
       {
         name: "2016 expert ",
-        link: "https://drive.google.com/file/d/1iEaTr_lKmB7GlFzgNHnOV7zq_o7WnMoL/view?usp=sharing",
+        link: "certifications/Microsoft Office Excel® 2016 Expert.pdf",
         color: "green-text-gradient",
       },
       {
         name: "2016",
-        link: "https://drive.google.com/file/d/1XUx1wge-OLKh1a2l8Pjhwt5isCvTJuLV/view?usp=sharing",
+        link: "certifications/Microsoft Office Excel® 2016.pdf",
         color: "green-text-gradient",
       },
       {
         name: "2013",
-        link: "https://drive.google.com/file/d/1yD6kgvWWZfY5cWIDRPoZ5jGz85SbcnEH/view?usp=sharing",
+        link: "certifications/Microsoft Office Excel® 2013.pdf",
         color: "green-text-gradient",
       },
     ],
-    images: [
-      excel2019,
-      excelexpert2016,
-      excel2016,
-      excel2013,
-    ],
-    source_code_link2:
-      "https://drive.google.com/file/d/1npc4Y8dkm48ZS72HrqawMm4-asygr0Sj/view?usp=sharing",
+    images: [excel2019, excelexpert2016, excel2016, excel2013],
+    source_code_link2: "certifications/Excel Associate 2019.pdf",
   },
   {
     name: "MOS: Word",
     description: `
-    Microsoft Word Expert certification earners proficiently use the advanced features of Word for documents and advanced formatting. 
-    They customize their Word environments to meet project needs and to enhance productivity in expert-level documents which include business plans, research papers and mass mailings. 
+    Microsoft Word Expert certification earners master advanced Word features, customizing settings for business plans, research papers, and mass mailings.
   
   `,
     tags: [
       {
         name: "2019",
-        link: "https://drive.google.com/file/d/1LA1C7Z9V9LbrxTLel64NbL1jN4NbWYJd/view",
+        link: "certifications/Word and Word 2019.pdf",
         color: "blue-text-gradient",
       },
       {
         name: "2016 expert ",
-        link: "https://drive.google.com/file/d/1qDrIv2nmWvFJoCVBMDIrjIhJEZ74AcQs/view",
+        link: "certifications/Microsoft Office Word 2016 Expert.pdf",
         color: "blue-text-gradient",
       },
       {
         name: "2016",
-        link: "https://drive.google.com/file/d/1RtiNalvr9_Eg8YbSJJQWmKuG4p06jmd8/view",
+        link: "certifications/Microsoft Office Word 2016.pdf",
         color: "blue-text-gradient",
       },
       {
         name: "2013",
-        link: "https://drive.google.com/file/d/1JmBN0fMKaDFGol6iESmO53m-f7cAMImu/view",
+        link: "certifications/Microsoft Office Word 2013.pdf",
         color: "blue-text-gradient",
       },
     ],
-    images: [
-      word2019,
-      wordexpert2016,
-      word2016,
-      word2013,
-    ],
-    source_code_link2:
-      "https://drive.google.com/file/d/1LA1C7Z9V9LbrxTLel64NbL1jN4NbWYJd/view",
+    images: [word2019, wordexpert2016, word2016, word2013],
+    source_code_link2: "certifications/Word and Word 2019.pdf",
   },
   {
     name: "MOS: Access",
@@ -979,34 +873,33 @@ const certifications = [
     tags: [
       {
         name: "2016",
-        link: "https://drive.google.com/file/d/1XUx1wge-OLKh1a2l8Pjhwt5isCvTJuLV/view?usp=sharing",
+        link: "certifications/Microsoft Office Access 2016.pdf",
         color: "red-text-gradient",
       },
       {
         name: "2013 ",
-        link: "https://drive.google.com/file/d/1JyJnbyudwVdpNsQqVdCUgxfDa4UeUIP2/view?usp=sharing",
+        link: "certifications/Microsoft Office Access 2013.pdf",
         color: "red-text-gradient",
       },
     ],
-    images: [
-      access2016,
-      access2013,
-    ],
-    source_code_link2:
-      "https://drive.google.com/file/d/1rFbUrKL_ZnohFBv6cd1eciWlXt73Hbe5/view?usp=sharing",
+    images: [access2016, access2013],
+    source_code_link2: "certifications/Microsoft Office Access 2016.pdf",
   },
   {
     name: "MOS: Powerpoint",
     description: `
     Microsoft Office Specialist: PowerPoint earners demonstrate a fundamental understanding of the PowerPoint environment and correct application of PowerPoint slideshows. 
-    Earners are able to create, edit, enhance and transform PowerPoint presentations, including professional grade sales presentations, employee training, instructional materials, and kiosk slideshows.
+    Earners are able to create, edit, enhance and transform PowerPoint presentations, including professional grade sales presentations and  employee training.
   `,
-    tags: [],
-    images: [
-      powerpoint2016,
+    tags: [
+      {
+        name: "2016",
+        link: "certifications/Microsoft Office PowerPoint® 2016.pdf",
+        color: "orange-text-gradient",
+      },
     ],
-    source_code_link2:
-      "https://drive.google.com/file/d/1XQOhmjX7nyrPv2Nhi2AJxgOJElpjcQEF/view?usp=sharing",
+    images: [powerpoint2016],
+    source_code_link2: "certifications/Microsoft Office PowerPoint® 2016.pdf",
   },
   {
     name: "MTA: Software Fundamentals",
@@ -1022,8 +915,7 @@ const certifications = [
       },
     ],
     images: mtasoftwarefundamentals,
-    source_code_link2:
-      "https://drive.google.com/file/d/1TtUN6xc21vHlNnJNjHjOu2hr-oECF0Jh/view?usp=sharing",
+    source_code_link2: "certifications/Software Development Fundamentals.pdf",
   },
   {
     name: "MTA: Database Administration Fundamentals",
@@ -1041,7 +933,7 @@ This certification validates skills essential for managing databases, demonstrat
     ],
     images: mtadatabaseadministration,
     source_code_link2:
-      "https://drive.google.com/file/d/1uuaTo3F61KaylXdTU9oLV5TFCVYQThYX/view?usp=sharing",
+      "certifications/Database Administration Fundamentals.pdf",
   },
   {
     name: "MTA: Security Fundamentals",
@@ -1058,8 +950,7 @@ This certification validates skills essential for managing databases, demonstrat
       },
     ],
     images: mtasecurityfundamentals,
-    source_code_link2:
-      "https://drive.google.com/file/d/1keD5GsddG9_kFuny1wyEmg-qiQ4HpyRQ/view?usp=sharing",
+    source_code_link2: "certifications/Security Fundamentals.pdf",
   },
   {
     name: "MTA: Networking Fundamentals",
@@ -1076,8 +967,7 @@ This certification validates skills essential for managing databases, demonstrat
       },
     ],
     images: mtanetworkingfundamentals,
-    source_code_link2:
-      "https://drive.google.com/file/d/10XUDO2fYiK3g6J-9lt2TsIVF0Ifm_d3z/view?usp=sharing",
+    source_code_link2: "certifications/Networking Fundamentals.pdf",
   },
   {
     name: "MTA: Windows Operating System Fundamentals",
@@ -1095,7 +985,7 @@ This certification validates skills essential for managing databases, demonstrat
     ],
     images: mtawindowsos,
     source_code_link2:
-      "https://drive.google.com/file/d/1CtTOydnPJiNu7kYpwlAiBhCBAc3tJuVZ/view?usp=sharing",
+      "certifications/Windows® Operating System Fundamentals.pdf",
   },
   {
     name: "MTA: Windows Server Administration Fundamentals",
@@ -1113,7 +1003,7 @@ This certification validates skills essential for managing databases, demonstrat
     ],
     images: mtawindowsserver,
     source_code_link2:
-      "https://drive.google.com/file/d/19ESTqQ5S7SBvzntfeuhcn-UIVRbDJ2T7/view?usp=sharing",
+      "certifications/Windows® Server Administration Fundamentals.pdf",
   },
   {
     name: "MTA: HTML5 Application Development Fundamentals",
@@ -1131,7 +1021,7 @@ This certification validates skills essential for managing databases, demonstrat
     ],
     images: mtahtml5,
     source_code_link2:
-      "https://drive.google.com/file/d/1MZrcEpjvfxiiKcCJJ12_rRwQdxNmcnyG/view?usp=sharing",
+      "certifications/HTML5 Application Development Fundamentals.pdf",
   },
   {
     name: "MTA: Introduction to Programming using HTML and CSS",
@@ -1148,7 +1038,7 @@ This certification validates skills essential for managing databases, demonstrat
     ],
     images: mtahtmlandcss,
     source_code_link2:
-      "https://drive.google.com/file/d/1vHdP5yokvOFP_bK5FCjEQAB-eED2zJLp/view?usp=sharing",
+      "certifications/Introduction to Programming using HTML and CSS.pdf",
   },
   {
     name: "Fundamentals of digital marketing",
@@ -1160,15 +1050,14 @@ This certification validates skills essential for managing databases, demonstrat
     tags: [],
     images: digitalmarketing,
     source_code_link2:
-      "https://drive.google.com/file/d/1npaaS2NJC53KCGVmi-8SKmiIi98mqY7s/view?usp=sharing",
+      "certifications/Google Fundamentals of digital marketing.pdf",
   },
 ];
 
 export {
   services,
-  technologies,
+  articles,
   experiences,
-  testimonials,
   projects,
   certifications,
   education,

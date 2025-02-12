@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import toast CSS
 import { motion } from "framer-motion"; // Import framer-motion
 import { Canvas } from "@react-three/fiber";
-import { useGLTF, useAnimations, OrbitControls } from "@react-three/drei"; // Import for 3D model loading
+import { useGLTF, useAnimations } from "@react-three/drei"; // Import for 3D model loading
 
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
@@ -208,7 +208,7 @@ const Contact = () => {
 
           <motion.button
             type="submit"
-            className="bg-tertiary py-3 px-8 rounded-xl outline-none w-fit text-white font-bold shadow-md shadow-primary"
+            className="bg-tertiary hover:bg-[#00C6FE] py-3 px-8 rounded-xl outline-none w-fit text-white font-bold shadow-md shadow-primary"
             initial={{ scale: 1 }}
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.2 }}

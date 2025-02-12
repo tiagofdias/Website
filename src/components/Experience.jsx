@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "react-vertical-timeline-component/style.min.css";
 import { education, proexp } from "../constants";
 import { SectionWrapper } from "../hoc";
@@ -6,7 +6,7 @@ import { SectionWrapper } from "../hoc";
 const TimelineItem = ({ item }) => (
   <div className="bg-tertiary p-5 rounded-2xl relative shadow-lg">
     {/* Timeline Dot */}
-    <div className="absolute top-5 left-[-34px] w-4 h-4 bg-purple-500 rounded-full border-2 border-purple-500"></div>
+    <div className="absolute top-5 left-[-34px] w-4 h-4 bg-cyan-500 rounded-full border-2 border-cyan-500"></div>
 
     {/* Date */}
     <p className="text-sm text-gray-400">{item.date}</p>
@@ -18,7 +18,7 @@ const TimelineItem = ({ item }) => (
           href={item.titleLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-300 hover:text-purple-500"
+          className="text-gray-300 hover:text-cyan-500"
         >
           {item.title}
         </a>
@@ -26,7 +26,7 @@ const TimelineItem = ({ item }) => (
         item.title
       )}
     </h3>
-    {<br></br>}
+    <br />
     {/* Company Name with Link */}
     {item.company_name && (
       <p className="text-sm text-gray-400">
@@ -35,7 +35,7 @@ const TimelineItem = ({ item }) => (
             href={item.companyLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-purple-500"
+            className="hover:text-cyan-500"
           >
             {item.company_name}
           </a>
@@ -50,7 +50,7 @@ const TimelineItem = ({ item }) => (
       <ul className="text-sm text-secondary mt-2 space-y-2">
         {item.points.map((point, idx) => (
           <li key={idx} className="flex items-start">
-            <span className="mr-2 text-purple-500">•</span>
+            <span className="mr-2 text-cyan-500">•</span>
             {point.text}
           </li>
         ))}
@@ -62,7 +62,7 @@ const TimelineItem = ({ item }) => (
 const TimelineSection = ({ items, sectionTitle }) => (
   <div className="mb-8">
     <h2 className="text-4xl font-bold text-white mb-4">{sectionTitle}</h2>
-    <div className="relative border-l-4 border-purple-500 pl-6 space-y-6">
+    <div className="relative border-l-4 border-cyan-500 pl-6 space-y-6">
       {items.map((item, index) => (
         <TimelineItem key={index} item={item} />
       ))}
@@ -70,11 +70,31 @@ const TimelineSection = ({ items, sectionTitle }) => (
   </div>
 );
 
-const Timeline = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-    <TimelineSection items={education} sectionTitle="Education" />
-    <TimelineSection items={proexp} sectionTitle="Experience" />
-  </div>
-);
+const Timeline = () => {
+  const [showAll, setShowAll] = useState(false);
+
+  // If "View All" hasn't been clicked, render only the button.
+  if (!showAll) {
+    return (
+      <div className="flex justify-center mt-10">
+        <button
+          onClick={() => setShowAll(true)}
+          className="bg-tertiary transition-transform duration-300 transform hover:scale-110 outline-none shadow-md shadow-primary text-white font-bold py-2 w-[1000px] rounded-3xl"
+        >
+          View All
+        </button>
+      </div>
+    );
+  }
+
+  // Once "View All" is clicked, render both timeline sections.
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <TimelineSection items={education} sectionTitle="Education" />
+      <TimelineSection items={proexp} sectionTitle="Experience" />
+    </div>
+  );
+};
 
 export default SectionWrapper(Timeline, "work");
+

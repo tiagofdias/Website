@@ -7,7 +7,28 @@ import {
   faGithub,
   faMedium,
 } from "@fortawesome/free-brands-svg-icons";
-import { motion } from "framer-motion";
+
+const IconWithTooltip = ({ icon, href, tooltip }) => (
+  <div className="relative inline-block group">
+    <div
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={tooltip}
+      className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
+    >
+
+      <div className="transition-transform duration-300 transform group-hover:scale-110">
+        <FontAwesomeIcon icon={icon} />
+      </div>
+      <span className="sr-only">{tooltip}</span>
+    </div>
+    <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none transition-all duration-300 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
+      {tooltip}
+    </div>
+  </div>
+);
+
 
 const Footer = () => {
   return (
@@ -15,9 +36,7 @@ const Footer = () => {
       <div className="grid gap-6">
         <div className="text-white p-6 rounded-md">
           <h2 className="text-xl font-bold mb-3">Tiago Dias</h2>
-          <p className="mb-4">
-            Junior Software Developer.
-          </p>
+          <p className="mb-4">Junior Software Developer.</p>
           <div className="flex justify-between items-center mt-5">
             <div className="flex items-center gap-5">
               <div className="flex gap-5">
@@ -30,8 +49,11 @@ const Footer = () => {
                     aria-label="LinkedIn"
                     className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
                   >
-                    <FontAwesomeIcon icon={faLinkedin} />
-                    <span className="sr-only">LinkedIn</span>
+                    <IconWithTooltip
+                      href="https://www.linkedin.com/in/tiagofdias/"
+                      icon={faLinkedin}
+                      tooltip="LinkedIn"
+                    />
                   </a>
                 </div>
                 {/* GitHub Button */}
@@ -43,7 +65,11 @@ const Footer = () => {
                     aria-label="GitHub"
                     className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
                   >
-                    <FontAwesomeIcon icon={faGithub} />
+                    <IconWithTooltip
+                      href="https://github.com/tiagofdias"
+                      icon={faGithub}
+                      tooltip="GitHub"
+                    />
                     <span className="sr-only">GitHub</span>
                   </a>
                 </div>
@@ -56,7 +82,11 @@ const Footer = () => {
                     aria-label="Medium"
                     className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
                   >
-                    <FontAwesomeIcon icon={faMedium} />
+                    <IconWithTooltip
+                      href="https://medium.com/@tiagofdias"
+                      icon={faMedium}
+                      tooltip="Medium"
+                    />
                     <span className="sr-only">Medium</span>
                   </a>
                 </div>
@@ -64,8 +94,10 @@ const Footer = () => {
             </div>
             <ScrollLink
               to="hero"
+              href="hero"
               smooth={true}
               duration={500}
+              aria-label="Scroll to about section" // accessible name
               className="flex items-center cursor-pointer transition-transform duration-300 transform hover:scale-110"
             >
               <svg
@@ -89,7 +121,3 @@ const Footer = () => {
 };
 
 export default SectionWrapper(Footer, "footer");
-
-
-
-

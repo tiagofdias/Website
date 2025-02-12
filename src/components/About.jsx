@@ -1,41 +1,14 @@
-import React from "react";
-import { Tilt } from "react-tilt";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-
 import { TypeAnimation } from "react-type-animation";
+import "react-vertical-timeline-component/style.min.css";
+
 import { styles } from "../styles";
-import { services } from "../constants";
+import { education, proexp } from "../constants";
 import { SectionWrapper } from "../hoc";
 import { fadeIn, textVariant } from "../utils/motion";
 
-const ServiceCard = ({ index, title, icon }) => (
-  <Tilt className="xs:w-[250px] w-full">
-    <motion.div
-      variants={fadeIn("right", "spring", index * 0.5, 0.75)}
-      className="w-full green-pink-gradient p-[1px] rounded-[20px] shadow-card"
-    >
-      <div
-        options={{
-          max: 45,
-          scale: 1,
-          speed: 450,
-        }}
-        className="bg-tertiary rounded-[20px] py-5 px-12 min-h-[280px] flex justify-evenly items-center flex-col"
-      >
-        <img
-          src={icon}
-          alt="web-development"
-          className="w-16 h-20 object-contain"
-        />
-
-        <h3 className="text-white text-[18px] font-bold text-center">
-          {title}
-        </h3>
-      </div>
-    </motion.div>
-  </Tilt>
-);
-
+// About Section
 const About = () => {
   return (
     <>
@@ -50,7 +23,7 @@ const About = () => {
       >
         As a{" "}
         <motion.span
-          className="font-bold cursor-pointer hover:text-purple-500"
+          className="font-bold cursor-pointer hover:text-[#00C6FE]"
           whileHover={{ scale: 1.1 }}
           onClick={() =>
             window.open(
@@ -67,7 +40,7 @@ const About = () => {
         </motion.span>{" "}
         with a{" "}
         <motion.span
-          className="font-bold cursor-pointer hover:text-purple-500"
+          className="font-bold cursor-pointer hover:text-[#00C6FE]"
           whileHover={{ scale: 1.1 }}
           onClick={() =>
             window.open(
@@ -80,7 +53,7 @@ const About = () => {
         in the same field, I am driven by a deep passion for technology. Based
         in{" "}
         <motion.span
-          className="font-bold cursor-pointer hover:text-purple-500"
+          className="font-bold cursor-pointer hover:text-[#00C6FE]"
           whileHover={{ scale: 1.1 }}
           onClick={() =>
             window.open(
@@ -118,4 +91,113 @@ const About = () => {
   );
 };
 
-export default SectionWrapper(About, "about");
+// Timeline Section
+const TimelineItem = ({ item }) => (
+  <div className="bg-tertiary p-5 rounded-2xl relative shadow-lg">
+    {/* Timeline Dot */}
+    <div className="absolute top-5 left-[-34px] w-4 h-4 bg-[#00C6FE] rounded-full border-2 border-cyan-500"></div>
+
+    {/* Date */}
+    <p className="text-sm text-gray-400">{item.date}</p>
+
+    {/* Title with Link */}
+    <h3 className="text-white font-bold text-[18px]">
+      {item.titleLink ? (
+        <a
+          href={item.titleLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-300 hover:text-[#00C6FE]"
+        >
+          {item.title}
+        </a>
+      ) : (
+        item.title
+      )}
+    </h3>
+    <br />
+    {/* Company Name with Link */}
+    {item.company_name && (
+      <p className="text-sm text-gray-400">
+        {item.companyLink ? (
+          <a
+            href={item.companyLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-[#00C6FE]"
+          >
+            {item.company_name}
+          </a>
+        ) : (
+          item.company_name
+        )}
+      </p>
+    )}
+
+    {/* Bullet Points */}
+    {item.points?.length > 0 && (
+      <ul className="text-sm text-secondary mt-2 space-y-2">
+        {item.points.map((point, idx) => (
+          <li key={idx} className="flex items-start">
+            <span className="mr-2 text-cyan-500">•</span>
+            {point.text}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
+
+const TimelineSection = ({ items, sectionTitle }) => (
+  <div className="mb-8">
+    <h2 className="text-4xl font-bold text-white mb-4">{sectionTitle}</h2>
+    <div className="relative border-l-4 border-cyan-500 pl-6 space-y-6">
+      {items.map((item, index) => (
+        <TimelineItem key={index} item={item} />
+      ))}
+    </div>
+  </div>
+);
+
+const Timeline = () => {
+  const [showAll, setShowAll] = useState(false);
+
+  if (!showAll) {
+    return (
+      <div className="flex justify-center mt-10">
+        <button
+          onClick={() => setShowAll(true)}
+          className="bg-tertiary transition-transform duration-300 transform hover:scale-110 hover:bg-[#00C6FE] outline-none shadow-md shadow-primary text-white font-bold py-2 w-[1000px] rounded-3xl"
+        >Tell me More
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+    <br></br>
+    <br></br>
+    <br></br>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <TimelineSection items={education} sectionTitle="Education" />
+      <TimelineSection items={proexp} sectionTitle="Experience" />
+    </div>
+    </>
+  );
+};
+
+// Merged Component
+const AboutAndTimeline = () => {
+  return (
+    <div>
+      {/* About Section */}
+      <About />
+      {/* Timeline Section */}
+      <Timeline />
+    </div>
+  );
+};
+
+export default SectionWrapper(AboutAndTimeline, "about");
+

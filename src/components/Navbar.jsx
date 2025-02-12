@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link as ScrollLink } from "react-scroll";
-import { Link } from "react-router-dom";
 import { styles } from "../styles";
 import { navLinks } from "../constants";
 import { menu, close } from "../assets";
@@ -39,12 +38,13 @@ const Navbar = () => {
     >
       <div className="w-full flex justify-between items-center max-w-7xl mx-auto">
         <ScrollLink
-          to="hero" // The ID of the target section
-          smooth={true} // Enables smooth scrolling
-          duration={500} // Duration of the scroll in milliseconds
-          offset={-50} // Adjust scroll offset if needed (e.g., for a fixed header)
+          to="hero" 
+          smooth={true} 
+          duration={500} 
+          offset={-50} 
           className="flex items-center gap-2 cursor-pointer"
-          onClick={() => setActive("")} // Reset active state on click
+          onClick={() => setActive("")} 
+          href="hero"
         >
           <p className="text-white text-[18px] font-bold flex">
             Tiago &nbsp;
@@ -65,8 +65,9 @@ const Navbar = () => {
                 to={nav.id}
                 smooth={true}
                 duration={500}
-                offset={-70} // Adjust for fixed navbar height
+                offset={0} // Adjust for fixed navbar height
                 onClick={() => setActive(nav.title)}
+                href={nav.id}
               >
                 {nav.title}
               </ScrollLink>
@@ -105,6 +106,7 @@ const Navbar = () => {
                     duration={500}
                     offset={-70}
                     onClick={() => setActive(nav.title)}
+                    href={nav.id}
                   >
                     {nav.title}
                   </ScrollLink>

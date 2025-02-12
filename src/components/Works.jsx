@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
 import { projects } from "../constants";
-import { github, webs } from "../assets"; // Make sure these paths are correct!
+import { github, webs } from "../assets";
+import { scroller } from "react-scroll"; // Import scroller for programmatic scrolling
 
-// ProjectCard component with modal preview and interactive links
 const ProjectCard = ({
   index,
   name,
@@ -13,17 +13,15 @@ const ProjectCard = ({
   images,
   source_code_link,
   source_code_link2,
+  onTagClick, 
+  activeTag,
 }) => {
-  // State for image transitions and modal
   const [currentIndex, setCurrentIndex] = useState(0);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [showTooltip, setShowTooltip] = useState({ github: false, web: false });
 
-  // Ensure images is always an array
   const projectImages = Array.isArray(images) ? images : [images];
 
-  // Functions to navigate the preview images
   const nextImage = () => {
     setPreviewIndex((prev) => (prev + 1) % projectImages.length);
   };
@@ -34,20 +32,33 @@ const ProjectCard = ({
     );
   };
 
-  // Open preview modal starting at the clicked image index
   const openPreview = (index) => {
     setPreviewIndex(index);
     setIsPreviewOpen(true);
   };
 
-  // Close the modal preview
   const closePreview = () => {
     setIsPreviewOpen(false);
   };
 
+  // These states are local to ProjectCard; remove them if not needed.
+  const [active, setActive] = useState("");
+  const [toggle, setToggle] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setScrolled(scrollTop > 100);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full relative">
-      {/* Image Container with Hover Effect */}
+      {/* Project Image Preview */}
       <div
         className="relative w-full h-[230px] overflow-hidden group cursor-pointer"
         onClick={() => openPreview(0)}
@@ -63,14 +74,12 @@ const ProjectCard = ({
           />
         ))}
 
-        {/* "+X More" Badge if multiple images exist */}
         {projectImages.length > 1 && (
           <div className="absolute top-3 left-3 bg-black bg-opacity-50 text-white text-xs py-1 px-2 rounded">
             +{projectImages.length - 1} More
           </div>
         )}
 
-        {/* Hover Overlay */}
         <div
           className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-sm font-bold"
           style={{ pointerEvents: "none" }}
@@ -81,32 +90,48 @@ const ProjectCard = ({
 
       {/* Project Details */}
       <div className="mt-5">
-        <h3 className="text-white font-bold text-[24px]">{name}</h3>
+        <h3 className="text-white font-bold text-[20px] pr-16 break-words">
+          {name}
+        </h3>
         <p className="mt-2 text-secondary text-[14px]">{description}</p>
       </div>
 
       {/* Tags Section */}
       <div className="mt-3 flex flex-wrap gap-2">
-        {tags.map((tag, idx) => (
-          <a
-            key={`${name}-${idx}`}
-            href={tag.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[14px] px-2.5 py-1 rounded-full bg-gray-700 text-white"
-          >
-            {tag.name}
-          </a>
-        ))}
+        {tags.map((tag, idx) => {
+          // If the activeTag matches the current tag (case-insensitive), apply cyan background.
+          const isActiveTag =
+            activeTag && tag.name.toLowerCase() === activeTag.toLowerCase();
+          return (
+            <span
+              key={`${name}-${idx}`}
+              className={`text-[14px] px-2.5 py-1 rounded-full transition-all duration-300 transform cursor-pointer 
+              ${
+                isActiveTag ? "bg-[#00C6FE]" : "bg-gray-700"
+              } text-white hover:scale-105`}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent card click propagation
+                if (onTagClick) onTagClick(tag.name);
+                // Programmatically scroll to the "projects" section
+                scroller.scrollTo("projects", {
+                  smooth: true,
+                  offset: 30,
+                  duration: 500,
+                });
+              }}
+            >
+              {tag.name}
+            </span>
+          );
+        })}
       </div>
 
       {/* Link Buttons */}
-      <div className="absolute top-8 right-8 flex gap-1">
+      <div className="absolute right-2 flex" style={{ top: "262px" }}>
         {source_code_link2 && (
           <div
-            className="relative black-gradient w-10 h-10 rounded-full flex justify-center items-center cursor-pointer"
+            className="relative w-11 h-11 left-3 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110"
             onClick={() => {
-              // Optional confirmation for first project (customize as needed)
               if (index === 0) {
                 const userConfirmed = window.confirm(
                   "This website may take some time (1-2 minutes) to load due to the free hosting service. Do you want to continue?"
@@ -115,43 +140,25 @@ const ProjectCard = ({
               }
               window.open(source_code_link2, "_blank");
             }}
-            onMouseEnter={() => setShowTooltip({ ...showTooltip, web: true })}
-            onMouseLeave={() => setShowTooltip({ ...showTooltip, web: false })}
           >
             <img
               src={webs}
               alt="website"
               className="w-1/2 h-1/2 object-contain"
             />
-            {showTooltip.web && (
-              <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded-md shadow-lg whitespace-nowrap">
-                Visit Website
-              </div>
-            )}
           </div>
         )}
 
         {source_code_link && (
           <div
-            className="relative black-gradient w-10 h-10 rounded-full flex justify-center items-center cursor-pointer"
+            className="relative w-11 h-11 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110"
             onClick={() => window.open(source_code_link, "_blank")}
-            onMouseEnter={() =>
-              setShowTooltip({ ...showTooltip, github: true })
-            }
-            onMouseLeave={() =>
-              setShowTooltip({ ...showTooltip, github: false })
-            }
           >
             <img
               src={github}
               alt="source code"
               className="w-1/2 h-1/2 object-contain"
             />
-            {showTooltip.github && (
-              <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded-md shadow-lg whitespace-nowrap">
-                View Source Code
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -162,7 +169,6 @@ const ProjectCard = ({
           className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50"
           onClick={closePreview}
         >
-          {/* Fixed-size container for the preview */}
           <div
             className="relative bg-white rounded-lg p-4 w-[70vw] h-[70vh] flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
@@ -173,7 +179,6 @@ const ProjectCard = ({
               className="max-w-full max-h-full object-contain rounded-lg transition-opacity duration-500"
             />
 
-            {/* Navigation Buttons */}
             {projectImages.length > 1 && (
               <>
                 <button
@@ -197,14 +202,12 @@ const ProjectCard = ({
               </>
             )}
 
-<button
-  className="absolute top-3 right-3 text-white text-2xl bg-black p-2 rounded-full hover:bg-gray-800"
-  onClick={closePreview}
->
-  ✖
-</button>
-
-
+            <button
+              className="absolute top-3 right-3 text-white text-2xl bg-black p-2 rounded-full hover:bg-gray-800"
+              onClick={closePreview}
+            >
+              ✖
+            </button>
           </div>
         </div>
       )}
@@ -212,10 +215,12 @@ const ProjectCard = ({
   );
 };
 
-// Projects component that maps over your projects array
 const Projects = () => {
-  // Optional: add mobile-specific logic if needed
   const [isMobile, setIsMobile] = useState(false);
+  // State to control whether to show all projects or just a subset
+  const [showAll, setShowAll] = useState(false);
+  // State for the active tag filter
+  const [activeTag, setActiveTag] = useState(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -227,6 +232,22 @@ const Projects = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Filter projects if an active tag is set
+  const filteredProjects = activeTag
+    ? projects.filter((project) =>
+        project.tags.some(
+          (tag) => tag.name.toLowerCase() === activeTag.toLowerCase()
+        )
+      )
+    : projects;
+
+  // Decide how many projects to display
+  const projectsToDisplay = activeTag
+    ? filteredProjects
+    : showAll
+    ? filteredProjects
+    : filteredProjects.slice(0, 3);
+
   return (
     <>
       <div>
@@ -237,11 +258,50 @@ const Projects = () => {
           Check out some of my dope projects.
         </p>
       </div>
+
+      {/* Display active filter and a clear button */}
+      {activeTag && (
+        <div className="mt-4 flex items-center">
+          <span className="text-secondary mr-4">
+            Filtering by tag: {" "}
+            <strong className="capitalize text-white">{activeTag}</strong>
+          </span>
+
+          <button
+            className="bg-gray-700 transition-transform duration-300 transform hover:scale-110 text-white px-3 py-1 rounded hover:bg-gray-600"
+            onClick={() => setActiveTag(null)}
+          >
+            Clear Filter
+          </button>
+        </div>
+      )}
+
       <div className="mt-20 flex flex-wrap gap-7 justify-center">
-        {projects.map((project, index) => (
-          <ProjectCard key={`project-${index}`} index={index} {...project} />
+        {projectsToDisplay.map((project, index) => (
+          <ProjectCard
+            key={`project-${index}`}
+            index={index}
+            activeTag={activeTag} // Pass the active tag to each project card
+            onTagClick={(tagName) => {
+              setActiveTag(tagName);
+              setShowAll(true);
+            }}
+            {...project}
+          />
         ))}
       </div>
+
+      {/* "View All" button appears only when no tag is active and not all projects are shown */}
+      {!activeTag && !showAll && (
+        <div className="flex justify-center mt-10">
+          <button
+            onClick={() => setShowAll(true)}
+            className="bg-tertiary transition-transform duration-300 transform hover:scale-110 hover:bg-[#00C6FE] outline-none shadow-md shadow-primary text-white font-bold py-2 w-[1000px] rounded-3xl"
+          >
+            View All
+          </button>
+        </div>
+      )}
     </>
   );
 };
