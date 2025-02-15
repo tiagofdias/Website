@@ -82,11 +82,6 @@ const Footer = () => {
                     aria-label="Medium"
                     className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
                   >
-                    <IconWithTooltip
-                      href="https://medium.com/@tiagofdias"
-                      icon={faMedium}
-                      tooltip="Medium"
-                    />
                     <span className="sr-only">Medium</span>
                   </a>
                 </div>

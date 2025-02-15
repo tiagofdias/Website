@@ -1,10 +1,5 @@
 import {
-  mobile,
-  backend,
-  creator,
-  web,
   meta,
-  junta,
   tesla,
   shopify,
   Consulteware,
@@ -45,6 +40,8 @@ import {
   LAFAQ,
   LAcontacts,
   LAtestimonials,
+  LAvehicles1,
+  LAvehicles2,
   CondomixSettingssecurity,
   CondomixSettingsprofile,
   CondomixSearchworkers,
@@ -87,27 +84,6 @@ export const navLinks = [
   },
 ];
 
-const services = [
-  {
-    title: "Microsoft Office Specialist Master 2016",
-    icon: web,
-  },
-  {
-    title:
-      "Microsoft Technology Associate for Software Development Fundamentals",
-    icon: mobile,
-  },
-  {
-    title: "Microsoft Technology Associate for Security Fundamentals",
-    icon: backend,
-  },
-  {
-    title:
-      "Microsoft Technology Associate for Database Administration Fundamentals",
-    icon: creator,
-  },
-];
-
 const articles = [
   {
     title: "A Beginner-Friendly Guide to REST APIs",
@@ -147,137 +123,6 @@ const articles = [
   },
 ];
 
-const experiences = [
-  {
-    title: "Master's degree in Computer Science",
-    titleLink: "https://www.istec.pt/index.php/en/master-in-computer-science/",
-    company_name: "ISTEC - Higher Institute of Advanced Technologies",
-    companyLink: "https://www.istec.pt/",
-    icon: shopify,
-    iconBg: "#383E56",
-    date: "Oct 2022 - Present",
-    points: [
-      {
-        text: "European Qualifications Framework Level 7",
-        link: "https://www.lsib.co.uk/2022/answers.aspx?id=1045&CourseTitle=What+is+eqf+level+of+bachelor%27s+degree%3F",
-      },
-    ],
-  },
-  {
-    title: "Bachelor's degree in Computer Science",
-    titleLink:
-      "https://www.istec.pt/index.php/en/eng_licenciatura-em-informatica/",
-    company_name: "ISTEC - Higher Institute of Advanced Technologies",
-    companyLink: "https://www.istec.pt/",
-    icon: shopify,
-    iconBg: "#383E56",
-    date: "Sep 2019 - Oct 2021",
-    points: [
-      {
-        text: "European Qualifications Framework Level 6",
-        link: "https://www.lsib.co.uk/2022/answers.aspx?id=1045&CourseTitle=What+is+eqf+level+of+bachelor%27s+degree%3F",
-      },
-    ],
-  },
-  {
-    title: ".NET Developer (Internship)",
-    titleLink: null,
-    company_name: "Consulteware",
-    companyLink: "https://consulteware.com/",
-    icon: Consulteware,
-    iconBg: "#383E56",
-    date: "Mar 2019 - Aug 2019",
-    points: [
-      {
-        text: "Focused on developing a time clock management system for small businesses.",
-      },
-      {
-        text: "Utilized Visual Basic, C#, and T-SQL within the .NET framework to design a robust, user-friendly solution tailored for small enterprises.",
-      },
-      {
-        text: "Gained valuable experience in relational databases, optimizing queries for efficient data management.",
-      },
-    ],
-  },
-  {
-    title: "Superior Vocational Course in Computer Science Management",
-    titleLink:
-      "https://www.istec.pt/index.php/en/ctesp-management-informatics/",
-    company_name: "ISTEC - Higher Institute of Advanced Technologies",
-    companyLink: "https://www.istec.pt/",
-    icon: shopify,
-    iconBg: "#383E56",
-    date: "Sep 2017 - Aug 2019",
-    points: [
-      {
-        text: "European Qualifications Framework Level 5",
-        link: "https://www.lsib.co.uk/2022/answers.aspx?id=1045&CourseTitle=What+is+eqf+level+of+bachelor%27s+degree%3F",
-      },
-    ],
-  },
-  {
-    title: "IT Help Desk Technician (Internship)",
-    titleLink: null,
-    company_name: "OGMA - Aeronautics Industry of Portugal, S.A.",
-    companyLink: "https://www.ogma.pt/",
-    icon: tesla,
-    iconBg: "#383E56",
-    date: "Apr 2017 - Jul 2017",
-    points: [
-      {
-        text: "Collaborated with Capgemini professionals to resolve complex IT tickets.",
-      },
-      {
-        text: "Performed Windows OS formatting and configuration to maintain high performance and security standards.",
-      },
-      {
-        text: "Gained hands-on experience in hardware repairs, broadening technical expertise.",
-      },
-    ],
-  },
-  {
-    title: "Frontend Developer (Internship)",
-    titleLink: null,
-    company_name: "Parish Council of Póvoa de Santa Iria and Forte da Casa",
-    companyLink: "https://jf-povoaforte.pt/",
-    icon: junta,
-    iconBg: "#383E56",
-    date: "May 2016 - Jun 2016",
-    points: [
-      {
-        text: "Contributed to the development of the local parish council's website.",
-      },
-      {
-        text: "Implementing responsive design and ensuring cross-browser compatibility.",
-      },
-      {
-        text: "Participating in code reviews and providing constructive feedback to other developers.",
-      },
-      {
-        text: "Designed and implemented user-friendly interfaces with HTML and CSS.",
-      },
-      { text: "Used JavaScript to enhance functionality and interactivity." },
-      {
-        text: "Gained experience in problem-solving and maintaining strong interpersonal relationships.",
-      },
-    ],
-  },
-  {
-    title: "Vocation Course in Programming and Management of IT Systems",
-    titleLink: "https://portal.aefc.edu.pt/2017/06/15/programacao/",
-    company_name: "Forte da Casa High School",
-    companyLink: "https://portal.aefc.edu.pt/",
-    icon: meta,
-    iconBg: "#383E56",
-    date: "Sep 2015 - Aug 2017",
-    points: [
-      {
-        text: "European Qualifications Framework Level 4",
-        link: "https://www.lsib.co.uk/2022/answers.aspx?id=1045&CourseTitle=What+is+eqf+level+of+bachelor%27s+degree%3F",
-      },
-    ],
-  },
-];
 const education = [
   {
     title: "Master's degree in Computer Science",
@@ -469,10 +314,13 @@ const projects = [
       {
         name: "shadcn",
       },
+      {
+        name: "three",
+      },
     ],
-    images: [LADrivingSchool, LAclasses, LAcontacts, LAFAQ, LAtestimonials],
+    images: [LADrivingSchool, LAvehicles1, LAvehicles2, LAtestimonials, LAclasses, LAcontacts, LAFAQ ],
     source_code_link: "https://github.com/tiagofdias/LA-Driving-School",
-    source_code_link2: "https://la-driving-school.vercel.app/",
+    source_code_link2: "https://tiagofdias.github.io/LA-Driving-School/",
   },
   {
     name: "Condomix",
@@ -1055,9 +903,7 @@ This certification validates skills essential for managing databases, demonstrat
 ];
 
 export {
-  services,
   articles,
-  experiences,
   projects,
   certifications,
   education,

@@ -89,11 +89,6 @@ const Hero = () => {
                 icon={faGithub}
                 tooltip="GitHub"
               />
-              <IconWithTooltip
-                href="https://medium.com/@tiagofdias"
-                icon={faMedium}
-                tooltip="Medium"
-              />
             </div>
 
             <ScrollLink

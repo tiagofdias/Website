@@ -69,6 +69,8 @@ import LAclasses from "./LA-Driving-School/classes.png";
 import LAcontacts from "./LA-Driving-School/contact.png";
 import LAFAQ from "./LA-Driving-School/FAQ.png";
 import LAtestimonials from "./LA-Driving-School/testimonials.png";
+import LAvehicles1 from "./LA-Driving-School/vehicles(MCLAREN).png";
+import LAvehicles2 from "./LA-Driving-School/vehicles(LAMBO).png";
 import SonarLogin from "./Sonar/login.png";
 import SonarChat from "./Sonar/Chat.png";
 import SonarProfile from "./Sonar/profile.png";
@@ -100,6 +102,8 @@ export {
   LAcontacts,
   LAFAQ,
   LAtestimonials,
+  LAvehicles1,
+  LAvehicles2,
   SonarLogin,
   SonarChat,
   SonarProfile,

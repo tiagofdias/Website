@@ -6,7 +6,7 @@
   <title>An Academic Analysis of the MVC Architecture</title>
   <style>
     pre {
-      background: #000;
+      background: #0E1B29;
       padding: 1rem;
       overflow-x: auto;
     }

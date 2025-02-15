@@ -4,11 +4,11 @@ import ReactDOM from 'react-dom';
 const Modal = ({ children, onClose }) => {
   return ReactDOM.createPortal(
     <div
-      className="fixed inset-0 bg-primary flex justify-center items-center z-[9999]"
+      className="fixed inset-0 bg-tertiary opacity-100 flex justify-center items-center z-[9999]"
       onClick={onClose} 
     >
       <div
-        className="bg-tertiary p-6 rounded-md max-w-3xl w-full relative overflow-auto max-h-[80vh]"
+        className="bg-black p-6 rounded-md max-w-3xl w-full relative overflow-auto max-h-[80vh]"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
       >
         {/* Close Button */}

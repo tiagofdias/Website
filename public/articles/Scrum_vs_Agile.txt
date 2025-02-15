@@ -6,7 +6,7 @@
   <title>A Comparative Analysis of Scrum and Agile Methodologies</title>
   <style>
     pre {
-      background: #000;
+      background: #0E1B29;
       padding: 1rem;
       overflow-x: auto;
     }

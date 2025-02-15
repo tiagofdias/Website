@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { styles } from "../styles";
 import { webs, github } from "../assets"; // Added github here like in Works
 import { SectionWrapper } from "../hoc";
@@ -12,11 +13,14 @@ const ProjectCard = ({
   images,
   source_code_link,
   source_code_link2,
+  isMobile, // passed from parent
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  
+  const [swipeDelta, setSwipeDelta] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+
   const projectImages = Array.isArray(images) ? images : [images];
 
   const nextImage = () => {
@@ -37,6 +41,47 @@ const ProjectCard = ({
   const closePreview = () => {
     setIsPreviewOpen(false);
   };
+
+  // Swipe functionality for mobile with transition effect
+  const touchStartX = useRef(null);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.changedTouches[0].screenX;
+    setIsSwiping(true);
+  };
+
+  const handleTouchMove = (e) => {
+    const delta = e.changedTouches[0].screenX - touchStartX.current;
+    setSwipeDelta(delta);
+  };
+
+  const handleTouchEnd = () => {
+    const threshold = 50; // Minimum swipe distance
+    if (swipeDelta > threshold) {
+      prevImage(); // swipe right -> previous image
+    } else if (swipeDelta < -threshold) {
+      nextImage(); // swipe left -> next image
+    }
+    setIsSwiping(false);
+    setSwipeDelta(0);
+    touchStartX.current = null;
+  };
+
+  // Keyboard navigation for accessibility
+  useEffect(() => {
+    if (!isPreviewOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        closePreview();
+      } else if (e.key === "ArrowLeft") {
+        prevImage();
+      } else if (e.key === "ArrowRight") {
+        nextImage();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPreviewOpen]);
 
   return (
     <div className="bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full relative">
@@ -70,12 +115,13 @@ const ProjectCard = ({
 
       {/* Project Details */}
       <div className="mt-5">
-        {/* Only the certification name gets extra right padding */}
-        <h3 className="text-white font-bold text-[24px] break-words pr-20">{name}</h3>
+        <h3 className="text-white font-bold text-[24px] break-words pr-20">
+          {name}
+        </h3>
         <p className="mt-2 text-secondary text-[14px]">{description}</p>
       </div>
 
-      {/* Tags Section – Leave this block untouched */}
+      {/* Tags Section */}
       <div className="mt-3 flex flex-wrap gap-2">
         {tags.map((tag, idx) => (
           <a
@@ -94,7 +140,7 @@ const ProjectCard = ({
                   ? "bg-red-700 hover:bg-red-500"
                   : tag.color === "green-text-gradient"
                   ? "bg-green-700 hover:bg-green-500"
-                  : tag.color === "undefined" || "bg-cyan-700 hover:bg-cyan-500"
+                  : "bg-cyan-700 hover:bg-cyan-500"
               } 
               text-white hover:scale-105
             `}
@@ -104,7 +150,7 @@ const ProjectCard = ({
         ))}
       </div>
 
-      {/* Links Button – Positioning remains unchanged */}
+      {/* Links Button */}
       <div className="absolute right-6 flex z-50" style={{ top: "262px" }}>
         {source_code_link2 && (
           <div
@@ -132,59 +178,115 @@ const ProjectCard = ({
         )}
       </div>
 
-      {/* Preview Modal */}
-      {isPreviewOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50"
-          onClick={closePreview}
-        >
+      {/* Updated Preview Modal using React Portal */}
+      {isPreviewOpen &&
+        createPortal(
           <div
-            className="relative bg-white rounded-lg p-4"
-            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+            className="fixed inset-0 bg-tertiary bg-opacity-100 flex items-center justify-center z-50"
+            onClick={closePreview}
           >
-            <img
-              src={projectImages[previewIndex]}
-              alt={`Preview-${previewIndex}`}
-              className="max-w-[70vw] max-h-[70vh] object-contain rounded-lg transition-opacity duration-500"
-            />
-            {projectImages.length > 1 && (
-              <>
-                <button
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 bg-black text-white p-2 rounded-full hover:bg-opacity-70"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    prevImage();
-                  }}
-                >
-                  ◀
-                </button>
-                <button
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-black text-white p-2 rounded-full hover:bg-opacity-70"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nextImage();
-                  }}
-                >
-                  ▶
-                </button>
-              </>
-            )}
-            <button
-              className="absolute top-3 right-3 text-white text-2xl bg-black bg-opacity-50 p-2 rounded-full hover:bg-opacity-70"
-              onClick={closePreview}
+            <div
+              className={`relative rounded-lg p-6 flex flex-col items-center focus:outline-none w-full ${
+                isMobile ? "max-w-[90vw]" : "max-w-[44vw]"
+              }`}
+              onClick={(e) => e.stopPropagation()}
+              tabIndex={0}
             >
-              ✖
-            </button>
-          </div>
-        </div>
-      )}
+              {/* Image Container with fixed height */}
+              <div className="w-full h-[70vh] flex items-center justify-center">
+                {isMobile ? (
+                  // Mobile Carousel: show all images side-by-side in a flex container
+                  <div
+                    className="w-full overflow-hidden"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    <div
+                      className="flex transition-transform duration-300 ease-out gap-2"
+                      style={{
+                        transform: `translateX(calc(-${previewIndex} * 100% - ${previewIndex} * 0.5rem + ${swipeDelta}px))`,
+                      }}
+                    >
+                      {projectImages.map((image, idx) => (
+                        <div key={idx} className="flex-shrink-0 w-full">
+                          <img
+                            src={image}
+                            alt={`Image ${idx + 1} of ${projectImages.length}`}
+                            className="w-full h-auto object-contain rounded-lg transition-opacity duration-500"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  // Web: show single image
+                  <img
+                    src={projectImages[previewIndex]}
+                    alt={`Image ${previewIndex + 1} of ${projectImages.length}`}
+                    className="max-w-[70vw] max-h-[70vh] object-contain rounded-lg transition-opacity duration-500"
+                  />
+                )}
+              </div>
+              {/* Slideshow Controls */}
+              {projectImages.length > 1 && (
+                <>
+                  {/* Previous/Next Buttons (only on non-mobile) */}
+                  {!isMobile && (
+                    <div className="mt-4 flex items-center justify-between w-full">
+                      <button
+                        aria-label="Previous image"
+                        className="px-4 py-2 bg-white text-black rounded focus:outline-none w-32"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          prevImage();
+                        }}
+                      >
+                        Previous
+                      </button>
+                      <button
+                        aria-label="Next image"
+                        className="px-4 py-2 bg-white text-black rounded focus:outline-none w-32"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          nextImage();
+                        }}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                  {/* Dot Indicators (shown on both mobile & web) */}
+                  <div className="mt-4 flex justify-center space-x-2">
+                    {projectImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        aria-label={`Go to image ${idx + 1}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewIndex(idx);
+                        }}
+                        className={`w-3 h-3 rounded-full focus:outline-none ${
+                          previewIndex === idx ? "bg-white" : "bg-gray-600"
+                        }`}
+                      ></button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
 
 const Certifications = () => {
   const [isMobile, setIsMobile] = useState(false);
-  // State to control showing all certifications or just a subset
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
@@ -197,7 +299,6 @@ const Certifications = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Show only the first three certifications until "View All" is clicked
   const certificationsToDisplay = showAll
     ? certifications
     : certifications.slice(0, 3);
@@ -226,7 +327,6 @@ const Certifications = () => {
         ))}
       </div>
 
-      {/* Render the "View All" button if there are more than three certifications */}
       {!showAll && certifications.length > 3 && (
         <div className="flex justify-center mt-10">
           <button
@@ -242,7 +342,4 @@ const Certifications = () => {
 };
 
 export default SectionWrapper(Certifications, "certifications");
-
-
-
 

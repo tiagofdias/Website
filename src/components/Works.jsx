@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
 import { projects } from "../constants";
 import { github, webs } from "../assets";
-import { scroller } from "react-scroll"; // Import scroller for programmatic scrolling
+import { scroller } from "react-scroll";
 
 const ProjectCard = ({
   index,
@@ -13,52 +14,70 @@ const ProjectCard = ({
   images,
   source_code_link,
   source_code_link2,
-  onTagClick, 
+  onTagClick,
   activeTag,
+  isMobile, // Added isMobile prop
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [swipeDelta, setSwipeDelta] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const touchStartX = useRef(null);
 
   const projectImages = Array.isArray(images) ? images : [images];
 
-  const nextImage = () => {
+  // Image navigation functions
+  const nextImage = () =>
     setPreviewIndex((prev) => (prev + 1) % projectImages.length);
-  };
-
-  const prevImage = () => {
+  const prevImage = () =>
     setPreviewIndex((prev) =>
       prev === 0 ? projectImages.length - 1 : prev - 1
     );
-  };
 
+  // Preview modal controls
   const openPreview = (index) => {
     setPreviewIndex(index);
     setIsPreviewOpen(true);
   };
 
-  const closePreview = () => {
-    setIsPreviewOpen(false);
+  const closePreview = () => setIsPreviewOpen(false);
+
+  // Swipe handlers for mobile
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.changedTouches[0].screenX;
+    setIsSwiping(true);
   };
 
-  // These states are local to ProjectCard; remove them if not needed.
-  const [active, setActive] = useState("");
-  const [toggle, setToggle] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const handleTouchMove = (e) => {
+    const delta = e.changedTouches[0].screenX - touchStartX.current;
+    setSwipeDelta(delta);
+  };
 
+  const handleTouchEnd = () => {
+    const threshold = 50;
+    if (swipeDelta > threshold) prevImage();
+    else if (swipeDelta < -threshold) nextImage();
+    setIsSwiping(false);
+    setSwipeDelta(0);
+    touchStartX.current = null;
+  };
+
+  // Keyboard navigation
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      setScrolled(scrollTop > 100);
+    if (!isPreviewOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") closePreview();
+      else if (e.key === "ArrowLeft") prevImage();
+      else if (e.key === "ArrowRight") nextImage();
     };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPreviewOpen]);
 
   return (
     <div className="bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full relative">
-      {/* Project Image Preview */}
+      {/* Image Preview Container */}
       <div
         className="relative w-full h-[230px] overflow-hidden group cursor-pointer"
         onClick={() => openPreview(0)}
@@ -73,13 +92,11 @@ const ProjectCard = ({
             }`}
           />
         ))}
-
         {projectImages.length > 1 && (
           <div className="absolute top-3 left-3 bg-black bg-opacity-50 text-white text-xs py-1 px-2 rounded">
             +{projectImages.length - 1} More
           </div>
         )}
-
         <div
           className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-sm font-bold"
           style={{ pointerEvents: "none" }}
@@ -99,20 +116,17 @@ const ProjectCard = ({
       {/* Tags Section */}
       <div className="mt-3 flex flex-wrap gap-2">
         {tags.map((tag, idx) => {
-          // If the activeTag matches the current tag (case-insensitive), apply cyan background.
           const isActiveTag =
             activeTag && tag.name.toLowerCase() === activeTag.toLowerCase();
           return (
             <span
               key={`${name}-${idx}`}
-              className={`text-[14px] px-2.5 py-1 rounded-full transition-all duration-300 transform cursor-pointer 
-              ${
+              className={`text-[14px] px-2.5 py-1 rounded-full transition-all duration-300 transform cursor-pointer ${
                 isActiveTag ? "bg-[#00C6FE]" : "bg-gray-700"
               } text-white hover:scale-105`}
               onClick={(e) => {
-                e.stopPropagation(); // Prevent card click propagation
+                e.stopPropagation();
                 if (onTagClick) onTagClick(tag.name);
-                // Programmatically scroll to the "projects" section
                 scroller.scrollTo("projects", {
                   smooth: true,
                   offset: 30,
@@ -133,10 +147,12 @@ const ProjectCard = ({
             className="relative w-11 h-11 left-3 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110"
             onClick={() => {
               if (index === 0) {
-                const userConfirmed = window.confirm(
-                  "This website may take some time (1-2 minutes) to load due to the free hosting service. Do you want to continue?"
-                );
-                if (!userConfirmed) return;
+                if (
+                  !window.confirm(
+                    "This website may take 1-2 minutes to load due to free hosting. Continue?"
+                  )
+                )
+                  return;
               }
               window.open(source_code_link2, "_blank");
             }}
@@ -148,7 +164,6 @@ const ProjectCard = ({
             />
           </div>
         )}
-
         {source_code_link && (
           <div
             className="relative w-11 h-11 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110"
@@ -163,85 +178,126 @@ const ProjectCard = ({
         )}
       </div>
 
-      {/* Preview Modal */}
-      {isPreviewOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50"
-          onClick={closePreview}
-        >
+      {/* Enhanced Preview Modal */}
+      {isPreviewOpen &&
+        createPortal(
           <div
-            className="relative bg-white rounded-lg p-4 w-[70vw] h-[70vh] flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 bg-tertiary bg-opacity-100 flex items-center justify-center z-50"
+            onClick={closePreview}
           >
-            <img
-              src={projectImages[previewIndex]}
-              alt={`Preview-${previewIndex}`}
-              className="max-w-full max-h-full object-contain rounded-lg transition-opacity duration-500"
-            />
-
-            {projectImages.length > 1 && (
-              <>
-                <button
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-2 rounded-full hover:bg-opacity-70"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    prevImage();
-                  }}
-                >
-                  ◀
-                </button>
-                <button
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black text-white p-2 rounded-full hover:bg-opacity-70"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nextImage();
-                  }}
-                >
-                  ▶
-                </button>
-              </>
-            )}
-
-            <button
-              className="absolute top-3 right-3 text-white text-2xl bg-black p-2 rounded-full hover:bg-gray-800"
-              onClick={closePreview}
+            <div
+              className={`relative rounded-lg p-6 flex flex-col items-center focus:outline-none w-full ${
+                isMobile ? "max-w-[90vw]" : "max-w-[44vw]"
+              }`}
+              onClick={(e) => e.stopPropagation()}
+              tabIndex={0}
             >
-              ✖
-            </button>
-          </div>
-        </div>
-      )}
+              {/* Image Container with fixed height */}
+              <div className="w-full h-[70vh] flex items-center justify-center">
+                {isMobile ? (
+                  <div
+                    className="w-full overflow-hidden"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    <div
+                      className="flex transition-transform duration-300 ease-out gap-2"
+                      style={{
+                        transform: `translateX(calc(-${previewIndex} * 100% - ${previewIndex} * 0.5rem + ${swipeDelta}px))`,
+                      }}
+                    >
+                      {projectImages.map((image, idx) => (
+                        <div key={idx} className="flex-shrink-0 w-full">
+                          <img
+                            src={image}
+                            alt={`Image ${idx + 1}`}
+                            className="w-full h-auto object-contain rounded-lg"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <img
+                    src={projectImages[previewIndex]}
+                    alt={`Image ${previewIndex + 1}`}
+                    className="max-w-[70vw] max-h-[70vh] object-contain rounded-lg"
+                  />
+                )}
+              </div>
+
+              {/* Navigation Controls */}
+              {projectImages.length > 1 && (
+                <>
+                  {!isMobile && (
+                    <div className="mt-4 flex items-center justify-between w-full">
+                      <button
+                        className="px-4 py-2 bg-white text-black rounded w-32"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          prevImage();
+                        }}
+                      >
+                        Previous
+                      </button>
+                      <button
+                        className="px-4 py-2 bg-white text-black rounded w-32"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          nextImage();
+                        }}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                  <div className="mt-4 flex justify-center space-x-2">
+                    {projectImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        className={`w-3 h-3 rounded-full ${
+                          previewIndex === idx ? "bg-white" : "bg-gray-600"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewIndex(idx);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
 
 const Projects = () => {
   const [isMobile, setIsMobile] = useState(false);
-  // State to control whether to show all projects or just a subset
   const [showAll, setShowAll] = useState(false);
-  // State for the active tag filter
   const [activeTag, setActiveTag] = useState(null);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Filter projects if an active tag is set
   const filteredProjects = activeTag
-    ? projects.filter((project) =>
-        project.tags.some(
-          (tag) => tag.name.toLowerCase() === activeTag.toLowerCase()
+    ? projects.filter((p) =>
+        p.tags.some(
+          (t) => t.name.toLowerCase() === activeTag.toLowerCase()
         )
       )
     : projects;
 
-  // Decide how many projects to display
   const projectsToDisplay = activeTag
     ? filteredProjects
     : showAll
@@ -259,16 +315,14 @@ const Projects = () => {
         </p>
       </div>
 
-      {/* Display active filter and a clear button */}
       {activeTag && (
         <div className="mt-4 flex items-center">
           <span className="text-secondary mr-4">
-            Filtering by tag: {" "}
+            Filtering by tag:{" "}
             <strong className="capitalize text-white">{activeTag}</strong>
           </span>
-
           <button
-            className="bg-gray-700 transition-transform duration-300 transform hover:scale-110 text-white px-3 py-1 rounded hover:bg-gray-600"
+            className="bg-gray-700 hover:scale-110 text-white px-3 py-1 rounded hover:bg-gray-600 transition-transform duration-300"
             onClick={() => setActiveTag(null)}
           >
             Clear Filter
@@ -281,22 +335,22 @@ const Projects = () => {
           <ProjectCard
             key={`project-${index}`}
             index={index}
-            activeTag={activeTag} // Pass the active tag to each project card
+            activeTag={activeTag}
             onTagClick={(tagName) => {
               setActiveTag(tagName);
               setShowAll(true);
             }}
+            isMobile={isMobile}
             {...project}
           />
         ))}
       </div>
 
-      {/* "View All" button appears only when no tag is active and not all projects are shown */}
       {!activeTag && !showAll && (
         <div className="flex justify-center mt-10">
           <button
             onClick={() => setShowAll(true)}
-            className="bg-tertiary transition-transform duration-300 transform hover:scale-110 hover:bg-[#00C6FE] outline-none shadow-md shadow-primary text-white font-bold py-2 w-[1000px] rounded-3xl"
+            className="bg-tertiary hover:scale-110 hover:bg-[#00C6FE] text-white font-bold py-2 w-[1000px] rounded-3xl transition-transform duration-300 outline-none shadow-md shadow-primary"
           >
             View All
           </button>
@@ -307,3 +361,5 @@ const Projects = () => {
 };
 
 export default SectionWrapper(Projects, "projects");
+
+
