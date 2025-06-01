@@ -2,12 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
 const mongoose = require('mongoose');
-require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 
+// Middleware setup
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -170,15 +171,21 @@ app.delete('/api/about/:id', auth, async (req, res) => {
   res.json({ success: true });
 });
 
-// Cron job check endpoint
-app.get('/ping', (req, res) => {
-  res.status(200).send('OK');
+// Setup static serving
+app.use(express.static(path.join(__dirname, '..', 'dist')));
+
+// Serve index.html for any non-API routes
+app.get(/^(?!\/api\/).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-app.listen(4000, () => console.log('API running on http://localhost:4000'));
+// MongoDB connection and server start
+mongoose.connect(process.env.MONGODB_URI)
+.then(() => {
+  console.log('MongoDB connected');
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+})
+.catch(err => console.error('MongoDB connection error:', err));
