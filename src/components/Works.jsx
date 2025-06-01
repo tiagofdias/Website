@@ -195,14 +195,6 @@ const ProjectCard = ({
           <div
             className="relative w-11 h-11 left-3 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110"
             onClick={() => {
-              if (index === 0) {
-                if (
-                  !window.confirm(
-                    "This website may take 1-2 minutes to load due to free hosting. Continue?"
-                  )
-                )
-                  return;
-              }
               window.open(source_code_link2, "_blank");
             }}
           >
