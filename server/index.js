@@ -10,7 +10,9 @@ const app = express();
 
 // Middleware setup
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:10000'],
+  origin: '*',  // More permissive for development
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 app.use(bodyParser.json());
@@ -174,6 +176,14 @@ app.delete('/api/about/:id', auth, async (req, res) => {
   res.json({ success: true });
 });
 
+// Add this before your route definitions
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
 // Setup static serving
 app.use(express.static(path.join(__dirname, '..', 'dist')));
 
@@ -192,3 +202,19 @@ mongoose.connect(process.env.MONGODB_URI)
   });
 })
 .catch(err => console.error('MongoDB connection error:', err));
+
+// Example fetch configuration to use in your components
+const fetchConfig = {
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*'
+  },
+  credentials: 'include'
+};
+
+// Add this after your route definitions
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
