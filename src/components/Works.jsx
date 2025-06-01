@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
-import { projects } from "../constants";
 import { github, webs } from "../assets";
 import { scroller } from "react-scroll";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ProjectCard = ({
   index,
@@ -16,18 +17,27 @@ const ProjectCard = ({
   source_code_link2,
   onTagClick,
   activeTag,
-  isMobile, // Added isMobile prop
+  isMobile,
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const projectImages = Array.isArray(images) ? images : [images];
   const [previewIndex, setPreviewIndex] = useState(0);
+  const extendedImages =
+    projectImages.length > 1
+      ? [
+          projectImages[projectImages.length - 1],
+          ...projectImages,
+          projectImages[0],
+        ]
+      : projectImages;
+  const [slideIndex, setSlideIndex] = useState(
+    projectImages.length > 1 ? 1 : 0
+  );
+  const [transitionEnabled, setTransitionEnabled] = useState(true);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [swipeDelta, setSwipeDelta] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const touchStartX = useRef(null);
 
-  const projectImages = Array.isArray(images) ? images : [images];
-
-  // Image navigation functions
   const nextImage = () =>
     setPreviewIndex((prev) => (prev + 1) % projectImages.length);
   const prevImage = () =>
@@ -35,15 +45,31 @@ const ProjectCard = ({
       prev === 0 ? projectImages.length - 1 : prev - 1
     );
 
-  // Preview modal controls
+  const nextSlide = () => {
+    if (projectImages.length > 1) {
+      setTransitionEnabled(true);
+      setSlideIndex((prev) => prev + 1);
+    }
+  };
+
+  const prevSlide = () => {
+    if (projectImages.length > 1) {
+      setTransitionEnabled(true);
+      setSlideIndex((prev) => prev - 1);
+    }
+  };
+
   const openPreview = (index) => {
-    setPreviewIndex(index);
+    if (isMobile && projectImages.length > 1) {
+      setSlideIndex(index + 1);
+    } else {
+      setPreviewIndex(index);
+    }
     setIsPreviewOpen(true);
   };
 
   const closePreview = () => setIsPreviewOpen(false);
 
-  // Swipe handlers for mobile
   const handleTouchStart = (e) => {
     touchStartX.current = e.changedTouches[0].screenX;
     setIsSwiping(true);
@@ -56,28 +82,54 @@ const ProjectCard = ({
 
   const handleTouchEnd = () => {
     const threshold = 50;
-    if (swipeDelta > threshold) prevImage();
-    else if (swipeDelta < -threshold) nextImage();
+    if (swipeDelta > threshold) {
+      prevSlide();
+    } else if (swipeDelta < -threshold) {
+      nextSlide();
+    }
     setIsSwiping(false);
     setSwipeDelta(0);
     touchStartX.current = null;
   };
 
-  // Keyboard navigation
+  const handleTransitionEnd = () => {
+    if (slideIndex === 0) {
+      setTransitionEnabled(false);
+      setSlideIndex(projectImages.length);
+    } else if (slideIndex === extendedImages.length - 1) {
+      setTransitionEnabled(false);
+      setSlideIndex(1);
+    }
+  };
+
+  useEffect(() => {
+    if (!transitionEnabled) {
+      requestAnimationFrame(() => setTransitionEnabled(true));
+    }
+  }, [transitionEnabled]);
+
+  const computedPreviewIndex =
+    isMobile && projectImages.length > 1 ? slideIndex - 1 : previewIndex;
+
   useEffect(() => {
     if (!isPreviewOpen) return;
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") closePreview();
-      else if (e.key === "ArrowLeft") prevImage();
-      else if (e.key === "ArrowRight") nextImage();
+      if (e.key === "Escape") {
+        closePreview();
+      } else if (e.key === "ArrowLeft") {
+        if (isMobile && projectImages.length > 1) prevSlide();
+        else prevImage();
+      } else if (e.key === "ArrowRight") {
+        if (isMobile && projectImages.length > 1) nextSlide();
+        else nextImage();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPreviewOpen]);
+  }, [isPreviewOpen, slideIndex, previewIndex]);
 
   return (
     <div className="bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full relative">
-      {/* Image Preview Container */}
       <div
         className="relative w-full h-[230px] overflow-hidden group cursor-pointer"
         onClick={() => openPreview(0)}
@@ -88,7 +140,7 @@ const ProjectCard = ({
             src={image}
             alt={`project-${idx}`}
             className={`w-full h-full object-cover rounded-2xl absolute top-0 left-0 transition-opacity duration-500 ${
-              currentIndex === idx ? "opacity-100" : "opacity-0"
+              idx === 0 ? "opacity-100" : "opacity-0"
             }`}
           />
         ))}
@@ -105,7 +157,6 @@ const ProjectCard = ({
         </div>
       </div>
 
-      {/* Project Details */}
       <div className="mt-5">
         <h3 className="text-white font-bold text-[20px] pr-16 break-words">
           {name}
@@ -113,7 +164,6 @@ const ProjectCard = ({
         <p className="mt-2 text-secondary text-[14px]">{description}</p>
       </div>
 
-      {/* Tags Section */}
       <div className="mt-3 flex flex-wrap gap-2">
         {tags.map((tag, idx) => {
           const isActiveTag =
@@ -140,7 +190,6 @@ const ProjectCard = ({
         })}
       </div>
 
-      {/* Link Buttons */}
       <div className="absolute right-2 flex" style={{ top: "262px" }}>
         {source_code_link2 && (
           <div
@@ -178,7 +227,6 @@ const ProjectCard = ({
         )}
       </div>
 
-      {/* Enhanced Preview Modal */}
       {isPreviewOpen &&
         createPortal(
           <div
@@ -194,9 +242,15 @@ const ProjectCard = ({
               onClick={(e) => e.stopPropagation()}
               tabIndex={0}
             >
-              {/* Image Container with fixed height */}
+              <button
+                className="absolute top-0 right-0 text-white text-4xl font-bold focus:outline-none transform transition-all duration-200 hover:text-red-600"
+                onClick={closePreview}
+              >
+                &times;
+              </button>
+              <br></br>
               <div className="w-full h-[70vh] flex items-center justify-center">
-                {isMobile ? (
+                {isMobile && projectImages.length > 1 ? (
                   <div
                     className="w-full overflow-hidden"
                     onTouchStart={handleTouchStart}
@@ -204,12 +258,16 @@ const ProjectCard = ({
                     onTouchEnd={handleTouchEnd}
                   >
                     <div
-                      className="flex transition-transform duration-300 ease-out gap-2"
+                      className="flex gap-2 ease-out"
                       style={{
-                        transform: `translateX(calc(-${previewIndex} * 100% - ${previewIndex} * 0.5rem + ${swipeDelta}px))`,
+                        transform: `translateX(calc(-${slideIndex} * 100% - ${slideIndex} * 0.5rem + ${swipeDelta}px))`,
+                        transition: transitionEnabled
+                          ? "transform 300ms ease-out"
+                          : "none",
                       }}
+                      onTransitionEnd={handleTransitionEnd}
                     >
-                      {projectImages.map((image, idx) => (
+                      {extendedImages.map((image, idx) => (
                         <div key={idx} className="flex-shrink-0 w-full">
                           <img
                             src={image}
@@ -229,7 +287,6 @@ const ProjectCard = ({
                 )}
               </div>
 
-              {/* Navigation Controls */}
               {projectImages.length > 1 && (
                 <>
                   {!isMobile && (
@@ -259,11 +316,17 @@ const ProjectCard = ({
                       <button
                         key={idx}
                         className={`w-3 h-3 rounded-full ${
-                          previewIndex === idx ? "bg-white" : "bg-gray-600"
+                          computedPreviewIndex === idx
+                            ? "bg-white"
+                            : "bg-gray-600"
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setPreviewIndex(idx);
+                          if (isMobile && projectImages.length > 1) {
+                            setSlideIndex(idx + 1);
+                          } else {
+                            setPreviewIndex(idx);
+                          }
                         }}
                       />
                     ))}
@@ -282,6 +345,15 @@ const Projects = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [activeTag, setActiveTag] = useState(null);
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    // Fetch projects from backend API
+    fetch(`${API_URL}/projects`)
+      .then((res) => res.json())
+      .then((data) => setProjects(data))
+      .catch((err) => console.error("Failed to fetch projects:", err));
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -292,9 +364,7 @@ const Projects = () => {
 
   const filteredProjects = activeTag
     ? projects.filter((p) =>
-        p.tags.some(
-          (t) => t.name.toLowerCase() === activeTag.toLowerCase()
-        )
+        p.tags.some((t) => t.name.toLowerCase() === activeTag.toLowerCase())
       )
     : projects;
 
@@ -315,21 +385,6 @@ const Projects = () => {
         </p>
       </div>
 
-      {activeTag && (
-        <div className="mt-4 flex items-center">
-          <span className="text-secondary mr-4">
-            Filtering by tag:{" "}
-            <strong className="capitalize text-white">{activeTag}</strong>
-          </span>
-          <button
-            className="bg-gray-700 hover:scale-110 text-white px-3 py-1 rounded hover:bg-gray-600 transition-transform duration-300"
-            onClick={() => setActiveTag(null)}
-          >
-            Clear Filter
-          </button>
-        </div>
-      )}
-
       <div className="mt-20 flex flex-wrap gap-7 justify-center">
         {projectsToDisplay.map((project, index) => (
           <ProjectCard
@@ -337,7 +392,11 @@ const Projects = () => {
             index={index}
             activeTag={activeTag}
             onTagClick={(tagName) => {
-              setActiveTag(tagName);
+              setActiveTag((prev) =>
+                prev && prev.toLowerCase() === tagName.toLowerCase()
+                  ? null
+                  : tagName
+              );
               setShowAll(true);
             }}
             isMobile={isMobile}
@@ -361,5 +420,3 @@ const Projects = () => {
 };
 
 export default SectionWrapper(Projects, "projects");
-
-

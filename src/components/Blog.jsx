@@ -1,41 +1,157 @@
-import React, { useState, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkBreaks from "remark-breaks";
-import rehypeRaw from "rehype-raw";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
-import { articles } from "../constants";
-import Modal from "./Modal"; // Import your Modal component
+
+// Memoized Article Card
+const ArticleCard = React.memo(function ArticleCard({ article, onClick }) {
+  return (
+    <div
+      className="flex flex-col gap-2 hover:opacity-75 cursor-pointer"
+      onClick={onClick}
+    >
+      {article.image_url ? ( 
+        <div className="relative rounded-md overflow-hidden aspect-video mb-4">
+          <img
+            src={article.image_url} 
+            alt={article.title}
+            className="absolute inset-0 object-cover w-full h-full"
+            loading="lazy"
+          />
+        </div>
+      ) : (
+        <div className="bg-muted rounded-md aspect-video mb-4"></div>
+      )}
+      <h3 className="text-xl tracking-tight">{article.title}</h3>
+    </div>
+  );
+});
+
+const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY;
+const RAPIDAPI_HOST = import.meta.env.VITE_RAPIDAPI_HOST;
+const MEDIUM_USER_ID = import.meta.env.VITE_MEDIUM_USER_ID;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Blog = () => {
   const [showAll, setShowAll] = useState(false);
-  const [selectedArticle, setSelectedArticle] = useState(null);
-  const [modalContent, setModalContent] = useState("");
+  const [articles, setArticles] = useState([]);
+  const mediumApiCallCount = useRef(0); // Counter for Medium API calls
 
+  // Helper to log and increment counter
+  const logMediumApiCall = (endpoint) => {
+    mediumApiCallCount.current += 1;
+    console.log(
+      `[Medium API Call #${mediumApiCallCount.current}] Endpoint: ${endpoint}`
+    );
+  };
+
+  // Fetch Medium article IDs from RapidAPI (using associated_articles)
+  const fetchMediumArticleIds = async () => {
+    logMediumApiCall(`/user/${MEDIUM_USER_ID}/articles`);
+    const res = await fetch(
+      `https://medium2.p.rapidapi.com/user/${MEDIUM_USER_ID}/articles`,
+      {
+        headers: {
+          "X-RapidAPI-Key": RAPIDAPI_KEY,
+          "X-RapidAPI-Host": RAPIDAPI_HOST,
+        },
+      }
+    );
+    const data = await res.json();
+    return data.associated_articles || [];
+  };
+
+  // Fetch local article IDs from your backend
+  const fetchLocalArticleIds = async () => {
+    const res = await fetch(`${API_URL}/articles`);
+    const data = await res.json();
+    return data.map((article) => article.articleid);
+  };
+
+  // Fetch full article info from RapidAPI
+  const fetchMediumArticleInfo = async (articleId) => {
+    logMediumApiCall(`/article/${articleId}`);
+    const res = await fetch(
+      `https://medium2.p.rapidapi.com/article/${articleId}`,
+      {
+        headers: {
+          "X-RapidAPI-Key": RAPIDAPI_KEY,
+          "X-RapidAPI-Host": RAPIDAPI_HOST,
+        },
+      }
+    );
+    return await res.json();
+  };
+
+  // When saving a new article, set its order to the end (or however you want to define it)
+  const saveArticleToBackend = async (article) => {
+    // Fetch current articles to determine the next order value
+    const res = await fetch(`${API_URL}/articles`);
+    const data = await res.json();
+    const maxOrder = data.reduce((max, a) => Math.max(max, a.order || 0), 0);
+
+    await fetch(`${API_URL}/articles`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...article,
+        order: maxOrder + 1, // Set order to last
+      }),
+    });
+  };
+
+  // Main effect to sync Medium articles with local DB and display
+  useEffect(() => {
+    let ignore = false;
+
+    const syncArticles = async () => {
+      // 1. Get all Medium article IDs from associated_articles
+      const mediumIds = await fetchMediumArticleIds();
+
+      // 2. Get all local article IDs
+      const localIds = await fetchLocalArticleIds();
+
+      // 3. Find missing IDs
+      const missingIds = mediumIds.filter((id) => !localIds.includes(id));
+
+      // 4. For each missing ID, fetch and save to backend
+      for (const id of missingIds) {
+        // Double-check to avoid duplicates (in case of race conditions)
+        if (localIds.includes(id)) continue;
+        const info = await fetchMediumArticleInfo(id);
+        // Only save if info is valid
+        if (info && info.id && info.title && info.url) {
+          await saveArticleToBackend({
+            articleid: info.id,
+            title: info.title,
+            url: info.url, 
+            image_url: info.image_url, 
+          });
+        }
+      }
+
+      // 5. Fetch all articles from backend to display (already sorted by order)
+      const res = await fetch(`${API_URL}/articles`);
+      const data = await res.json();
+      if (!ignore) setArticles(data);
+    };
+
+    syncArticles();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  // Remove the reverse logic, since backend now returns sorted by order
   const visibleArticles = showAll ? articles : articles.slice(0, 4);
 
-  useEffect(() => {
-    if (selectedArticle && selectedArticle.contentFile) {
-      const fetchContent = async () => {
-        try {
-          const response = await fetch(selectedArticle.contentFile);
-          if (!response.ok) throw new Error("Network response was not ok");
-          const text = await response.text();
-          setModalContent(text);
-        } catch (error) {
-          setModalContent("Error loading content.");
-        }
-      };
-      fetchContent();
+  const handleArticleClick = useCallback((url) => { // <-- use url
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
     }
-  }, [selectedArticle]);
-
-  useEffect(() => {
-    document.body.style.overflow = selectedArticle ? "hidden" : "unset";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [selectedArticle]);
+  }, []);
 
   return (
     <>
@@ -54,27 +170,11 @@ const Blog = () => {
       <div className="container mx-auto flex flex-col gap-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {visibleArticles.map((article, index) => (
-            <div
+            <ArticleCard
               key={index}
-              className="flex flex-col gap-2 hover:opacity-75 cursor-pointer"
-              onClick={() => {
-                setSelectedArticle(article);
-                setModalContent(""); // Clear previous content
-              }}
-            >
-              {article.image ? (
-                <div className="relative rounded-md overflow-hidden aspect-video mb-4">
-                  <img
-                    src={article.image}
-                    alt={article.title}
-                    className="absolute inset-0 object-cover w-full h-full"
-                  />
-                </div>
-              ) : (
-                <div className="bg-muted rounded-md aspect-video mb-4"></div>
-              )}
-              <h3 className="text-xl tracking-tight">{article.title}</h3>
-            </div>
+              article={article}
+              onClick={() => handleArticleClick(article.url)}
+            />
           ))}
         </div>
 
@@ -90,42 +190,6 @@ const Blog = () => {
           </div>
         )}
       </div>
-
-      {/* Modal Preview via React Portal */}
-      {selectedArticle && (
-        <Modal onClose={() => setSelectedArticle(null)}>
-          <h2 className="text-3xl font-bold mb-4">{selectedArticle.title}</h2>
-          <div className="markdown-content text-base leading-relaxed">
-            <ReactMarkdown
-              remarkPlugins={[remarkBreaks]}
-              rehypePlugins={[rehypeRaw]}
-              components={{
-                h1: ({ node, ...props }) => (
-                  <h1 className="text-4xl font-bold mt-4 mb-2" {...props} />
-                ),
-                h2: ({ node, ...props }) => (
-                  <h2 className="text-3xl font-semibold mt-3 mb-2" {...props} />
-                ),
-                h3: ({ node, ...props }) => (
-                  <h3 className="text-2xl font-medium mt-3 mb-2" {...props} />
-                ),
-                h4: ({ node, ...props }) => (
-                  <h4 className="text-xl font-medium mt-2 mb-1" {...props} />
-                ),
-                ul: ({ children }) => (
-                  <ul className="list-disc pl-5 space-y-2">{children}</ul>
-                ),
-                ol: ({ children }) => (
-                  <ol className="list-decimal pl-5 space-y-2">{children}</ol>
-                ),
-                li: ({ children }) => <li className="mb-1">{children}</li>,
-              }}
-            >
-              {modalContent || "Loading..."}
-            </ReactMarkdown>
-          </div>
-        </Modal>
-      )}
     </>
   );
 };

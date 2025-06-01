@@ -218,15 +218,16 @@ const Contact = () => {
         </form>
 
         {/* 3D Model Canvas (Stormtrooper) */}
+        {/*
         <div className="flex justify-end mt-8 ml-25 lg:block hidden">
           <Canvas
             style={{ width: "700px", height: "800px" }}
             camera={{ position: [5, 5, 5], fov: 50 }}
           >
-            {/* Increased size and adjusted camera */}
             <StormtrooperModel />
           </Canvas>
         </div>
+        */}
       </div>
 
       <ToastContainer

@@ -37,20 +37,21 @@ const Navbar = () => {
       }`}
     >
       <div className="w-full flex justify-between items-center max-w-7xl mx-auto">
-        <ScrollLink
-          to="hero" 
-          smooth={true} 
-          duration={500} 
-          offset={-50} 
-          className="flex items-center gap-2 cursor-pointer"
-          onClick={() => setActive("")} 
-          href="hero"
-        >
-          <p className="text-white text-[18px] font-bold flex">
-            Tiago &nbsp;
-            <span className="sm:block hidden"> Dias</span>
-          </p>
-        </ScrollLink>
+      <ScrollLink
+  to="hero"
+  smooth={true}
+  duration={500}
+  offset={-50}
+  className="flex items-center gap-2 cursor-pointer transition-transform duration-300 hover:scale-105"
+  onClick={() => setActive("")}
+  href="hero"
+>
+  <p className="text-white text-[18px] font-bold flex">
+    Tiago &nbsp;
+    <span> Dias</span>
+  </p>
+</ScrollLink>
+
 
         <ul className="list-none hidden sm:flex flex-row gap-10">
           {navLinks.map((nav) => (

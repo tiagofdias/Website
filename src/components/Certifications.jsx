@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { styles } from "../styles";
-import { webs, github } from "../assets"; // Added github here like in Works
+import { webs, github } from "../assets";
 import { SectionWrapper } from "../hoc";
-import { certifications } from "../constants";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ProjectCard = ({
   index,
@@ -13,16 +14,31 @@ const ProjectCard = ({
   images,
   source_code_link,
   source_code_link2,
-  isMobile, // passed from parent
+  isMobile,
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // For web (non-mobile) mode
   const [previewIndex, setPreviewIndex] = useState(0);
+
+  // For mobile infinite-loop carousel
+  const projectImages = Array.isArray(images) ? images : [images];
+  const extendedImages =
+    projectImages.length > 1
+      ? [
+          projectImages[projectImages.length - 1],
+          ...projectImages,
+          projectImages[0],
+        ]
+      : projectImages;
+  const [slideIndex, setSlideIndex] = useState(
+    projectImages.length > 1 ? 1 : 0
+  );
+  const [transitionEnabled, setTransitionEnabled] = useState(true);
+
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [swipeDelta, setSwipeDelta] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
 
-  const projectImages = Array.isArray(images) ? images : [images];
-
+  // Standard web handlers
   const nextImage = () => {
     setPreviewIndex((prev) => (prev + 1) % projectImages.length);
   };
@@ -33,8 +49,28 @@ const ProjectCard = ({
     );
   };
 
+  // Mobile infinite loop handlers
+  const nextSlide = () => {
+    if (projectImages.length > 1) {
+      setTransitionEnabled(true);
+      setSlideIndex((prev) => prev + 1);
+    }
+  };
+
+  const prevSlide = () => {
+    if (projectImages.length > 1) {
+      setTransitionEnabled(true);
+      setSlideIndex((prev) => prev - 1);
+    }
+  };
+
   const openPreview = (index) => {
-    setPreviewIndex(index);
+    // For mobile, we want to start on the real image inside the extended array.
+    if (isMobile && projectImages.length > 1) {
+      setSlideIndex(index + 1);
+    } else {
+      setPreviewIndex(index);
+    }
     setIsPreviewOpen(true);
   };
 
@@ -42,9 +78,8 @@ const ProjectCard = ({
     setIsPreviewOpen(false);
   };
 
-  // Swipe functionality for mobile with transition effect
+  // Touch handling for swipe (mobile)
   const touchStartX = useRef(null);
-
   const handleTouchStart = (e) => {
     touchStartX.current = e.changedTouches[0].screenX;
     setIsSwiping(true);
@@ -56,32 +91,54 @@ const ProjectCard = ({
   };
 
   const handleTouchEnd = () => {
-    const threshold = 50; // Minimum swipe distance
+    const threshold = 50;
     if (swipeDelta > threshold) {
-      prevImage(); // swipe right -> previous image
+      prevSlide();
     } else if (swipeDelta < -threshold) {
-      nextImage(); // swipe left -> next image
+      nextSlide();
     }
     setIsSwiping(false);
     setSwipeDelta(0);
     touchStartX.current = null;
   };
 
-  // Keyboard navigation for accessibility
+  // Snap the slider if we're on a clone (mobile infinite loop)
+  const handleTransitionEnd = () => {
+    if (slideIndex === 0) {
+      setTransitionEnabled(false);
+      setSlideIndex(projectImages.length);
+    } else if (slideIndex === extendedImages.length - 1) {
+      setTransitionEnabled(false);
+      setSlideIndex(1);
+    }
+  };
+
+  // Re-enable transition after snapping
+  useEffect(() => {
+    if (!transitionEnabled) {
+      requestAnimationFrame(() => setTransitionEnabled(true));
+    }
+  }, [transitionEnabled]);
+
+  // computedPreviewIndex for dot indicators (works for both mobile & web)
+  const computedPreviewIndex =
+    isMobile && projectImages.length > 1 ? slideIndex - 1 : previewIndex;
+
+  // Keyboard navigation
   useEffect(() => {
     if (!isPreviewOpen) return;
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
         closePreview();
       } else if (e.key === "ArrowLeft") {
-        prevImage();
+        isMobile && projectImages.length > 1 ? prevSlide() : prevImage();
       } else if (e.key === "ArrowRight") {
-        nextImage();
+        isMobile && projectImages.length > 1 ? nextSlide() : nextImage();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPreviewOpen]);
+  }, [isPreviewOpen, slideIndex, previewIndex]);
 
   return (
     <div className="bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full relative">
@@ -96,7 +153,7 @@ const ProjectCard = ({
             src={image}
             alt={`project-${idx}`}
             className={`w-full h-full object-cover rounded-2xl absolute top-0 left-0 transition-opacity duration-500 ${
-              currentIndex === idx ? "opacity-100" : "opacity-0"
+              previewIndex === idx ? "opacity-100" : "opacity-0"
             }`}
           />
         ))}
@@ -131,19 +188,11 @@ const ProjectCard = ({
             rel="noopener noreferrer"
             className={`
               text-[14px] px-2.5 py-1 rounded-full transition-all duration-300 transform
-              ${
-                tag.color === "blue-text-gradient"
-                  ? "bg-blue-700 hover:bg-blue-500"
-                  : tag.color === "orange-text-gradient"
-                  ? "bg-orange-700 hover:bg-orange-500"
-                  : tag.color === "red-text-gradient"
-                  ? "bg-red-700 hover:bg-red-500"
-                  : tag.color === "green-text-gradient"
-                  ? "bg-green-700 hover:bg-green-500"
-                  : "bg-cyan-700 hover:bg-cyan-500"
-              } 
               text-white hover:scale-105
             `}
+            style={{
+              background: tag.color || "#2563eb",
+            }}
           >
             {tag.name}
           </a>
@@ -195,10 +244,18 @@ const ProjectCard = ({
               onClick={(e) => e.stopPropagation()}
               tabIndex={0}
             >
-              {/* Image Container with fixed height */}
+              {/* X Button to close */}
+              <button
+                className="absolute top-1 right-1 text-white text-4xl font-bold focus:outline-none transform transition-all duration-200 hover:text-red-600"
+                onClick={closePreview}
+              >
+                &times;
+              </button>
+              <br></br>
+              {/* Image Container */}
               <div className="w-full h-[70vh] flex items-center justify-center">
-                {isMobile ? (
-                  // Mobile Carousel: show all images side-by-side in a flex container
+                {isMobile && projectImages.length > 1 ? (
+                  // Mobile infinite carousel with clones
                   <div
                     className="w-full overflow-hidden"
                     onTouchStart={handleTouchStart}
@@ -206,12 +263,16 @@ const ProjectCard = ({
                     onTouchEnd={handleTouchEnd}
                   >
                     <div
-                      className="flex transition-transform duration-300 ease-out gap-2"
+                      className="flex gap-2 ease-out"
                       style={{
-                        transform: `translateX(calc(-${previewIndex} * 100% - ${previewIndex} * 0.5rem + ${swipeDelta}px))`,
+                        transform: `translateX(calc(-${slideIndex} * 100% - ${slideIndex} * 0.5rem + ${swipeDelta}px))`,
+                        transition: transitionEnabled
+                          ? "transform 300ms ease-out"
+                          : "none",
                       }}
+                      onTransitionEnd={handleTransitionEnd}
                     >
-                      {projectImages.map((image, idx) => (
+                      {extendedImages.map((image, idx) => (
                         <div key={idx} className="flex-shrink-0 w-full">
                           <img
                             src={image}
@@ -223,7 +284,7 @@ const ProjectCard = ({
                     </div>
                   </div>
                 ) : (
-                  // Web: show single image
+                  // Non-mobile or single image
                   <img
                     src={projectImages[previewIndex]}
                     alt={`Image ${previewIndex + 1} of ${projectImages.length}`}
@@ -231,10 +292,11 @@ const ProjectCard = ({
                   />
                 )}
               </div>
+
               {/* Slideshow Controls */}
               {projectImages.length > 1 && (
                 <>
-                  {/* Previous/Next Buttons (only on non-mobile) */}
+                  {/* Web Navigation Buttons */}
                   {!isMobile && (
                     <div className="mt-4 flex items-center justify-between w-full">
                       <button
@@ -259,7 +321,7 @@ const ProjectCard = ({
                       </button>
                     </div>
                   )}
-                  {/* Dot Indicators (shown on both mobile & web) */}
+                  {/* Dot Indicators for both mobile & web */}
                   <div className="mt-4 flex justify-center space-x-2">
                     {projectImages.map((_, idx) => (
                       <button
@@ -267,10 +329,16 @@ const ProjectCard = ({
                         aria-label={`Go to image ${idx + 1}`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setPreviewIndex(idx);
+                          if (isMobile && projectImages.length > 1) {
+                            setSlideIndex(idx + 1);
+                          } else {
+                            setPreviewIndex(idx);
+                          }
                         }}
                         className={`w-3 h-3 rounded-full focus:outline-none ${
-                          previewIndex === idx ? "bg-white" : "bg-gray-600"
+                          computedPreviewIndex === idx
+                            ? "bg-white"
+                            : "bg-gray-600"
                         }`}
                       ></button>
                     ))}
@@ -286,8 +354,16 @@ const ProjectCard = ({
 };
 
 const Certifications = () => {
+  const [certifications, setCertifications] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_URL}/certifications`)
+      .then((res) => res.json())
+      .then((data) => setCertifications(data))
+      .catch((err) => console.error("Failed to fetch certifications:", err));
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -342,4 +418,3 @@ const Certifications = () => {
 };
 
 export default SectionWrapper(Certifications, "certifications");
-

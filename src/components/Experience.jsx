@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "react-vertical-timeline-component/style.min.css";
-import { education, proexp } from "../constants";
 import { SectionWrapper } from "../hoc";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const TimelineItem = ({ item }) => (
   <div className="bg-tertiary p-5 rounded-2xl relative shadow-lg">
@@ -72,6 +73,20 @@ const TimelineSection = ({ items, sectionTitle }) => (
 
 const Timeline = () => {
   const [showAll, setShowAll] = useState(false);
+  const [education, setEducation] = useState([]);
+  const [proexp, setProexp] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/education`)
+      .then((res) => res.json())
+      .then((data) => setEducation(data))
+      .catch((err) => console.error("Failed to fetch education:", err));
+
+    fetch(`${API_URL}/proexp`)
+      .then((res) => res.json())
+      .then((data) => setProexp(data))
+      .catch((err) => console.error("Failed to fetch proexp:", err));
+  }, []);
 
   // If "View All" hasn't been clicked, render only the button.
   if (!showAll) {

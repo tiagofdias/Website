@@ -189,6 +189,29 @@ const education = [
 ];
 
 const proexp = [
+   {
+    title: "Gen AI Software Engineer",
+    titleLink: null,
+    company_name: "Capgemini",
+    companyLink: "https://www.capgemini.com/pt-en/",
+    icon: Consulteware,
+    iconBg: "#383E56",
+    date: "Mar 2025 - Present",
+    points: [
+      {
+        text: "Designed and developed an AI agent in Python that ingests multi‑page PDF company reports, performs semantic “chunking” into coherent segments, and exposes a conversational interface for querying both financial and operational insights.",
+      },
+      {
+        text: "Built end‑to‑end NLP workflows using spaCy and NLTK for document segmentation and named‑entity recognition, then generated embeddings (cached for performance) and ran vector search (via FAISS) to enable fast, accurate retrieval.",
+      },
+      {
+        text: "Integrated pre‑trained large language models for advanced text generation and Q&A, and fine‑tuned them on domain‑specific financial/operational text using supervised prompt‑completion pairs to boost relevance and accuracy.",
+      },
+      {
+        text: "Developed a context‑aware chatbot UI that supports follow‑up questions and deep dives into report sections, managing dialogue state and prompt engineering for coherent multi‑turn interactions.",
+      },
+    ],
+  },
   {
     title: ".NET Developer (Internship)",
     titleLink: null,

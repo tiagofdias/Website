@@ -8,9 +8,9 @@ module.exports = {
         blink: 'blink 1s infinite',
       },
       colors: {
-        primary: "#050816",
+        primary: "#1a3b50",
         secondary: "#CCCCCC",
-        tertiary: "#0E1B29",
+        tertiary: "#345164",
         "black-100": "#100d25",
         "black-200": "#090325",
         "white-100": "#f3f3f3",
