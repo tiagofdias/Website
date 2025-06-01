@@ -210,6 +210,7 @@ const emptyForms = {
     content: [],
     skills: "",
     languages: [],
+    PDFCV: "",
   },
 };
 
@@ -914,6 +915,17 @@ const AdminPanel = ({ token, onLogout }) => {
             >
               + Add Language
             </button>
+
+            <label style={{ fontWeight: "bold" }}>PDF CV URL</label>
+            <input
+              name="PDFCV"
+              placeholder="PDF CV URL (e.g., Dropbox link)"
+              value={form.PDFCV || ""}
+              onChange={handleChange}
+              style={focus.PDFCV ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
+              onFocus={() => setFocus(f => ({ ...f, PDFCV: true }))}
+              onBlur={() => setFocus(f => ({ ...f, PDFCV: false }))}
+            />
           </>
         );
       default:
@@ -1404,6 +1416,26 @@ const AdminPanel = ({ token, onLogout }) => {
                         </span>
                       )
                     )}
+                  </div>
+                )}
+                {/* Add this inside the About section preview, after the Languages section */}
+                {item.PDFCV && (
+                  <div style={{ marginBottom: 8 }}>
+                    <b style={{ fontSize: 16, color: "#000", display: "block", marginBottom: 4 }}>
+                      PDF CV:
+                    </b>
+                    <a
+                      href={item.PDFCV}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "#2563eb",
+                        textDecoration: "underline",
+                        fontSize: 15
+                      }}
+                    >
+                      {item.PDFCV}
+                    </a>
                   </div>
                 )}
               </li>

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLinkedin, faGithub } from "@fortawesome/free-brands-svg-icons";
 import { Link as ScrollLink } from "react-scroll";
@@ -30,6 +30,21 @@ const IconWithTooltip = ({ icon, href, tooltip }) => (
 );
 
 const Hero = () => {
+  const [cvUrl, setCvUrl] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    fetch(`${API_URL}/about`)
+      .then((res) => res.json())
+      .then((data) => {
+        const aboutData = Array.isArray(data) ? data[0] : data;
+        if (aboutData?.PDFCV) {
+          setCvUrl(aboutData.PDFCV);
+        }
+      })
+      .catch((error) => console.error("Error fetching CV URL:", error));
+  }, []);
+
   const downloadCV = () => {
     const cv = "./CV.pdf";
     const link = document.createElement("a");
@@ -55,8 +70,9 @@ const Hero = () => {
             <div className="w-2.5 h-2.5 rounded-full bg-[#04ba03] animate-blink"></div>
           </div>
           <a
-            href="./CV.pdf"
-            download="Tiago_Dias_CV.pdf"
+            href={cvUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-white text-[#1E1E1E] text-sm px-3 py-2 rounded-full font-bold uppercase transition-transform duration-300 transform hover:scale-110"
           >
             DOWNLOAD CV

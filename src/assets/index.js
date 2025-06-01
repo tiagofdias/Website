@@ -37,7 +37,6 @@ import tucano from "./tucano.png";
 import memorygame from "./memorygame.png";
 import weather from "./weather.png";
 
-import arco from "./arco.png";
 import currency from "./currency.png";
 import DIGI from "./DIGI.png";
 import investorcalculator from "./investorcalculator.png";
@@ -67,7 +66,6 @@ import digitalmarketing from "./digitalmarketing.png";
 import LADrivingSchool from "./LA-Driving-School/mainpage.png";
 import LAclasses from "./LA-Driving-School/classes.png";
 import LAcontacts from "./LA-Driving-School/contact.png";
-import LAFAQ from "./LA-Driving-School/FAQ.png";
 import LAtestimonials from "./LA-Driving-School/testimonials.png";
 import LAvehicles1 from "./LA-Driving-School/vehicles(MCLAREN).png";
 import LAvehicles2 from "./LA-Driving-School/vehicles(LAMBO).png";
@@ -100,7 +98,6 @@ export {
   Condomix2faOFF,
   LAclasses,
   LAcontacts,
-  LAFAQ,
   LAtestimonials,
   LAvehicles1,
   LAvehicles2,
@@ -130,7 +127,6 @@ export {
   mtasoftwarefundamentals,
   mtawindowsos,
   mtawindowsserver,
-  arco,
   currency,
   DIGI,
   investorcalculator,

@@ -59,7 +59,8 @@ const AboutSchema = new mongoose.Schema({
     }
   ],
   skills: { type: String, default: "" },
-  languages: [{ type: String }]
+  languages: [{ type: String }],
+  PDFCV: { type: String, default: "" } // Move PDFCV here as a top-level field
 });
 
 module.exports = {
