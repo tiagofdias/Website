@@ -9,7 +9,10 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 
 // Middleware setup
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:10000'],
+  credentials: true
+}));
 app.use(bodyParser.json());
 
 const SECRET = process.env.JWT_SECRET;
@@ -183,7 +186,7 @@ app.get(/^(?!\/api\/).*/, (req, res) => {
 mongoose.connect(process.env.MONGODB_URI)
 .then(() => {
   console.log('MongoDB connected');
-  const PORT = process.env.PORT || 4000;
+  const PORT = process.env.PORT || 10000;  // Change default port to 10000
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
