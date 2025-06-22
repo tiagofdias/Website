@@ -1,89 +1,11 @@
-import React, { useState, useEffect, Suspense, useRef } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
 import { TypeAnimation } from "react-type-animation";
 import "react-vertical-timeline-component/style.min.css";
 
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF, useAnimations } from "@react-three/drei";
-import * as THREE from "three";
-
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
-import { fadeIn, textVariant } from "../utils/motion";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
-// -------------------------
-// CatModel Component (unchanged)
-// -------------------------
-const CatModel = () => {
-  const { scene, animations } = useGLTF("models/cat.glb");
-  const { actions } = useAnimations(animations, scene);
-
-  useEffect(() => {
-    if (actions && actions["MOTION"]) {
-      actions["MOTION"].reset().play();
-    }
-  }, [actions]);
-
-  return (
-    <group position={[0, -10, 0]}>
-      <primitive object={scene} scale={7} />
-    </group>
-  );
-};
-
-// -------------------------
-// AstronautModel Component
-// -------------------------
-const AstronautModel = () => {
-  const { scene, animations } = useGLTF("models/astronaut.glb");
-  const { actions, mixer } = useAnimations(animations, scene);
-  const sequence = ["moon_walk", "moon_walk", "moon_walk"];
-  const indexRef = useRef(0);
-
-  useEffect(() => {
-    if (actions && mixer) {
-      // Set each animation to play only once
-      sequence.forEach((name) => {
-        if (actions[name]) {
-          actions[name].setLoop(THREE.LoopOnce, 1);
-          actions[name].clampWhenFinished = true;
-        }
-      });
-
-      const playNextAnimation = () => {
-        const actionName = sequence[indexRef.current];
-        if (actions[actionName]) {
-          actions[actionName].reset().play();
-        }
-      };
-
-      const onFinished = (e) => {
-        const currentName = sequence[indexRef.current];
-        if (e.action === actions[currentName]) {
-          // Move to the next animation in the sequence
-          indexRef.current = (indexRef.current + 1) % sequence.length;
-          playNextAnimation();
-        }
-      };
-
-      mixer.addEventListener("finished", onFinished);
-      playNextAnimation();
-
-      // Cleanup the event listener on unmount
-      return () => {
-        mixer.removeEventListener("finished", onFinished);
-      };
-    }
-  }, [actions, mixer, sequence]);
-
-  return (
-    <group position={[0, -14, 0]}>
-      <primitive object={scene} scale={8} />
-    </group>
-  );
-};
 
 // -------------------------
 // Custom hook to detect mobile devices based on viewport width
@@ -104,7 +26,7 @@ const useIsMobile = () => {
 };
 
 // -------------------------
-// About Section (unchanged)
+// About Section
 // -------------------------
 const About = () => {
   const [about, setAbout] = useState(null);
@@ -125,15 +47,12 @@ const About = () => {
   return (
     <div className="flex flex-col md:flex-row gap-8 items-center">
       <div className="flex-1">
-        <motion.div variants={textVariant()}>
+        <div>
           <p className={styles.sectionSubText}>Introduction</p>
           <h2 className={styles.sectionHeadText}>About Me.</h2>
-        </motion.div>
+        </div>
 
-        <motion.div
-          variants={fadeIn("", "", 0.1, 1)}
-          className="mt-4 text-[#CCCCCC] text-[17px] max-w-4xl leading-[30px]"
-        >
+        <div className="mt-4 text-[#CCCCCC] text-[17px] max-w-4xl leading-[30px]">
           {about.content &&
             about.content.map((part, i) =>
               part.link ? (
@@ -181,17 +100,14 @@ const About = () => {
             speed={50}
             repeat={Infinity}
           />
-        </motion.div>
+        </div>
 
-        <motion.div
-          variants={fadeIn("", "", 0.1, 1)}
-          className="mt-4 text-[#CCCCCC] text-[17px] max-w-3xl leading-[30px]"
-        >
+        <div className="mt-4 text-[#CCCCCC] text-[17px] max-w-3xl leading-[30px]">
           <br />
           <div align="left">
             <img src={about.skills} alt="skills" />
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -208,19 +124,19 @@ const TimelineItem = ({ item }) => (
     {/* Date */}
     <p className="text-sm text-gray-400">{item.date}</p>
 
-    {/* Title with Link */}
+    {/* Title with Link - Updated styling here */}
     <h3 className="text-white font-bold text-[18px]">
       {item.titleLink ? (
         <a
           href={item.titleLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-300 hover:text-[#00C6FE]"
+          className="text-white hover:text-[#00C6FE]" // Changed from text-gray-300 to text-white
         >
           {item.title}
         </a>
       ) : (
-        item.title
+        <span className="text-white">{item.title}</span> // Added span with text-white
       )}
     </h3>
 
@@ -257,7 +173,6 @@ const TimelineItem = ({ item }) => (
 );
 
 const TimelineSection = ({ items, sectionTitle }) => {
-  const isMobile = useIsMobile();
   return (
     <div className="mb-8">
       <h2 className="text-4xl font-bold text-white mb-4">{sectionTitle}</h2>
@@ -266,20 +181,6 @@ const TimelineSection = ({ items, sectionTitle }) => {
           <TimelineItem key={index} item={item} />
         ))}
       </div>
-      {/* If Education has fewer items, add the astronaut model as a visual filler */}
-      {/*
-      {sectionTitle === "Education" && !isMobile && (
-        <div className="mt-8">
-          <Canvas style={{ height: "400px" }} camera={{ position: [5, 10, 15] }}>
-            <ambientLight intensity={1} />
-            <directionalLight position={[10, 20, 5]} intensity={4} />
-            <Suspense fallback={null}>
-              <AstronautModel />
-            </Suspense>
-          </Canvas>
-        </div>
-      )}
-      */}
     </div>
   );
 };
@@ -290,14 +191,26 @@ const Timeline = () => {
   const [proexp, setProexp] = useState([]);
 
   useEffect(() => {
+    // Fetch and filter education data
     fetch(`${API_URL}/education`)
       .then((res) => res.json())
-      .then((data) => setEducation(data))
+      .then((data) => {
+        const enabledEducation = data
+          .filter(item => item.enabled)
+          .sort((a, b) => a.order - b.order);
+        setEducation(enabledEducation);
+      })
       .catch((err) => console.error("Failed to fetch education:", err));
 
+    // Fetch and filter professional experience data
     fetch(`${API_URL}/proexp`)
       .then((res) => res.json())
-      .then((data) => setProexp(data))
+      .then((data) => {
+        const enabledProexp = data
+          .filter(item => item.enabled)
+          .sort((a, b) => a.order - b.order);
+        setProexp(enabledProexp);
+      })
       .catch((err) => console.error("Failed to fetch proexp:", err));
   }, []);
 

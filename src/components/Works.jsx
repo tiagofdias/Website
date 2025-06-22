@@ -129,7 +129,10 @@ const ProjectCard = ({
   }, [isPreviewOpen, slideIndex, previewIndex]);
 
   return (
-    <div className="bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full relative">
+    <div
+      className="bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full flex flex-col"
+      style={{ minHeight: 480 }}
+    >
       <div
         className="relative w-full h-[230px] overflow-hidden group cursor-pointer"
         onClick={() => openPreview(0)}
@@ -157,13 +160,42 @@ const ProjectCard = ({
         </div>
       </div>
 
-      <div className="mt-5">
-        <h3 className="text-white font-bold text-[20px] pr-16 break-words">
-          {name}
-        </h3>
-        <p className="mt-2 text-secondary text-[14px]">{description}</p>
+      <div className="mt-5 flex-1 flex flex-col">
+        <div className="flex items-start justify-between">
+          <h3 className="text-white font-bold text-[20px] pr-4 break-words flex-1">
+            {(name || "").replace(/-/g, " ")}
+          </h3>
+          <div className="flex gap-2 ml-2 mt-[-4px]">
+            {source_code_link2 && (
+              <div
+                className="w-9 h-9 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110 bg-[#0000002d]"
+                onClick={() => window.open(source_code_link2, "_blank")}
+              >
+                <img
+                  src={webs}
+                  alt="website"
+                  className="w-1/2 h-1/2 object-contain"
+                />
+              </div>
+            )}
+            {source_code_link && (
+              <div
+                className="w-9 h-9 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110 bg-[#0000002d]"
+                onClick={() => window.open(source_code_link, "_blank")}
+              >
+                <img
+                  src={github}
+                  alt="source code"
+                  className="w-1/2 h-1/2 object-contain"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <p className="mt-2 text-secondary text-[14px] flex-1">{description}</p>
       </div>
 
+      {/* Tags always at the bottom, not absolute */}
       <div className="mt-3 flex flex-wrap gap-2">
         {tags.map((tag, idx) => {
           const isActiveTag =
@@ -188,35 +220,6 @@ const ProjectCard = ({
             </span>
           );
         })}
-      </div>
-
-      <div className="absolute right-2 flex" style={{ top: "262px" }}>
-        {source_code_link2 && (
-          <div
-            className="relative w-11 h-11 left-3 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110"
-            onClick={() => {
-              window.open(source_code_link2, "_blank");
-            }}
-          >
-            <img
-              src={webs}
-              alt="website"
-              className="w-1/2 h-1/2 object-contain"
-            />
-          </div>
-        )}
-        {source_code_link && (
-          <div
-            className="relative w-11 h-11 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110"
-            onClick={() => window.open(source_code_link, "_blank")}
-          >
-            <img
-              src={github}
-              alt="source code"
-              className="w-1/2 h-1/2 object-contain"
-            />
-          </div>
-        )}
       </div>
 
       {isPreviewOpen &&
@@ -340,10 +343,16 @@ const Projects = () => {
   const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    // Fetch projects from backend API
+    // Fetch projects from backend API and filter enabled ones
     fetch(`${API_URL}/projects`)
       .then((res) => res.json())
-      .then((data) => setProjects(data))
+      .then((data) => {
+        // Filter enabled projects and sort by order
+        const enabledProjects = data
+          .filter((project) => project.enabled)
+          .sort((a, b) => a.order - b.order);
+        setProjects(enabledProjects);
+      })
       .catch((err) => console.error("Failed to fetch projects:", err));
   }, []);
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import axios from 'axios';
 
 function ImagesInput({ images, onChange }) {
   const [focusIdx, setFocusIdx] = React.useState(null);
@@ -10,7 +11,7 @@ function ImagesInput({ images, onChange }) {
     onChange(newImages);
   };
   const handleAdd = () => onChange([...images, ""]);
-  const handleRemove = idx => onChange(images.filter((_, i) => i !== idx));
+  const handleRemove = (idx) => onChange(images.filter((_, i) => i !== idx));
 
   // Use the same inputStyle and inputFocusStyle as the main form
   const inputStyle = {
@@ -35,13 +36,20 @@ function ImagesInput({ images, onChange }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <label style={{ fontWeight: "bold", marginBottom: 4 }}>Images</label>
       {images.map((img, idx) => (
-        <div key={idx} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div
+          key={idx}
+          style={{ display: "flex", gap: 8, alignItems: "center" }}
+        >
           <input
             type="text"
             value={img}
-            onChange={e => handleImageChange(idx, e.target.value)}
+            onChange={(e) => handleImageChange(idx, e.target.value)}
             placeholder={`Image URL #${idx + 1}`}
-            style={focusIdx === idx ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
+            style={
+              focusIdx === idx
+                ? { ...inputStyle, ...inputFocusStyle }
+                : inputStyle
+            }
             onFocus={() => setFocusIdx(idx)}
             onBlur={() => setFocusIdx(null)}
           />
@@ -94,7 +102,7 @@ function PointsInput({ points, onChange }) {
     onChange(newPoints);
   };
   const handleAdd = () => onChange([...(points || []), { text: "" }]);
-  const handleRemove = idx => onChange(points.filter((_, i) => i !== idx));
+  const handleRemove = (idx) => onChange(points.filter((_, i) => i !== idx));
 
   const inputStyle = {
     padding: "12px 14px",
@@ -118,13 +126,20 @@ function PointsInput({ points, onChange }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <label style={{ fontWeight: "bold", marginBottom: 4 }}>Points</label>
       {(points || []).map((pt, idx) => (
-        <div key={idx} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div
+          key={idx}
+          style={{ display: "flex", gap: 8, alignItems: "center" }}
+        >
           <input
             type="text"
             value={pt.text}
-            onChange={e => handlePointChange(idx, e.target.value)}
+            onChange={(e) => handlePointChange(idx, e.target.value)}
             placeholder={`Point #${idx + 1}`}
-            style={focusIdx === idx ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
+            style={
+              focusIdx === idx
+                ? { ...inputStyle, ...inputFocusStyle }
+                : inputStyle
+            }
             onFocus={() => setFocusIdx(idx)}
             onBlur={() => setFocusIdx(null)}
           />
@@ -146,7 +161,9 @@ function PointsInput({ points, onChange }) {
         </div>
       ))}
       {/* Button aligned to the left */}
-      <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-start" }}>
+      <div
+        style={{ marginTop: 8, display: "flex", justifyContent: "flex-start" }}
+      >
         <button
           type="button"
           onClick={handleAdd}
@@ -171,17 +188,21 @@ function PointsInput({ points, onChange }) {
 
 const emptyForms = {
   projects: {
+    projectid: "", 
     name: "",
     description: "",
     tags: [],
     images: [],
     source_code_link: "",
     source_code_link2: "",
+    enabled: true,
   },
   articles: {
     title: "",
-    contentFile: "",
-    image: "",
+    url: "",          // Changed from contentFile
+    image_url: "",    // Changed from image
+    enabled: true,
+    articleid: "",    // Added to match model
   },
   certifications: {
     name: "",
@@ -189,6 +210,7 @@ const emptyForms = {
     tags: [],
     images: [],
     source_code_link2: "",
+    enabled: true,
   },
   education: {
     title: "",
@@ -197,6 +219,7 @@ const emptyForms = {
     companyLink: "",
     date: "",
     points: [],
+    enabled: true,
   },
   proexp: {
     title: "",
@@ -205,6 +228,7 @@ const emptyForms = {
     companyLink: "",
     date: "",
     points: [],
+    enabled: true,
   },
   about: {
     content: [],
@@ -229,18 +253,30 @@ const AdminPanel = ({ token, onLogout }) => {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForms[section]);
   const [focus, setFocus] = useState({});
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Helper to get the API URL
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Fetch configuration
+  const fetchConfig = {
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  };
 
   useEffect(() => {
     setForm(emptyForms[section]);
     setEditingId(null);
     if (section === "about") {
-      console.log('Fetching about data...');
+      console.log("Fetching about data...");
       fetch(`${API_URL}/about`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           // Always treat as array for consistency
           const aboutArr = Array.isArray(data) ? data : [data];
           if (aboutArr.length > 0) {
@@ -254,8 +290,8 @@ const AdminPanel = ({ token, onLogout }) => {
             setItems([]);
           }
         })
-        .catch(error => {
-          console.error('Error fetching about:', error);
+        .catch((error) => {
+          console.error("Error fetching about:", error);
           setForm(emptyForms.about);
           setEditingId(null);
           setItems([]);
@@ -264,8 +300,8 @@ const AdminPanel = ({ token, onLogout }) => {
       // For other sections, reset to default state
       setForm(emptyForms[section]);
       setEditingId(null);
-      fetch(`${API_URL}/${endpoints[section]}`)
-        .then(res => res.json())
+      fetch(`${API_URL}/${endpoints[section]}`, fetchConfig)
+        .then((res) => res.json())
         .then(setItems);
     }
   }, [section]);
@@ -281,9 +317,10 @@ const AdminPanel = ({ token, onLogout }) => {
         const secondsLeft = Math.floor((expMs - now) / 1000);
         if (expMs > now) {
           console.log(
-            `[JWT] Token is active. Time left: ${secondsLeft > 60
-              ? (secondsLeft / 60).toFixed(1) + " minutes"
-              : secondsLeft + " seconds"
+            `[JWT] Token is active. Time left: ${
+              secondsLeft > 60
+                ? (secondsLeft / 60).toFixed(1) + " minutes"
+                : secondsLeft + " seconds"
             }`
           );
           timeoutId = setTimeout(onLogout, expMs - now);
@@ -299,27 +336,38 @@ const AdminPanel = ({ token, onLogout }) => {
     return () => clearTimeout(timeoutId);
   }, [token, onLogout]);
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    setForm((f) => ({ ...f, [name]: value }));
   };
 
   // For tags and images fields (if present)
-  const handleTagsChange = e => {
-    setForm(f => ({ ...f, tags: e.target.value.split(",").map(t => ({ name: t.trim() })) }));
+  const handleTagsChange = (e) => {
+    setForm((f) => ({
+      ...f,
+      tags: e.target.value.split(",").map((t) => ({ name: t.trim() })),
+    }));
   };
-  const handleImagesChange = e => {
-    setForm(f => ({ ...f, images: e.target.value.split(",").map(i => i.trim()) }));
+  const handleImagesChange = (e) => {
+    setForm((f) => ({
+      ...f,
+      images: e.target.value.split(",").map((i) => i.trim()),
+    }));
   };
 
   // For points field (education/proexp)
-  const handlePointsChange = e => {
-    setForm(f => ({ ...f, points: e.target.value.split(",").map(p => ({ text: p.trim() })) }));
+  const handlePointsChange = (e) => {
+    setForm((f) => ({
+      ...f,
+      points: e.target.value.split(",").map((p) => ({ text: p.trim() })),
+    }));
   };
 
   // For delete
-  const handleDelete = async id => {
-    const confirmed = window.confirm("Are you sure you want to delete this item?");
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this item?"
+    );
     if (!confirmed) return;
 
     try {
@@ -329,7 +377,7 @@ const AdminPanel = ({ token, onLogout }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete item');
+        throw new Error("Failed to delete item");
       }
 
       if (section === "about") {
@@ -339,53 +387,79 @@ const AdminPanel = ({ token, onLogout }) => {
         setEditingId(null);
       } else {
         // For other sections, just remove the item from the list
-        setItems(items => items.filter(item => item._id !== id));
+        setItems((items) => items.filter((item) => item._id !== id));
       }
     } catch (error) {
-      console.error('Error deleting item:', error);
-      alert('Failed to delete item. Please try again.');
+      console.error("Error deleting item:", error);
+      alert("Failed to delete item. Please try again.");
     }
   };
 
   // For add/edit
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       let data = { ...form };
+
+      // For projects section
+      if (section === "projects") {
+        // For new projects, ensure projectid is unique if provided
+        if (!editingId && data.projectid) {
+          const existingProject = items.find(p => p.projectid === data.projectid);
+          if (existingProject) {
+            throw new Error('A project with this ID already exists');
+          }
+        }
+        
+        // If no projectid is provided for new projects, generate a unique one
+        if (!editingId && !data.projectid) {
+          data.projectid = Date.now().toString(); // Use timestamp as fallback projectid
+        }
+        
+        console.log('Submitting project data:', data);
+      }
+      
       if (section === "about") {
         const method = form._id ? "PUT" : "POST";
         const url = form._id
           ? `${API_URL}/about/${form._id}`
           : `${API_URL}/about`;
-        
+
         const response = await fetch(url, {
           method,
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify(data),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to update About section');
+          throw new Error("Failed to update About section");
         }
 
         const updatedData = await response.json();
-        
+
         // Refresh the items list
         const res = await fetch(`${API_URL}/about`);
         const fetchedData = await res.json();
-        const aboutArr = Array.isArray(fetchedData) ? fetchedData : [fetchedData];
+        const aboutArr = Array.isArray(fetchedData)
+          ? fetchedData
+          : [fetchedData];
         setItems(aboutArr);
         setForm(aboutArr[0] || emptyForms.about);
         alert("About section updated successfully!");
         return;
       }
       if (editingId === null) {
-        const maxOrder = items.length > 0
-          ? Math.max(...items.map(item => typeof item.order === "number" ? item.order : -1))
-          : -1;
+        const maxOrder =
+          items.length > 0
+            ? Math.max(
+                ...items.map((item) =>
+                  typeof item.order === "number" ? item.order : -1
+                )
+              )
+            : -1;
         data.order = maxOrder + 1;
       }
       const method = editingId === null ? "POST" : "PUT";
@@ -393,29 +467,39 @@ const AdminPanel = ({ token, onLogout }) => {
         editingId === null
           ? `${API_URL}/${endpoints[section]}`
           : `${API_URL}/${endpoints[section]}/${editingId}`;
+      
       const res = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(data),
       });
+
+      if (!res.ok) {
+        throw new Error(`Failed to ${editingId ? 'update' : 'create'} project`);
+      }
+
       const updatedItem = await res.json();
+      console.log("Response from backend:", updatedItem);
+      
       if (editingId === null) {
         setItems(items => [...items, updatedItem]);
       } else {
-        setItems(items => items.map(item => item._id === editingId ? updatedItem : item));
+        setItems(items => items.map(item => 
+          item._id === editingId ? updatedItem : item
+        ));
       }
       setForm(emptyForms[section]);
       setEditingId(null);
     } catch (error) {
-      console.error('Error:', error);
-      alert('Failed to save changes. Please try again.');
+      console.error("Error:", error);
+      alert(error.message || "Failed to save changes. Please try again.");
     }
   };
 
-  const handleEdit = item => {
+  const handleEdit = (item) => {
     setEditingId(item._id);
     // Merge with emptyForms to ensure all fields are present and controlled
     setForm({ ...emptyForms[section], ...item });
@@ -424,7 +508,10 @@ const AdminPanel = ({ token, onLogout }) => {
   const moveItemUp = async (index) => {
     if (index === 0) return;
     const newItems = [...items];
-    [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
+    [newItems[index - 1], newItems[index]] = [
+      newItems[index],
+      newItems[index - 1],
+    ];
     // Swap order values
     const tempOrder = newItems[index - 1].order;
     newItems[index - 1].order = newItems[index].order;
@@ -495,9 +582,11 @@ const AdminPanel = ({ token, onLogout }) => {
               value={form.name || ""}
               onChange={handleChange}
               required
-              style={focus.name ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
-              onFocus={() => setFocus(f => ({ ...f, name: true }))}
-              onBlur={() => setFocus(f => ({ ...f, name: false }))}
+              style={
+                focus.name ? { ...inputStyle, ...inputFocusStyle } : inputStyle
+              }
+              onFocus={() => setFocus((f) => ({ ...f, name: true }))}
+              onBlur={() => setFocus((f) => ({ ...f, name: false }))}
             />
             <textarea
               name="description"
@@ -506,18 +595,42 @@ const AdminPanel = ({ token, onLogout }) => {
               onChange={handleChange}
               required
               rows={3}
-              style={focus.description ? { ...inputStyle, ...inputFocusStyle, resize: "vertical" } : { ...inputStyle, resize: "vertical" }}
-              onFocus={() => setFocus(f => ({ ...f, description: true }))}
-              onBlur={() => setFocus(f => ({ ...f, description: false }))}
+              style={
+                focus.description
+                  ? { ...inputStyle, ...inputFocusStyle, resize: "vertical" }
+                  : { ...inputStyle, resize: "vertical" }
+              }
+              onFocus={() => setFocus((f) => ({ ...f, description: true }))}
+              onBlur={() => setFocus((f) => ({ ...f, description: false }))}
             />
             <input
               name="tags"
               placeholder="Tags (comma separated)"
-              value={(form.tags || []).map(t => t.name).join(", ")}
+              value={(form.tags || []).map((t) => t.name).join(", ")}
               onChange={handleTagsChange}
               style={inputStyle}
             />
-            <ImagesInput images={form.images || []} onChange={imgs => setForm(f => ({ ...f, images: imgs }))} />
+            {/* Images textarea for easier bulk entry, like certifications */}
+            <label
+              style={{ fontWeight: "bold", marginBottom: 4, display: "block" }}
+            >
+              Images
+            </label>
+            <textarea
+              placeholder="Paste each image URL on a new line"
+              value={(form.images || []).join("\n")}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  images: e.target.value
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter((line) => line),
+                }))
+              }
+              rows={4}
+              style={{ ...inputStyle, resize: "vertical" }}
+            />
             <input
               name="source_code_link"
               placeholder="Github Link"
@@ -532,6 +645,7 @@ const AdminPanel = ({ token, onLogout }) => {
               onChange={handleChange}
               style={inputStyle}
             />
+           
           </>
         );
       case "articles":
@@ -544,9 +658,11 @@ const AdminPanel = ({ token, onLogout }) => {
               value={form.title || ""}
               onChange={handleChange}
               required
-              style={focus.title ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
-              onFocus={() => setFocus(f => ({ ...f, title: true }))}
-              onBlur={() => setFocus(f => ({ ...f, title: false }))}
+              style={
+                focus.title ? { ...inputStyle, ...inputFocusStyle } : inputStyle
+              }
+              onFocus={() => setFocus((f) => ({ ...f, title: true }))}
+              onBlur={() => setFocus((f) => ({ ...f, title: false }))}
             />
             <input
               name="url"
@@ -554,18 +670,24 @@ const AdminPanel = ({ token, onLogout }) => {
               value={form.url || ""}
               onChange={handleChange}
               required
-              style={focus.url ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
-              onFocus={() => setFocus(f => ({ ...f, url: true }))}
-              onBlur={() => setFocus(f => ({ ...f, url: false }))}
+              style={
+                focus.url ? { ...inputStyle, ...inputFocusStyle } : inputStyle
+              }
+              onFocus={() => setFocus((f) => ({ ...f, url: true }))}
+              onBlur={() => setFocus((f) => ({ ...f, url: false }))}
             />
             <input
               name="image_url"
               placeholder="Image URL"
               value={form.image_url || ""}
               onChange={handleChange}
-              style={focus.image_url ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
-              onFocus={() => setFocus(f => ({ ...f, image_url: true }))}
-              onBlur={() => setFocus(f => ({ ...f, image_url: false }))}
+              style={
+                focus.image_url
+                  ? { ...inputStyle, ...inputFocusStyle }
+                  : inputStyle
+              }
+              onFocus={() => setFocus((f) => ({ ...f, image_url: true }))}
+              onBlur={() => setFocus((f) => ({ ...f, image_url: false }))}
             />
           </>
         );
@@ -578,9 +700,13 @@ const AdminPanel = ({ token, onLogout }) => {
               value={form.name || ""}
               onChange={handleChange}
               required
-              style={focus.certname ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
-              onFocus={() => setFocus(f => ({ ...f, certname: true }))}
-              onBlur={() => setFocus(f => ({ ...f, certname: false }))}
+              style={
+                focus.certname
+                  ? { ...inputStyle, ...inputFocusStyle }
+                  : inputStyle
+              }
+              onFocus={() => setFocus((f) => ({ ...f, certname: true }))}
+              onBlur={() => setFocus((f) => ({ ...f, certname: false }))}
             />
             <textarea
               name="description"
@@ -589,23 +715,38 @@ const AdminPanel = ({ token, onLogout }) => {
               onChange={handleChange}
               required
               rows={3}
-              style={focus.certdesc ? { ...inputStyle, ...inputFocusStyle, resize: "vertical" } : { ...inputStyle, resize: "vertical" }}
-              onFocus={() => setFocus(f => ({ ...f, certdesc: true }))}
-              onBlur={() => setFocus(f => ({ ...f, certdesc: false }))}
+              style={
+                focus.certdesc
+                  ? { ...inputStyle, ...inputFocusStyle, resize: "vertical" }
+                  : { ...inputStyle, resize: "vertical" }
+              }
+              onFocus={() => setFocus((f) => ({ ...f, certdesc: true }))}
+              onBlur={() => setFocus((f) => ({ ...f, certdesc: false }))}
             />
             {/* Tag Editor */}
             <div style={{ marginBottom: 8 }}>
-              <label style={{ fontWeight: "bold", marginBottom: 4, display: "block" }}>Tags</label>
+              <label
+                style={{
+                  fontWeight: "bold",
+                  marginBottom: 4,
+                  display: "block",
+                }}
+              >
+                Tags
+              </label>
               {(form.tags || []).map((tag, idx) => (
-                <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                <div
+                  key={idx}
+                  style={{ display: "flex", gap: 8, marginBottom: 6 }}
+                >
                   <input
                     type="text"
                     placeholder="Tag Name"
                     value={tag.name || ""}
-                    onChange={e => {
+                    onChange={(e) => {
                       const tags = [...form.tags];
                       tags[idx] = { ...tags[idx], name: e.target.value };
-                      setForm(f => ({ ...f, tags }));
+                      setForm((f) => ({ ...f, tags }));
                     }}
                     style={{ ...inputStyle, flex: 2 }}
                   />
@@ -613,30 +754,36 @@ const AdminPanel = ({ token, onLogout }) => {
                     type="text"
                     placeholder="Tag Link"
                     value={tag.link || ""}
-                    onChange={e => {
+                    onChange={(e) => {
                       const tags = [...form.tags];
                       tags[idx] = { ...tags[idx], link: e.target.value };
-                      setForm(f => ({ ...f, tags }));
+                      setForm((f) => ({ ...f, tags }));
                     }}
                     style={{ ...inputStyle, flex: 3 }}
                   />
                   <input
                     type="color"
                     value={tag.color || "#2563eb"}
-                    onChange={e => {
+                    onChange={(e) => {
                       const tags = [...form.tags];
                       tags[idx] = { ...tags[idx], color: e.target.value };
-                      setForm(f => ({ ...f, tags }));
+                      setForm((f) => ({ ...f, tags }));
                     }}
-                    style={{ width: 40, height: 40, border: "none", background: "none", cursor: "pointer" }}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      border: "none",
+                      background: "none",
+                      cursor: "pointer",
+                    }}
                     title="Tag Color"
                   />
                   <button
                     type="button"
                     onClick={() => {
-                      setForm(f => ({
+                      setForm((f) => ({
                         ...f,
-                        tags: f.tags.filter((_, i) => i !== idx)
+                        tags: f.tags.filter((_, i) => i !== idx),
                       }));
                     }}
                     style={{
@@ -656,7 +803,14 @@ const AdminPanel = ({ token, onLogout }) => {
               ))}
               <button
                 type="button"
-                onClick={() => setForm(f => ({ ...f, tags: [...(f.tags || []), { name: "", link: "", color: "#2563eb" }] }))
+                onClick={() =>
+                  setForm((f) => ({
+                    ...f,
+                    tags: [
+                      ...(f.tags || []),
+                      { name: "", link: "", color: "#2563eb" },
+                    ],
+                  }))
                 }
                 style={{
                   background: "#fff",
@@ -675,17 +829,21 @@ const AdminPanel = ({ token, onLogout }) => {
               </button>
             </div>
             {/* Images textarea for easier bulk entry */}
-            <label style={{ fontWeight: "bold", marginBottom: 4, display: "block" }}>Images</label>
+            <label
+              style={{ fontWeight: "bold", marginBottom: 4, display: "block" }}
+            >
+              Images
+            </label>
             <textarea
               placeholder="Paste each image URL on a new line"
-              value={(form.images || []).join('\n')}
-              onChange={e =>
-                setForm(f => ({
+              value={(form.images || []).join("\n")}
+              onChange={(e) =>
+                setForm((f) => ({
                   ...f,
                   images: e.target.value
-                    .split('\n')
-                    .map(line => line.trim())
-                    .filter(line => line)
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter((line) => line),
                 }))
               }
               rows={4}
@@ -710,9 +868,11 @@ const AdminPanel = ({ token, onLogout }) => {
               value={form.title || ""}
               onChange={handleChange}
               required
-              style={focus.title ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
-              onFocus={() => setFocus(f => ({ ...f, title: true }))}
-              onBlur={() => setFocus(f => ({ ...f, title: false }))}
+              style={
+                focus.title ? { ...inputStyle, ...inputFocusStyle } : inputStyle
+              }
+              onFocus={() => setFocus((f) => ({ ...f, title: true }))}
+              onBlur={() => setFocus((f) => ({ ...f, title: false }))}
             />
             <input
               name="titleLink"
@@ -744,7 +904,7 @@ const AdminPanel = ({ token, onLogout }) => {
             />
             <PointsInput
               points={form.points || []}
-              onChange={pts => setForm(f => ({ ...f, points: pts }))}
+              onChange={(pts) => setForm((f) => ({ ...f, points: pts }))}
             />
           </>
         );
@@ -753,26 +913,36 @@ const AdminPanel = ({ token, onLogout }) => {
           <>
             <label style={{ fontWeight: "bold" }}>About Content</label>
             {(form.content || []).map((part, idx) => (
-              <div key={idx} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+              <div
+                key={idx}
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  marginBottom: 6,
+                }}
+              >
                 <input
                   type="text"
                   placeholder="Text"
                   value={part.text}
-                  onChange={e => {
+                  onChange={(e) => {
                     const content = [...form.content];
                     content[idx].text = e.target.value;
-                    setForm(f => ({ ...f, content }));
+                    setForm((f) => ({ ...f, content }));
                   }}
                   style={{ ...inputStyle, flex: 2 }}
                 />
-                <label style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <label
+                  style={{ display: "flex", alignItems: "center", gap: 2 }}
+                >
                   <input
                     type="checkbox"
                     checked={!!part.bold}
-                    onChange={e => {
+                    onChange={(e) => {
                       const content = [...form.content];
                       content[idx].bold = e.target.checked;
-                      setForm(f => ({ ...f, content }));
+                      setForm((f) => ({ ...f, content }));
                     }}
                   />
                   Bold
@@ -781,41 +951,55 @@ const AdminPanel = ({ token, onLogout }) => {
                   type="text"
                   placeholder="Link"
                   value={part.link || ""}
-                  onChange={e => {
+                  onChange={(e) => {
                     const content = [...form.content];
                     content[idx].link = e.target.value;
-                    setForm(f => ({ ...f, content }));
+                    setForm((f) => ({ ...f, content }));
                   }}
                   style={{ ...inputStyle, flex: 2 }}
                 />
                 <input
                   type="color"
                   value={part.color || "#2563eb"}
-                  onChange={e => {
+                  onChange={(e) => {
                     const content = [...form.content];
                     content[idx].color = e.target.value;
-                    setForm(f => ({ ...f, content }));
+                    setForm((f) => ({ ...f, content }));
                   }}
                   title="Text Color"
-                  style={{ width: 36, height: 36, border: "none", background: "none", cursor: "pointer" }}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                  }}
                 />
                 <input
                   type="color"
                   value={part.hovercolor || "#38bdf8"}
-                  onChange={e => {
+                  onChange={(e) => {
                     const content = [...form.content];
                     content[idx].hovercolor = e.target.value;
-                    setForm(f => ({ ...f, content }));
+                    setForm((f) => ({ ...f, content }));
                   }}
                   title="Hover Color"
-                  style={{ width: 36, height: 36, border: "none", background: "none", cursor: "pointer" }}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                  }}
                 />
                 <button
                   type="button"
-                  onClick={() => setForm(f => ({
-                    ...f,
-                    content: f.content.filter((_, i) => i !== idx)
-                  }))}
+                  onClick={() =>
+                    setForm((f) => ({
+                      ...f,
+                      content: f.content.filter((_, i) => i !== idx),
+                    }))
+                  }
                   style={{
                     background: "#e63946",
                     color: "#fff",
@@ -832,10 +1016,21 @@ const AdminPanel = ({ token, onLogout }) => {
             ))}
             <button
               type="button"
-              onClick={() => setForm(f => ({
-                ...f,
-                content: [...(f.content || []), { text: "", bold: false, link: "", color: "#2563eb", hovercolor: "#38bdf8" }]
-              }))}
+              onClick={() =>
+                setForm((f) => ({
+                  ...f,
+                  content: [
+                    ...(f.content || []),
+                    {
+                      text: "",
+                      bold: false,
+                      link: "",
+                      color: "#2563eb",
+                      hovercolor: "#38bdf8",
+                    },
+                  ],
+                }))
+              }
               style={{
                 background: "#fff",
                 color: "#2563eb",
@@ -863,23 +1058,33 @@ const AdminPanel = ({ token, onLogout }) => {
 
             <label style={{ fontWeight: "bold" }}>Languages</label>
             {(form.languages || []).map((lang, idx) => (
-              <div key={idx} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
+              <div
+                key={idx}
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  marginBottom: 4,
+                }}
+              >
                 <input
                   type="text"
                   value={lang}
-                  onChange={e => {
+                  onChange={(e) => {
                     const languages = [...form.languages];
                     languages[idx] = e.target.value;
-                    setForm(f => ({ ...f, languages }));
+                    setForm((f) => ({ ...f, languages }));
                   }}
                   style={{ ...inputStyle, flex: 2 }}
                 />
                 <button
                   type="button"
-                  onClick={() => setForm(f => ({
-                    ...f,
-                    languages: f.languages.filter((_, i) => i !== idx)
-                  }))}
+                  onClick={() =>
+                    setForm((f) => ({
+                      ...f,
+                      languages: f.languages.filter((_, i) => i !== idx),
+                    }))
+                  }
                   style={{
                     background: "#e63946",
                     color: "#fff",
@@ -896,10 +1101,12 @@ const AdminPanel = ({ token, onLogout }) => {
             ))}
             <button
               type="button"
-              onClick={() => setForm(f => ({
-                ...f,
-                languages: [...(f.languages || []), ""]
-              }))}
+              onClick={() =>
+                setForm((f) => ({
+                  ...f,
+                  languages: [...(f.languages || []), ""],
+                }))
+              }
               style={{
                 background: "#fff",
                 color: "#2563eb",
@@ -922,9 +1129,11 @@ const AdminPanel = ({ token, onLogout }) => {
               placeholder="PDF CV URL (e.g., Dropbox link)"
               value={form.PDFCV || ""}
               onChange={handleChange}
-              style={focus.PDFCV ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
-              onFocus={() => setFocus(f => ({ ...f, PDFCV: true }))}
-              onBlur={() => setFocus(f => ({ ...f, PDFCV: false }))}
+              style={
+                focus.PDFCV ? { ...inputStyle, ...inputFocusStyle } : inputStyle
+              }
+              onFocus={() => setFocus((f) => ({ ...f, PDFCV: true }))}
+              onBlur={() => setFocus((f) => ({ ...f, PDFCV: false }))}
             />
           </>
         );
@@ -948,6 +1157,166 @@ const AdminPanel = ({ token, onLogout }) => {
   const inputFocusStyle = {
     border: "1.5px solid #2563eb",
     boxShadow: "0 0 0 2px #2563eb22",
+  };
+
+  const handleFetchArticles = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch existing articles from database first
+      const dbResponse = await fetch(`${API_URL}/articles`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const dbArticles = await dbResponse.json();
+
+      // Get the highest order number
+      const highestOrder = Math.max(...dbArticles.map(article => article.order || 0), -1);
+
+      // Fetch Medium article IDs
+      const mediumResponse = await fetch(
+        `https://${import.meta.env.VITE_RAPIDAPI_HOST}/user/${import.meta.env.VITE_MEDIUM_USER_ID}/articles`,
+        {
+          headers: {
+            'X-RapidAPI-Key': import.meta.env.VITE_RAPIDAPI_KEY,
+            'X-RapidAPI-Host': import.meta.env.VITE_RAPIDAPI_HOST,
+          },
+        }
+      );
+      const mediumData = await mediumResponse.json();
+      const articleIds = mediumData.associated_articles || [];
+
+      let newOrderCounter = highestOrder + 1;
+
+      // Fetch full article info for each new article
+      for (const id of articleIds) {
+        // Skip if article already exists in database
+        if (dbArticles.some(dbArticle => dbArticle.articleid === id)) continue;
+
+        const articleResponse = await fetch(
+          `https://${import.meta.env.VITE_RAPIDAPI_HOST}/article/${id}`,
+          {
+            headers: {
+              'X-RapidAPI-Key': import.meta.env.VITE_RAPIDAPI_KEY,
+              'X-RapidAPI-Host': import.meta.env.VITE_RAPIDAPI_HOST,
+            },
+          }
+        );
+        const articleInfo = await articleResponse.json();
+
+        if (articleInfo && articleInfo.id) {
+          await fetch(`${API_URL}/articles`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              articleid: articleInfo.id,
+              title: articleInfo.title,
+              url: articleInfo.url,
+              image_url: articleInfo.image_url,
+              enabled: true,
+              order: newOrderCounter++ // Increment order for each new article
+            })
+          });
+        }
+      }
+
+      // Refresh the articles list
+      const updatedResponse = await fetch(`${API_URL}/articles`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const updatedArticles = await updatedResponse.json();
+      setItems(updatedArticles);
+
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+      console.error('Error syncing articles:', err);
+    }
+  };
+
+  const handleFetchProjects = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Fetch existing projects from database first
+      const dbResponse = await fetch(`${API_URL}/projects`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const dbProjects = await dbResponse.json();
+
+      // Get the highest order number
+      const highestOrder = Math.max(...dbProjects.map(project => project.order || 0), -1);
+
+      // Fetch GitHub repositories
+      const githubResponse = await fetch('https://api.github.com/users/tiagofdias/repos');
+      const repos = await githubResponse.json();
+
+      let newOrderCounter = highestOrder + 1;
+
+      // Process each repository
+      for (const repo of repos) {
+        // Skip if project already exists in database (using projectid)
+        if (dbProjects.some(dbProject => dbProject.projectid === repo.id.toString())) {
+          console.log(`Skipping existing project: ${repo.name}`);
+          continue;
+        }
+
+        // Transform GitHub topics into the required tags format
+        const tags = (repo.topics || []).map(topic => ({
+          name: topic
+        }));
+
+        const newProject = {
+          projectid: repo.id.toString(),
+          name: repo.name,
+          description: repo.description || 'No description available',
+          source_code_link: repo.html_url,
+          source_code_link2: repo.homepage || '',
+          tags: tags,
+          enabled: true,
+          order: newOrderCounter++,
+          images: [] // Initialize empty images array
+        };
+
+        console.log('Creating new project:', newProject);
+
+        // Create new project
+        await fetch(`${API_URL}/projects`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(newProject)
+        });
+      }
+
+      // Refresh the projects list
+      const updatedResponse = await fetch(`${API_URL}/projects`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const updatedProjects = await updatedResponse.json();
+      setItems(updatedProjects);
+
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+      console.error('Error syncing projects:', err);
+    }
   };
 
   return (
@@ -1003,10 +1372,16 @@ const AdminPanel = ({ token, onLogout }) => {
       <div style={{ display: "flex", gap: 40, alignItems: "flex-start" }}>
         {/* Left: Form */}
         <div style={{ flex: 1, minWidth: 340 }}>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: 32,
+            }}
+          >
             <select
               value={section}
-              onChange={e => setSection(e.target.value)}
+              onChange={(e) => setSection(e.target.value)}
               style={{
                 padding: "10px 18px",
                 borderRadius: 10,
@@ -1060,7 +1435,8 @@ const AdminPanel = ({ token, onLogout }) => {
                   boxShadow: "0 2px 8px rgba(37,99,235,0.08)",
                 }}
               >
-                {editingId === null ? "Add" : "Update"} {section.slice(0, 1).toUpperCase() + section.slice(1, 15)}
+                {editingId === null ? "Add" : "Update"}{" "}
+                {section.slice(0, 1).toUpperCase() + section.slice(1, 15)}
               </button>
               {editingId !== null && (
                 <button
@@ -1069,8 +1445,8 @@ const AdminPanel = ({ token, onLogout }) => {
                     // If it's the About section, re-fetch the data instead of clearing
                     if (section === "about") {
                       fetch(`${API_URL}/about`)
-                        .then(res => res.json())
-                        .then(data => {
+                        .then((res) => res.json())
+                        .then((data) => {
                           const aboutArr = Array.isArray(data) ? data : [data];
                           if (aboutArr.length > 0) {
                             setForm(aboutArr[0]);
@@ -1101,8 +1477,58 @@ const AdminPanel = ({ token, onLogout }) => {
                   Cancel
                 </button>
               )}
+              {/* Add the Fetch Articles button only in the articles section */}
+              {section === "articles" && !editingId && (
+                <button
+                  type="button"
+                  onClick={handleFetchArticles}
+                  style={{
+                    flex: 1,
+                    background: "#22c55e",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    padding: "12px 0",
+                    fontWeight: "bold",
+                    fontSize: 18,
+                    letterSpacing: 1,
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                    boxShadow: "0 2px 8px rgba(34,197,94,0.08)",
+                  }}
+                >
+                  Fetch Articles
+                </button>
+              )}
+              {section === "projects" && !editingId && (
+                <button
+                  type="button"
+                  onClick={handleFetchProjects}
+                  style={{
+                    flex: 1,
+                    background: "#22c55e",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    padding: "12px 0",
+                    fontWeight: "bold",
+                    fontSize: 18,
+                    letterSpacing: 1,
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                    boxShadow: "0 2px 8px rgba(34,197,94,0.08)",
+                  }}
+                >
+                  Fetch Projects
+                </button>
+              )}
             </div>
           </form>
+          {/* Add this button for fetching articles */}
+          {section === "articles" && (
+            <div style={{ textAlign: "center" }}>
+            </div>
+          )}
         </div>
         {/* Right: Existing Items */}
         <div style={{ flex: 1.2, minWidth: 380 }}>
@@ -1131,7 +1557,9 @@ const AdminPanel = ({ token, onLogout }) => {
                 case "about":
                   return "About Section Content";
                 default:
-                  return `Existing ${section.charAt(0).toUpperCase() + section.slice(1)}`;
+                  return `Existing ${
+                    section.charAt(0).toUpperCase() + section.slice(1)
+                  }`;
               }
             })()}
           </h3>
@@ -1154,68 +1582,83 @@ const AdminPanel = ({ token, onLogout }) => {
                   gap: 8,
                 }}
               >
-                <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <span>
                     {section === "about" ? (
                       <div style={{ width: "100%" }}>
                         {/* Content section */}
                         <div style={{ marginBottom: 16 }}>
-                          <b style={{ fontSize: 16, color: "#000" }}>Content:</b>{" "}
-                          {item.content && item.content.length > 0
-                            ? item.content.map((part, i) =>
-                                part.link ? (
-                                  <a
-                                    key={i}
-                                    href={part.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                      fontWeight: part.bold ? "bold" : "normal",
-                                      color: part.color || "#2563eb",
-                                      textDecoration: "underline",
-                                      marginRight: 2,
-                                      transition: "color 0.2s",
-                                      cursor: "pointer",
-                                    }}
-                                    onMouseOver={e =>
-                                      part.hovercolor && (e.target.style.color = part.hovercolor)
-                                    }
-                                    onMouseOut={e =>
-                                      part.color && (e.target.style.color = part.color)
-                                    }
-                                  >
-                                    {part.text}
-                                  </a>
-                                ) : (
-                                  <span
-                                    key={i}
-                                    style={{
-                                      fontWeight: part.bold ? "bold" : "normal",
-                                      color: part.color || undefined,
-                                      marginRight: 2,
-                                    }}
-                                  >
-                                    {part.text}
-                                  </span>
-                                )
+                          <b style={{ fontSize: 16, color: "#000" }}>
+                            Content:
+                          </b>{" "}
+                          {item.content && item.content.length > 0 ? (
+                            item.content.map((part, i) =>
+                              part.link ? (
+                                <a
+                                  key={i}
+                                  href={part.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    fontWeight: part.bold ? "bold" : "normal",
+                                    color: part.color || "#2563eb",
+                                    textDecoration: "underline",
+                                    marginRight: 2,
+                                    transition: "color 0.2s",
+                                    cursor: "pointer",
+                                  }}
+                                  onMouseOver={(e) =>
+                                    part.hovercolor &&
+                                    (e.target.style.color = part.hovercolor)
+                                  }
+                                  onMouseOut={(e) =>
+                                    part.color &&
+                                    (e.target.style.color = part.color)
+                                  }
+                                >
+                                  {part.text}
+                                </a>
+                              ) : (
+                                <span
+                                  key={i}
+                                  style={{
+                                    fontWeight: part.bold ? "bold" : "normal",
+                                    color: part.color || undefined,
+                                    marginRight: 2,
+                                  }}
+                                >
+                                  {part.text}
+                                </span>
                               )
-                            : <span style={{ color: "#888" }}>No content</span>}
+                            )
+                          ) : (
+                            <span style={{ color: "#888" }}>No content</span>
+                          )}
                         </div>
 
                         {/* Skills section with larger image */}
                         {item.skills && (
                           <div style={{ marginBottom: 16 }}>
-                            <b style={{ fontSize: 16, color: "#000" }}>Skills:</b>
+                            <b style={{ fontSize: 16, color: "#000" }}>
+                              Skills:
+                            </b>
                             <div>
-                              <img 
-                                src={item.skills} 
-                                alt="skills" 
-                                style={{ 
-                                  maxWidth: "100%", 
+                              <img
+                                src={item.skills}
+                                alt="skills"
+                                style={{
+                                  maxWidth: "100%",
                                   width: "auto",
                                   height: "auto",
-                                  marginTop: 8 
-                                }} 
+                                  marginTop: 8,
+                                }}
                               />
                             </div>
                           </div>
@@ -1224,16 +1667,25 @@ const AdminPanel = ({ token, onLogout }) => {
                         {/* Languages section with better visibility */}
                         {item.languages && item.languages.length > 0 && (
                           <div style={{ marginBottom: 8 }}>
-                            <b style={{ fontSize: 16, color: "#000", display: "block", marginBottom: 4 }}>
+                            <b
+                              style={{
+                                fontSize: 16,
+                                color: "#000",
+                                display: "block",
+                                marginBottom: 4,
+                              }}
+                            >
                               Languages:
                             </b>
-                            <div style={{ 
-                              display: "flex", 
-                              flexDirection: "column", 
-                              gap: 4 
-                            }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 4,
+                              }}
+                            >
                               {item.languages.map((lang, idx) => (
-                                <span 
+                                <span
                                   key={idx}
                                   style={{
                                     fontSize: 15,
@@ -1249,7 +1701,9 @@ const AdminPanel = ({ token, onLogout }) => {
                       </div>
                     ) : (
                       <span>
-                        <b style={{ fontSize: 18, color: "#000" }}>{item.name || item.title}</b>
+                        <b style={{ fontSize: 15, color: "#000" }}>
+                          {item.name || item.title}
+                        </b>
                       </span>
                     )}
                   </span>
@@ -1276,88 +1730,147 @@ const AdminPanel = ({ token, onLogout }) => {
                     ) : (
                       // Show all buttons for other sections
                       <>
-                        <button
-                          onClick={() => moveItemUp(index)}
-                          disabled={index === 0}
-                          style={{
-                            marginRight: 4,
-                            background: "#e0e3e7",
-                            color: "#2563eb",
-                            border: "none",
-                            borderRadius: 6,
-                            padding: "6px 12px",
-                            fontWeight: "bold",
-                            fontSize: 16,
-                            cursor: index === 0 ? "not-allowed" : "pointer",
-                            opacity: index === 0 ? 0.5 : 1,
-                            transition: "background 0.2s",
-                          }}
-                          title="Move Up"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          onClick={() => moveItemDown(index)}
-                          disabled={index === items.length - 1}
-                          style={{
-                            marginRight: 12,
-                            background: "#e0e3e7",
-                            color: "#2563eb",
-                            border: "none",
-                            borderRadius: 6,
-                            padding: "6px 12px",
-                            fontWeight: "bold",
-                            fontSize: 16,
-                            cursor: index === items.length - 1 ? "not-allowed" : "pointer",
-                            opacity: index === items.length - 1 ? 0.5 : 1,
-                            transition: "background 0.2s",
-                          }}
-                          title="Move Down"
-                        >
-                          ↓
-                        </button>
-                        <button
-                          onClick={() => handleEdit(item)}
-                          style={{
-                            marginRight: 8,
-                            background: "#38bdf8",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: 6,
-                            padding: "6px 16px",
-                            fontWeight: "bold",
-                            fontSize: 16,
-                            cursor: "pointer",
-                            transition: "background 0.2s",
-                          }}
-                          title="Edit"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item._id)}
-                          style={{
-                            background: "#ef4444",
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: 6,
-                            padding: "6px 16px",
-                            fontWeight: "bold",
-                            fontSize: 16,
-                            cursor: "pointer",
-                            transition: "background 0.2s",
-                          }}
-                          title="Delete"
-                        >
-                          Delete
-                        </button>
+                        {section !== 'about' && (
+                          <>
+                            <button
+                              onClick={() => moveItemUp(index)}
+                              disabled={index === 0}
+                              style={{
+                                marginRight: 4,
+                                background: "#e0e3e7",
+                                color: "#2563eb",
+                                border: "none",
+                                borderRadius: 6,
+                                padding: "6px 12px",
+                                fontWeight: "bold",
+                                fontSize: 16,
+                                cursor: index === 0 ? "not-allowed" : "pointer",
+                                opacity: index === 0 ? 0.5 : 1,
+                                transition: "background 0.2s",
+                              }}
+                              title="Move Up"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              onClick={() => moveItemDown(index)}
+                              disabled={index === items.length - 1}
+                              style={{
+                                marginRight: 12,
+                                background: "#e0e3e7",
+                                color: "#2563eb",
+                                border: "none",
+                                borderRadius: 6,
+                                padding: "6px 12px",
+                                fontWeight: "bold",
+                                fontSize: 16,
+                                cursor: index === items.length - 1 ? "not-allowed" : "pointer",
+                                opacity: index === items.length - 1 ? 0.5 : 1,
+                                transition: "background 0.2s",
+                              }}
+                              title="Move Down"
+                            >
+                              ↓
+                            </button>
+                            <button
+                              onClick={() => handleEdit(item)}
+                              style={{
+                                marginRight: 8,
+                                background: "#38bdf8",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: 6,
+                                padding: "6px 16px",
+                                fontWeight: "bold",
+                                fontSize: 16,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
+                              title="Edit"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item._id)}
+                              style={{
+                                marginRight: 8,
+                                background: "#ef4444",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: 6,
+                                padding: "6px 16px",
+                                fontWeight: "bold",
+                                fontSize: 16,
+                                cursor: "pointer",
+                                transition: "background 0.2s",
+                              }}
+                              title="Delete"
+                            >
+                              Delete
+                            </button>
+                            <button
+                              style={{
+                                background: item.enabled ? "#ef4444" : "#22c55e",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: 6,
+                                padding: "6px 16px",
+                                fontWeight: "bold",
+                                fontSize: 16,
+                                cursor: "pointer",
+                                transition: "all 0.2s ease",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                              }}
+                              onMouseOver={(e) => {
+                                e.target.style.transform = "translateY(-1px)";
+                                e.target.style.boxShadow =
+                                  "0 4px 6px rgba(0,0,0,0.15)";
+                              }}
+                              onMouseOut={(e) => {
+                                e.target.style.transform = "translateY(0)";
+                                e.target.style.boxShadow =
+                                  "0 2px 4px rgba(0,0,0,0.1)";
+                              }}
+                              onClick={async () => {
+                                await fetch(`${API_URL}/${endpoints[section]}/${item._id}`, {
+                                  method: "PUT",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${token}`,
+                                  },
+                                  body: JSON.stringify({
+                                    ...item,
+                                    enabled: !item.enabled,
+                                  }),
+                                });
+                                setItems((items) =>
+                                  items.map((p) =>
+                                    p._id === item._id
+                                      ? { ...p, enabled: !item.enabled }
+                                      : p
+                                  )
+                                );
+                              }}
+                            >
+                              {item.enabled ? "Disable" : "Enable"}
+                            </button>
+                          </>
+                        )}
                       </>
                     )}
                   </span>
                 </div>
                 {/* Show tags below the name/title */}
                 {item.tags && item.tags.length > 0 && (
-                  <div style={{ marginTop: 4, width: "100%", display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      width: "100%",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 6,
+                    }}
+                  >
                     {item.tags.map((t, i) =>
                       t.link ? (
                         <a
@@ -1366,7 +1879,10 @@ const AdminPanel = ({ token, onLogout }) => {
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{
-                            background: t.color && t.color.startsWith("#") ? t.color : "#2563eb",
+                            background:
+                              t.color && t.color.startsWith("#")
+                                ? t.color
+                                : "#2563eb",
                             color: "#fff",
                             borderRadius: 6,
                             padding: "2px 10px",
@@ -1376,13 +1892,14 @@ const AdminPanel = ({ token, onLogout }) => {
                             marginBottom: 2,
                             display: "inline-block",
                             textDecoration: "none",
-                            transition: "transform 0.2s cubic-bezier(.4,0,.2,1)",
+                            transition:
+                              "transform 0.2s cubic-bezier(.4,0,.2,1)",
                             cursor: "pointer",
                           }}
-                          onMouseOver={e => {
+                          onMouseOver={(e) => {
                             e.currentTarget.style.transform = "scale(1.08)";
                           }}
-                          onMouseOut={e => {
+                          onMouseOut={(e) => {
                             e.currentTarget.style.transform = "scale(1)";
                           }}
                           title={t.link}
@@ -1393,7 +1910,10 @@ const AdminPanel = ({ token, onLogout }) => {
                         <span
                           key={i}
                           style={{
-                            background: t.color && t.color.startsWith("#") ? t.color : "#2563eb",
+                            background:
+                              t.color && t.color.startsWith("#")
+                                ? t.color
+                                : "#2563eb",
                             color: "#fff",
                             borderRadius: 6,
                             padding: "2px 10px",
@@ -1402,12 +1922,13 @@ const AdminPanel = ({ token, onLogout }) => {
                             marginRight: 4,
                             marginBottom: 2,
                             display: "inline-block",
-                            transition: "transform 0.2s cubic-bezier(.4,0,.2,1)",
+                            transition:
+                              "transform 0.2s cubic-bezier(.4,0,.2,1)",
                           }}
-                          onMouseOver={e => {
+                          onMouseOver={(e) => {
                             e.currentTarget.style.transform = "scale(1.08)";
                           }}
-                          onMouseOut={e => {
+                          onMouseOut={(e) => {
                             e.currentTarget.style.transform = "scale(1)";
                           }}
                           title={t.link || ""}
@@ -1421,7 +1942,14 @@ const AdminPanel = ({ token, onLogout }) => {
                 {/* Add this inside the About section preview, after the Languages section */}
                 {item.PDFCV && (
                   <div style={{ marginBottom: 8 }}>
-                    <b style={{ fontSize: 16, color: "#000", display: "block", marginBottom: 4 }}>
+                    <b
+                      style={{
+                        fontSize: 16,
+                        color: "#000",
+                        display: "block",
+                        marginBottom: 4,
+                      }}
+                    >
                       PDF CV:
                     </b>
                     <a
@@ -1431,7 +1959,7 @@ const AdminPanel = ({ token, onLogout }) => {
                       style={{
                         color: "#2563eb",
                         textDecoration: "underline",
-                        fontSize: 15
+                        fontSize: 15,
                       }}
                     >
                       {item.PDFCV}

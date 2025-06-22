@@ -1,10 +1,9 @@
 import React, { useRef, useState, useEffect } from "react";
 import emailjs from "@emailjs/browser";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import toast CSS
-import { motion } from "framer-motion"; // Import framer-motion
+import "react-toastify/dist/ReactToastify.css";
 import { Canvas } from "@react-three/fiber";
-import { useGLTF, useAnimations } from "@react-three/drei"; // Import for 3D model loading
+import { useGLTF, useAnimations } from "@react-three/drei";
 
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
@@ -125,22 +124,8 @@ const Contact = () => {
 
   return (
     <>
-      <motion.p
-        className={styles.sectionSubText}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
-        Get in touch
-      </motion.p>
-      <motion.h3
-        className={styles.sectionHeadText}
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
-        Contact Me.
-      </motion.h3>
+      <p className={styles.sectionSubText}>Get in touch</p>
+      <h3 className={styles.sectionHeadText}>Contact Me.</h3>
 
       <div className="mt-12 flex flex-col lg:flex-row gap-12 items-start w-full">
         <form
@@ -149,12 +134,7 @@ const Contact = () => {
           className="flex-1 flex flex-col gap-8 w-full lg:max-w-xl"
         >
           {/* Form Fields */}
-          <motion.label
-            className="flex flex-col"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.1 }}
-          >
+          <label className="flex flex-col">
             <span className="text-white font-medium mb-4">
               <b>Name</b>
             </span>
@@ -166,14 +146,9 @@ const Contact = () => {
               placeholder="What's your name?"
               className="bg-tertiary py-4 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium w-full"
             />
-          </motion.label>
+          </label>
 
-          <motion.label
-            className="flex flex-col"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-          >
+          <label className="flex flex-col">
             <span className="text-white font-medium mb-4">
               <b>Email</b>
             </span>
@@ -185,14 +160,9 @@ const Contact = () => {
               placeholder="What's your email address?"
               className="bg-tertiary py-4 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium w-full"
             />
-          </motion.label>
+          </label>
 
-          <motion.label
-            className="flex flex-col"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.3 }}
-          >
+          <label className="flex flex-col">
             <span className="text-white font-medium mb-4">
               <b>Message</b>
             </span>
@@ -204,30 +174,16 @@ const Contact = () => {
               placeholder="What you want to say?"
               className="bg-tertiary py-3 px-6 placeholder:text-secondary text-white rounded-lg outline-none border-none font-medium w-full"
             />
-          </motion.label>
+          </label>
 
-          <motion.button
+          <button
             type="submit"
             className="bg-tertiary hover:bg-[#00C6FE] py-3 px-8 rounded-xl outline-none w-fit text-white font-bold shadow-md shadow-primary"
-            initial={{ scale: 1 }}
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
           >
             {loading ? "Sending..." : "Send"}
-          </motion.button>
+          </button>
         </form>
 
-        {/* 3D Model Canvas (Stormtrooper) */}
-        {/*
-        <div className="flex justify-end mt-8 ml-25 lg:block hidden">
-          <Canvas
-            style={{ width: "700px", height: "800px" }}
-            camera={{ position: [5, 5, 5], fov: 50 }}
-          >
-            <StormtrooperModel />
-          </Canvas>
-        </div>
-        */}
       </div>
 
       <ToastContainer

@@ -80,7 +80,7 @@ const Footer = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Medium"
-                    className="text-white text-2xl transition-transform duration-300 transform group-hover:scale-110"
+                    className="text-black text-2xl transition-transform duration-300 transform group-hover:scale-110"
                   >
                     <span className="sr-only">Medium</span>
                   </a>

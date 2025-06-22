@@ -141,7 +141,10 @@ const ProjectCard = ({
   }, [isPreviewOpen, slideIndex, previewIndex]);
 
   return (
-    <div className="bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full relative">
+    <div
+      className="bg-tertiary p-5 rounded-2xl sm:w-[360px] w-full flex flex-col"
+      style={{ minHeight: 480 }}
+    >
       {/* Image Preview Container */}
       <div
         className="relative w-full h-[230px] overflow-hidden group cursor-pointer"
@@ -170,15 +173,43 @@ const ProjectCard = ({
         </div>
       </div>
 
-      {/* Project Details */}
-      <div className="mt-5">
-        <h3 className="text-white font-bold text-[24px] break-words pr-20">
-          {name}
-        </h3>
-        <p className="mt-2 text-secondary text-[14px]">{description}</p>
+      {/* Project Details with action buttons on the right of the title */}
+      <div className="mt-5 flex-1 flex flex-col">
+        <div className="flex items-start justify-between">
+          <h3 className="text-white font-bold text-[24px] break-words pr-4 flex-1">
+            {name}
+          </h3>
+          <div className="flex gap-2 ml-2 mt-[-4px]">
+            {source_code_link2 && (
+              <div
+                className="w-9 h-9 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110 bg-[#0000002d]"
+                onClick={() => window.open(source_code_link2, "_blank")}
+              >
+                <img
+                  src={webs}
+                  alt="website"
+                  className="w-1/2 h-1/2 object-contain"
+                />
+              </div>
+            )}
+            {source_code_link && (
+              <div
+                className="w-9 h-9 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110 bg-[#0000002d]"
+                onClick={() => window.open(source_code_link, "_blank")}
+              >
+                <img
+                  src={github}
+                  alt="source code"
+                  className="w-1/2 h-1/2 object-contain"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <p className="mt-2 text-secondary text-[14px] flex-1">{description}</p>
       </div>
 
-      {/* Tags Section */}
+      {/* Tags always at the bottom, not absolute */}
       <div className="mt-3 flex flex-wrap gap-2">
         {tags.map((tag, idx) => (
           <a
@@ -197,34 +228,6 @@ const ProjectCard = ({
             {tag.name}
           </a>
         ))}
-      </div>
-
-      {/* Links Button */}
-      <div className="absolute right-6 flex z-50" style={{ top: "262px" }}>
-        {source_code_link2 && (
-          <div
-            className="relative w-11 h-11 left-3 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110"
-            onClick={() => window.open(source_code_link2, "_blank")}
-          >
-            <img
-              src={webs}
-              alt="website"
-              className="w-1/2 h-1/2 object-contain"
-            />
-          </div>
-        )}
-        {source_code_link && (
-          <div
-            className="relative w-11 h-11 rounded-full flex justify-center items-center cursor-pointer transition-transform duration-300 hover:scale-110"
-            onClick={() => window.open(source_code_link, "_blank")}
-          >
-            <img
-              src={github}
-              alt="source code"
-              className="w-1/2 h-1/2 object-contain"
-            />
-          </div>
-        )}
       </div>
 
       {/* Updated Preview Modal using React Portal */}
@@ -361,7 +364,13 @@ const Certifications = () => {
   useEffect(() => {
     fetch(`${API_URL}/certifications`)
       .then((res) => res.json())
-      .then((data) => setCertifications(data))
+      .then((data) => {
+        // Filter enabled certifications and sort by order
+        const enabledCertifications = data
+          .filter((cert) => cert.enabled)
+          .sort((a, b) => a.order - b.order);
+        setCertifications(enabledCertifications);
+      })
       .catch((err) => console.error("Failed to fetch certifications:", err));
   }, []);
 
