@@ -7,6 +7,7 @@ import { styles } from "../styles";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import { useGLTF, useAnimations } from "@react-three/drei";
+import { API_URL } from "../utils/config";
 
 const IconWithTooltip = ({ icon, href, tooltip }) => (
   <div className="relative inline-block group">
@@ -31,8 +32,7 @@ const IconWithTooltip = ({ icon, href, tooltip }) => (
 
 const Hero = () => {
   const [cvUrl, setCvUrl] = useState("");
-  const API_URL = import.meta.env.VITE_API_URL;
-
+  
   useEffect(() => {
     fetch(`${API_URL}/about`)
       .then((res) => res.json())
@@ -81,9 +81,9 @@ const Hero = () => {
 
         <div className="text-center mt-5">
           <h2 className={styles.sectionHeadText}>
-            JUNIOR
+            
             <br />
-            SOFTWARE DEVELOPER.
+            SOFTWARE ENGINEER.
           </h2>
           <br />
           <div className="text-lg text-[#CCCCCC] leading-relaxed">
