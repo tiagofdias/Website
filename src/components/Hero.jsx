@@ -29,6 +29,43 @@ const IconWithTooltip = ({ icon, href, tooltip }) => (
   </div>
 );
 
+// Animated titles that rotate every 5 seconds with a subtle fade/slide effect
+const AnimatedTitles = () => {
+  const titles = [
+    "SOFTWARE ENGINEER.",
+    "AI ENTHUSIAST.",
+    "FULLSTACK DEVELOPER.",
+    "OPEN SOURCE CONTRIBUTOR.",
+  ];
+  const [index, setIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    // change every 5 seconds; animate out then animate in
+    const interval = setInterval(() => {
+      setVisible(false);
+      // wait for the out animation, then change text and show
+      setTimeout(() => {
+        setIndex((i) => (i + 1) % titles.length);
+        setVisible(true);
+      }, 600); // should be slightly less than the CSS duration
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <span className="inline-block">
+      <span
+        className={`inline-block transition-all duration-700 ease-in-out transform ${
+          visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
+        }`}>
+        {titles[index]}
+      </span>
+    </span>
+  );
+};
+
 const Hero = () => {
   const [cvUrl, setCvUrl] = useState("");
   const API_URL = import.meta.env.VITE_API_URL;
@@ -81,9 +118,8 @@ const Hero = () => {
 
         <div className="text-center mt-5">
           <h2 className={styles.sectionHeadText}>
-            
             <br />
-            SOFTWARE ENGINEER.
+            <AnimatedTitles />
           </h2>
           <br />
           <div className="text-lg text-[#CCCCCC] leading-relaxed">
