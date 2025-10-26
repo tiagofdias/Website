@@ -87,27 +87,6 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-            <ScrollLink
-              to="hero"
-              href="hero"
-              smooth={true}
-              duration={500}
-              aria-label="Scroll to about section" // accessible name
-              className="flex items-center cursor-pointer transition-transform duration-300 transform hover:scale-110"
-            >
-              <svg
-                className="w-6 h-6 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 19V5"></path>
-                <path d="M5 12l7-7 7 7"></path>
-              </svg>
-            </ScrollLink>
           </div>
         </div>
       </div>

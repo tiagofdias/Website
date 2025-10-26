@@ -363,6 +363,24 @@ const Projects = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Listen for filter events from chat widget
+  useEffect(() => {
+    const handleFilterProjects = (event) => {
+      const { tag } = event.detail;
+      if (tag) {
+        console.log(`Filtering projects by tag: ${tag}`);
+        setActiveTag(tag);
+        setShowAll(true);
+      }
+    };
+
+    window.addEventListener('filterProjects', handleFilterProjects);
+    
+    return () => {
+      window.removeEventListener('filterProjects', handleFilterProjects);
+    };
+  }, []);
+
   const filteredProjects = activeTag
     ? projects.filter((p) =>
         p.tags.some((t) => t.name.toLowerCase() === activeTag.toLowerCase())

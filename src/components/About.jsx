@@ -212,6 +212,17 @@ const Timeline = () => {
         setProexp(enabledProexp);
       })
       .catch((err) => console.error("Failed to fetch proexp:", err));
+
+    // Listen for chat widget expand event
+    const handleExpandEvent = () => {
+      setShowAll(true);
+    };
+    
+    window.addEventListener('expandAboutSection', handleExpandEvent);
+    
+    return () => {
+      window.removeEventListener('expandAboutSection', handleExpandEvent);
+    };
   }, []);
 
   if (!showAll) {

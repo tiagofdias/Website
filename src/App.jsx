@@ -8,6 +8,7 @@ import {
   Navbar,
   Works,
   Footer,
+  ChatWidget,
 } from "./components";
 import Certifications from "./components/Certifications";
 import { SnowOverlay } from "react-snow-overlay";
@@ -45,6 +46,7 @@ const App = () => {
               <Blog />
               <Contact /> 
               <Footer />
+              <ChatWidget />
             </div>
           }
         />
