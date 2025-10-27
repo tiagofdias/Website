@@ -1072,7 +1072,7 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
           type: 'url',
           icon: '💼',
           label: 'LinkedIn',
-          action: 'https://www.linkedin.com/in/tiagofaldias'
+          action: 'https://www.linkedin.com/in/tiagofdias'
         },
         {
           type: 'download',
