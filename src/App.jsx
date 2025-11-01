@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {
-  About,
   Contact,
   Blog,
   Hero,
   Navbar,
   Works,
   Footer,
-  ChatWidget,
 } from "./components";
+import { AboutSection, MyJourney } from "./components/About";
 import Certifications from "./components/Certifications";
+import ChatWidget from "./components/ChatWidget";
 import { SnowOverlay } from "react-snow-overlay";
 import AdminLogin from "./components/Login";
 import AdminPanel from "./components/AdminPanel";
@@ -30,7 +30,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <SnowOverlay maxParticles={25} disabledOnSingleCpuDevices={true} />
+      {/* <SnowOverlay maxParticles={25} disabledOnSingleCpuDevices={true} /> */}
       <Routes>
         <Route
           path="/"
@@ -42,7 +42,8 @@ const App = () => {
               </div>
                <Works />
               <Certifications />
-              <About />
+              <AboutSection />
+               <MyJourney />
               <Blog />
               <Contact /> 
               <Footer />

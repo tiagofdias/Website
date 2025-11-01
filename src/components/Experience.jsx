@@ -92,12 +92,18 @@ const Timeline = () => {
   if (!showAll) {
     return (
       <div className="flex justify-center mt-10">
-        <button
-          onClick={() => setShowAll(true)}
-          className="bg-tertiary transition-transform duration-300 transform hover:scale-110 outline-none shadow-md shadow-primary text-white font-bold py-2 w-[1000px] rounded-3xl"
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="w-full max-w-3xl px-4"
         >
-          View All
-        </button>
+          <button
+            onClick={() => setShowAll(true)}
+            className="bg-white/10 backdrop-blur-sm border border-white/30 hover:border-white/60 transition-all duration-300 hover:shadow-glow-lg outline-none text-white font-bold py-2 w-full rounded-3xl"
+          >
+            View All
+          </button>
+        </motion.div>
       </div>
     );
   }

@@ -880,74 +880,115 @@ User Question: ${message}
 
 Provide a helpful, accurate response in THIRD PERSON about Tiago based on the above information:`;
 
-    // Try to use OpenRouter AI (MiniMax model) for intelligent responses
-    try {
-      const fetch = require('node-fetch');
-      
-      console.log('Calling OpenRouter AI (MiniMax)...');
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://tiagofdias.com',
-          'X-Title': 'Tiago Dias Portfolio'
-        },
-        body: JSON.stringify({
-          model: 'minimax/minimax-m2:free',
-          messages: [
-            {
-              role: 'system',
-              content: contextPrompt
-            },
-            {
-              role: 'user',
-              content: message
-            }
-          ]
-        })
-      });
+    // Try OpenRouter AI with primary and fallback models
+    const fetch = require('node-fetch');
+    const AbortController = require('abort-controller');
+    const models = [
+      'meta-llama/llama-3.2-3b-instruct:free',
+      'microsoft/phi-3-mini-128k-instruct:free',
+      'qwen/qwen-2-7b-instruct:free'
+    ];
 
-      const data = await response.json();
-      console.log('OpenRouter response received');
-      
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        aiResponse = data.choices[0].message.content;
+    let lastError = null;
+    for (const model of models) {
+      try {
+        console.log(`Calling OpenRouter AI (${model})...`);
         
-        // Remove <think> tags and their content from the response
-        aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>\s*/g, '').trim();
+        // Add 10 second timeout
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
         
-        // If action buttons will be shown, strip any URLs from the response as a safety net
-        if (willShowActionButtons) {
-          console.log('Stripping URLs from response. willShowActionButtons:', willShowActionButtons);
-          console.log('Original response:', aiResponse);
-          
-          // Remove URLs (http://, https://, www.) - more aggressive matching
-          aiResponse = aiResponse.replace(/https?:\/\/[^\s,;.!?]+\.?/gi, '');
-          aiResponse = aiResponse.replace(/www\.[^\s,;.!?]+\.?/gi, '');
-          
-          // Remove common phrases about buttons and links
-          aiResponse = aiResponse.replace(/\s*(at|on|in|via|through|using|clicking|click)\s+(the\s+)?(link|button|url)\s+(at\s+)?(the\s+)?(top|bottom|above|below)(\s+of\s+(this|the)\s+page)?/gi, '');
-          aiResponse = aiResponse.replace(/\s*using the button at the (top|bottom)/gi, '');
-          aiResponse = aiResponse.replace(/\s*at the (top|bottom) of (this|the) page/gi, '');
-          
-          // Remove phrases like "connect via LinkedIn at" or "através do LinkedIn em"
-          aiResponse = aiResponse.replace(/(connect|conectar|contatar)\s+(via|through|at|em|no)\s+(LinkedIn|GitHub|his\s+LinkedIn|o\s+LinkedIn)/gi, '');
-          
-          // Clean up any leftover punctuation and double spaces
-          aiResponse = aiResponse.replace(/\s*[,;]\s*\./g, '.'); // Fix ", ." or "; ."
-          aiResponse = aiResponse.replace(/\.\s*\./g, '.'); // Fix ".."
-          aiResponse = aiResponse.replace(/\s+/g, ' ').trim();
-          
-          console.log('After URL stripping:', aiResponse);
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://tiagofdias.com',
+            'X-Title': 'Tiago Dias Portfolio'
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: 'system',
+                content: contextPrompt
+              },
+              {
+                role: 'user',
+                content: message
+              }
+            ],
+            max_tokens: 200,
+            temperature: 0.7
+          }),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeout);
+
+        const data = await response.json();
+        console.log(`OpenRouter response received from ${model}`);
+        
+        // Check for rate limit or API errors
+        if (data.error) {
+          console.error(`❌ OpenRouter API Error (${model}):`, data.error);
+          lastError = new Error(data.error.message || JSON.stringify(data.error));
+          continue; // Try next model
         }
-      } else {
-        throw new Error('Invalid response format from OpenRouter');
+        
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+          aiResponse = data.choices[0].message.content;
+          
+          // Remove <think> tags and their content from the response
+          aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>\s*/g, '').trim();
+          
+          // If action buttons will be shown, strip any URLs from the response as a safety net
+          if (willShowActionButtons) {
+            console.log('Stripping URLs from response. willShowActionButtons:', willShowActionButtons);
+            console.log('Original response:', aiResponse);
+            
+            // Remove URLs (http://, https://, www.) - more aggressive matching
+            aiResponse = aiResponse.replace(/https?:\/\/[^\s,;.!?]+\.?/gi, '');
+            aiResponse = aiResponse.replace(/www\.[^\s,;.!?]+\.?/gi, '');
+            
+            // Remove common phrases about buttons and links
+            aiResponse = aiResponse.replace(/\s*(at|on|in|via|through|using|clicking|click)\s+(the\s+)?(link|button|url)\s+(at\s+)?(the\s+)?(top|bottom|above|below)(\s+of\s+(this|the)\s+page)?/gi, '');
+            aiResponse = aiResponse.replace(/\s*using the button at the (top|bottom)/gi, '');
+            aiResponse = aiResponse.replace(/\s*at the (top|bottom) of (this|the) page/gi, '');
+            
+            // Remove phrases like "connect via LinkedIn at" or "através do LinkedIn em"
+            aiResponse = aiResponse.replace(/(connect|conectar|contatar)\s+(via|through|at|em|no)\s+(LinkedIn|GitHub|his\s+LinkedIn|o\s+LinkedIn)/gi, '');
+            
+            // Clean up any leftover punctuation and double spaces
+            aiResponse = aiResponse.replace(/\s*[,;]\s*\./g, '.'); // Fix ", ." or "; ."
+            aiResponse = aiResponse.replace(/\.\s*\./g, '.'); // Fix ".."
+            aiResponse = aiResponse.replace(/\s+/g, ' ').trim();
+            
+            console.log('After URL stripping:', aiResponse);
+          }
+          
+          // Successfully got response, break out of model loop
+          break;
+        } else {
+          lastError = new Error(`Invalid response format from ${model}`);
+          continue; // Try next model
+        }
+      } catch (aiError) {
+        if (aiError.name === 'AbortError') {
+          console.error(`⏱️ OpenRouter timeout (${model}): Request took longer than 10 seconds`);
+          lastError = new Error(`Timeout: ${model} took too long to respond`);
+        } else {
+          console.error(`OpenRouter AI error (${model}):`, aiError);
+          lastError = aiError;
+        }
+        // Try next model
       }
-    } catch (aiError) {
-      console.error('OpenRouter AI error:', aiError);
+    }
+    
+    // If all models failed, use rule-based fallback
+    if (!aiResponse) {
+      console.error('All OpenRouter models failed, using rule-based fallback. Last error:', lastError);
       
-      // Fallback to rule-based responses if AI fails
       if (matchedProject) {
         aiResponse = describeProject(matchedProject);
       } else if (matchedCertification) {
@@ -1055,12 +1096,44 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
                aiResponseLower.includes('blog')) {
       scrollTarget = 'blog'; // Changed from 'articles' to 'blog' to match frontend section name
       console.log('  → Detected: Blog/Articles section');
-    } else if (aiResponseLower.includes('about section') || mentionsExperience || mentionsEducation ||
-               aiResponseLower.includes('worked at') || aiResponseLower.includes('trabalhou') ||
-               aiResponseLower.includes('career') || aiResponseLower.includes('timeline')) {
+    } else if (aiResponseLower.includes('tech stack') || aiResponseLower.includes('technology') ||
+               aiResponseLower.includes('technologies') || aiResponseLower.includes('programming languages') ||
+               aiResponseLower.includes('languages') && (aiResponseLower.includes('speak') || aiResponseLower.includes('know')) ||
+               aiResponseLower.includes('skills') || aiResponseLower.includes('what does') ||
+               aiResponseLower.includes('who is') || aiResponseLower.includes('about him') ||
+               aiResponseLower.includes('introduction') || aiResponseLower.includes('about section')) {
       scrollTarget = 'about';
+      console.log('  → Detected: About/Introduction section (tech stack, languages, skills, or intro)');
+    } else if (mentionsExperience || mentionsEducation ||
+               aiResponseLower.includes('worked at') || aiResponseLower.includes('trabalhou') ||
+               aiResponseLower.includes('career') || aiResponseLower.includes('timeline') ||
+               aiResponseLower.includes('experience') && !aiResponseLower.includes('years of experience') ||
+               aiResponseLower.includes('education') ||
+               aiResponseLower.includes('ogma') || aiResponseLower.includes('condomix') ||
+               aiResponseLower.includes('istec') || aiResponseLower.includes('university')) {
+      scrollTarget = 'myjourney';
       shouldExpandTimeline = true;
-      console.log('  → Detected: Experience/About section');
+      console.log('  → Detected: Experience/Education (My Journey section)');
+    }
+    
+    // Determine which My Journey tab to open (experience vs education)
+    let aboutTab = null;
+    if (scrollTarget === 'myjourney' && shouldExpandTimeline) {
+      if (mentionsEducation || 
+          aiResponseLower.includes('education') || aiResponseLower.includes('educação') || 
+          aiResponseLower.includes('university') || aiResponseLower.includes('istec') ||
+          aiResponseLower.includes('bachelor') || aiResponseLower.includes('master') ||
+          aiResponseLower.includes('degree') || aiResponseLower.includes('school')) {
+        aboutTab = 'education';
+        console.log('  → Tab: Education');
+      } else if (mentionsExperience || 
+                 aiResponseLower.includes('experience') || aiResponseLower.includes('experiência') ||
+                 aiResponseLower.includes('worked') || aiResponseLower.includes('trabalhou') ||
+                 aiResponseLower.includes('career') || aiResponseLower.includes('job') ||
+                 aiResponseLower.includes('ogma') || aiResponseLower.includes('condomix')) {
+        aboutTab = 'experience';
+        console.log('  → Tab: Experience');
+      }
     }
     
     // Detect if AI mentions LinkedIn (means user asking about contact/LinkedIn)
@@ -1141,6 +1214,8 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
     }
     
     console.log('Final scrollTarget:', scrollTarget);
+    console.log('Final shouldExpandTimeline:', shouldExpandTimeline);
+    console.log('Final aboutTab:', aboutTab);
     console.log('Final actionButtons:', actionButtons ? `${actionButtons.length} buttons` : 'none');
     console.log('=== END POST-AI ANALYSIS ===');
     
@@ -1272,6 +1347,7 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
       response: aiResponse,
       scrollTarget: scrollTarget,
       shouldExpandTimeline: shouldExpandTimeline,
+      aboutTab: aboutTab,
       detectedLanguage: detectedLanguage,
       filterTag: filterTag,
       actionButtons: actionButtons
@@ -1280,6 +1356,7 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
     console.log('=== RESPONSE SENT TO FRONTEND ===');
     console.log('scrollTarget:', scrollTarget);
     console.log('shouldExpandTimeline:', shouldExpandTimeline);
+    console.log('aboutTab:', aboutTab);
     console.log('filterTag:', filterTag);
     console.log('actionButtons:', actionButtons ? `${actionButtons.length} buttons` : 'none');
   } catch (error) {
