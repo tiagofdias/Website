@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { styles } from "../styles";
 import { webs, github } from "../assets";
 import { SectionWrapper } from "../hoc";
@@ -258,105 +258,163 @@ const ProjectCard = ({
         ))}
       </div>
 
-      {/* Updated Preview Modal using React Portal */}
+      {/* Modern Preview Modal using React Portal */}
       {isPreviewOpen &&
         createPortal(
-          <div
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
-            className="fixed inset-0 bg-tertiary bg-opacity-100 flex items-center justify-center z-50"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
             onClick={closePreview}
           >
-            <div
-              className={`relative rounded-lg p-6 flex flex-col items-center focus:outline-none w-full ${
-                isMobile ? "max-w-[90vw]" : "max-w-[44vw]"
+            {/* Backdrop with blur effect */}
+            <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
+            
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              className={`relative rounded-2xl p-6 flex flex-col items-center focus:outline-none w-full shadow-2xl bg-gradient-to-br from-[#1a1a2e]/95 to-[#0f0f1e]/95 border border-white/10 ${
+                isMobile ? "max-w-[95vw]" : "max-w-[50vw]"
               }`}
               onClick={(e) => e.stopPropagation()}
               tabIndex={0}
             >
-              {/* X Button to close */}
-              <button
-                className="absolute top-1 right-1 text-white text-4xl font-bold focus:outline-none transform transition-all duration-200 hover:text-red-600"
+              {/* Decorative gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#00C6FE]/5 via-purple-500/5 to-pink-500/5 pointer-events-none rounded-2xl" />
+              
+              {/* Modern close button */}
+              <motion.button
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 border border-red-500/30 hover:border-red-500/50 shadow-lg"
                 onClick={closePreview}
+                aria-label="Close preview"
               >
-                &times;
-              </button>
-              <br></br>
-              {/* Image Container */}
-              <div className="w-full h-[70vh] flex items-center justify-center">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </motion.button>
+
+              {/* Certificate title */}
+              <h2 id="modal-title" className="text-white text-xl font-bold mb-4 mt-2 text-center bg-gradient-to-r from-[#00C6FE] to-purple-500 bg-clip-text text-transparent">
+                {name}
+              </h2>
+              
+              {/* Enhanced Image Container */}
+              <div className="w-full h-[70vh] flex items-center justify-center relative rounded-xl overflow-hidden">
+                {/* Loading shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer pointer-events-none" />
+                
                 {isMobile && projectImages.length > 1 ? (
                   // Mobile infinite carousel with clones
                   <div
-                    className="w-full overflow-hidden"
+                    className="w-full overflow-hidden rounded-xl"
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                   >
                     <div
-                      className="flex gap-2 ease-out"
+                      className="flex gap-3 ease-out"
                       style={{
-                        transform: `translateX(calc(-${slideIndex} * 100% - ${slideIndex} * 0.5rem + ${swipeDelta}px))`,
+                        transform: `translateX(calc(-${slideIndex} * 100% - ${slideIndex} * 0.75rem + ${swipeDelta}px))`,
                         transition: transitionEnabled
-                          ? "transform 300ms ease-out"
+                          ? "transform 400ms cubic-bezier(0.4, 0, 0.2, 1)"
                           : "none",
                       }}
                       onTransitionEnd={handleTransitionEnd}
                     >
                       {extendedImages.map((image, idx) => (
-                        <div key={idx} className="flex-shrink-0 w-full">
+                        <motion.div 
+                          key={idx} 
+                          className="flex-shrink-0 w-full"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
                           <img
                             src={image}
-                            alt={`Image ${idx + 1} of ${projectImages.length}`}
-                            className="w-full h-auto object-contain rounded-lg transition-opacity duration-500"
+                            alt={`Certificate ${idx + 1} of ${projectImages.length}`}
+                            className="w-full h-auto object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
                           />
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  // Non-mobile or single image
-                  <img
+                  // Desktop or single image with enhanced styling
+                  <motion.img
+                    key={previewIndex}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
                     src={projectImages[previewIndex]}
-                    alt={`Image ${previewIndex + 1} of ${projectImages.length}`}
-                    className="max-w-[70vw] max-h-[70vh] object-contain rounded-lg transition-opacity duration-500"
+                    alt={`Certificate ${previewIndex + 1} of ${projectImages.length}`}
+                    className="max-w-[70vw] max-h-[70vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
                   />
                 )}
               </div>
 
-              {/* Slideshow Controls */}
+              {/* Modern Slideshow Controls */}
               {projectImages.length > 1 && (
                 <>
-                  {/* Web Navigation Buttons */}
+                  {/* Navigation Buttons - Desktop only */}
                   {!isMobile && (
-                    <div className="mt-4 flex items-center justify-between w-full">
-                      <button
+                    <div className="mt-6 flex items-center justify-center gap-4 w-full">
+                      <motion.button
+                        whileHover={{ scale: 1.05, x: -3 }}
+                        whileTap={{ scale: 0.95 }}
                         aria-label="Previous image"
-                        className="px-4 py-2 bg-white text-black rounded focus:outline-none w-32"
+                        className="group relative px-6 py-3 bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 hover:from-[#00C6FE]/30 hover:to-purple-500/30 text-white rounded-xl focus:outline-none transition-all duration-300 border border-[#00C6FE]/30 hover:border-[#00C6FE]/60 shadow-lg hover:shadow-[#00C6FE]/20 flex items-center gap-2 font-medium"
                         onClick={(e) => {
                           e.stopPropagation();
                           prevImage();
                         }}
                       >
+                        <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
                         Previous
-                      </button>
-                      <button
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05, x: 3 }}
+                        whileTap={{ scale: 0.95 }}
                         aria-label="Next image"
-                        className="px-4 py-2 bg-white text-black rounded focus:outline-none w-32"
+                        className="group relative px-6 py-3 bg-gradient-to-r from-purple-500/20 to-[#00C6FE]/20 hover:from-purple-500/30 hover:to-[#00C6FE]/30 text-white rounded-xl focus:outline-none transition-all duration-300 border border-purple-500/30 hover:border-purple-500/60 shadow-lg hover:shadow-purple-500/20 flex items-center gap-2 font-medium"
                         onClick={(e) => {
                           e.stopPropagation();
                           nextImage();
                         }}
                       >
                         Next
-                      </button>
+                        <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </motion.button>
                     </div>
                   )}
-                  {/* Dot Indicators for both mobile & web */}
-                  <div className="mt-4 flex justify-center space-x-2">
+                  
+                  {/* Enhanced Dot Indicators */}
+                  <div className="mt-6 flex justify-center items-center gap-2">
                     {projectImages.map((_, idx) => (
-                      <button
+                      <motion.button
                         key={idx}
+                        whileHover={{ scale: 1.2 }}
+                        whileTap={{ scale: 0.9 }}
                         aria-label={`Go to image ${idx + 1}`}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -366,18 +424,23 @@ const ProjectCard = ({
                             setPreviewIndex(idx);
                           }
                         }}
-                        className={`w-3 h-3 rounded-full focus:outline-none ${
+                        className={`rounded-full focus:outline-none transition-all duration-300 ${
                           computedPreviewIndex === idx
-                            ? "bg-white"
-                            : "bg-gray-600"
+                            ? "w-8 h-3 bg-gradient-to-r from-[#00C6FE] to-purple-500 shadow-lg shadow-[#00C6FE]/30"
+                            : "w-3 h-3 bg-white/30 hover:bg-white/50"
                         }`}
-                      ></button>
+                      />
                     ))}
+                  </div>
+                  
+                  {/* Image counter */}
+                  <div className="mt-3 text-center text-white/60 text-sm font-medium">
+                    {computedPreviewIndex + 1} / {projectImages.length}
                   </div>
                 </>
               )}
-            </div>
-          </div>,
+            </motion.div>
+          </motion.div>,
           document.body
         )}
     </motion.div>
