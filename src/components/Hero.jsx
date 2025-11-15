@@ -243,7 +243,7 @@ const Hero = () => {
         </motion.div>
 
         {/* MOBILE LAYOUT - Completely redesigned */}
-        <div className="lg:hidden flex-1 w-full flex flex-col items-center justify-center px-5 pt-20 pb-8 space-y-6">
+        <div className="lg:hidden flex-1 w-full flex flex-col items-center justify-center px-2 pt-12 pb-56 space-y-4">
           {/* Top Buttons - Mobile */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}

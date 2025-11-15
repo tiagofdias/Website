@@ -140,6 +140,16 @@ const ProjectCard = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isPreviewOpen, slideIndex, previewIndex]);
 
+  // Auto-cycle images on card preview
+  const [isHovering, setIsHovering] = useState(false);
+  useEffect(() => {
+    if (!isHovering || projectImages.length <= 1 || isPreviewOpen) return;
+    const interval = setInterval(() => {
+      setPreviewIndex((prev) => (prev + 1) % projectImages.length);
+    }, 2000); // Change image every 2 seconds
+    return () => clearInterval(interval);
+  }, [isHovering, projectImages.length, isPreviewOpen]);
+
   return (
     <motion.div
       initial={isMobile ? {} : { opacity: 0, y: 30 }}
@@ -153,6 +163,11 @@ const ProjectCard = ({
       <div
         className="relative w-full h-[230px] overflow-hidden rounded-xl cursor-pointer"
         onClick={() => openPreview(0)}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => {
+          setIsHovering(false);
+          setPreviewIndex(0); // Reset to first image when not hovering
+        }}
       >
         {/* Gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-10 rounded-xl" />
@@ -173,7 +188,7 @@ const ProjectCard = ({
             src={image}
             alt={`project-${idx}`}
             className={`w-full h-full object-cover rounded-xl absolute top-0 left-0 transition-all duration-500 group-hover/card:scale-110 ${
-              idx === 0 ? "opacity-100" : "opacity-0"
+              previewIndex === idx ? "opacity-100" : "opacity-0"
             }`}
           />
         ))}
@@ -283,8 +298,8 @@ const ProjectCard = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              className={`relative rounded-2xl p-6 flex flex-col items-center focus:outline-none w-full shadow-2xl bg-gradient-to-br from-[#1a1a2e]/95 to-[#0f0f1e]/95 border border-white/10 ${
-                isMobile ? "max-w-[95vw]" : "max-w-[50vw]"
+              className={`relative rounded-2xl p-4 sm:p-6 flex flex-col items-center focus:outline-none shadow-2xl bg-gradient-to-br from-[#1a1a2e]/95 to-[#0f0f1e]/95 border border-white/10 ${
+                isMobile ? "max-w-[95vw] w-full" : "max-w-[90vw] w-auto"
               }`}
               onClick={(e) => e.stopPropagation()}
               tabIndex={0}
@@ -314,25 +329,25 @@ const ProjectCard = ({
               </motion.button>
 
               {/* Project title */}
-              <h2 className="text-white text-xl font-bold mb-4 mt-2 text-center bg-gradient-to-r from-[#00C6FE] to-purple-500 bg-clip-text text-transparent">
+              <h2 className="text-white text-xl font-bold mb-3 sm:mb-4 mt-2 text-center bg-gradient-to-r from-[#00C6FE] to-purple-500 bg-clip-text text-transparent">
                 {(name || "").replace(/-/g, " ")}
               </h2>
               
               {/* Enhanced Image Container */}
-              <div className="w-full h-[70vh] flex items-center justify-center relative rounded-xl overflow-hidden">
+              <div className="w-full max-h-[75vh] flex items-center justify-center relative rounded-xl overflow-hidden">
                 {/* Loading shimmer effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer pointer-events-none" />
                 
                 {isMobile && projectImages.length > 1 ? (
                   // Mobile infinite carousel with clones
                   <div
-                    className="w-full overflow-hidden rounded-xl"
+                    className="w-full max-h-[75vh] overflow-hidden rounded-xl flex items-center"
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                   >
                     <div
-                      className="flex gap-3 ease-out"
+                      className="flex gap-3 ease-out items-center"
                       style={{
                         transform: `translateX(calc(-${slideIndex} * 100% - ${slideIndex} * 0.75rem + ${swipeDelta}px))`,
                         transition: transitionEnabled
@@ -344,7 +359,7 @@ const ProjectCard = ({
                       {extendedImages.map((image, idx) => (
                         <motion.div 
                           key={idx} 
-                          className="flex-shrink-0 w-full"
+                          className="flex-shrink-0 w-full flex items-center justify-center"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ duration: 0.3 }}
@@ -352,7 +367,7 @@ const ProjectCard = ({
                           <img
                             src={image}
                             alt={`Project screenshot ${idx + 1} of ${projectImages.length}`}
-                            className="w-full h-auto object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
+                            className="w-full h-auto max-h-[75vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
                           />
                         </motion.div>
                       ))}
@@ -367,7 +382,7 @@ const ProjectCard = ({
                     transition={{ duration: 0.3 }}
                     src={projectImages[previewIndex]}
                     alt={`Project screenshot ${previewIndex + 1} of ${projectImages.length}`}
-                    className="max-w-[70vw] max-h-[70vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
+                    className="w-auto h-auto max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
                   />
                 )}
               </div>

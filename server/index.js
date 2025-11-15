@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const path = require('path');
 const fetch = require('node-fetch');
+const { extractImagesFromPdfLinks } = require('./pdfExtractor');
+const healthMonitor = require('./healthMonitor');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 // Add global error handlers to catch uncaught errors
@@ -19,6 +21,9 @@ process.on('unhandledRejection', (reason, promise) => {
 
 const app = express();
 
+// Trust proxy to get real IP addresses
+app.set('trust proxy', true);
+
 // Middleware setup
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
@@ -28,8 +33,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
-app.use(bodyParser.json());
-app.use(express.json()); // Add express built-in JSON parser as backup
+// Increase payload limit to handle base64 images (default is 100kb)
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(express.json({ limit: '50mb' })); // Add express built-in JSON parser as backup
 
 // Log all requests
 app.use((req, res, next) => {
@@ -69,10 +75,90 @@ function auth(req, res, next) {
 }
 
 app.get('/api/ping', (req, res) => {
+  healthMonitor.updatePing();
   res.json({ message: 'pong' });
 });
 
-const { Project, Certification, ProExp, Education, Article, About } = require('./models');
+// Helper function to download images from Google Drive and convert to base64
+async function downloadImagesFromDriveLinks(driveLinks) {
+  if (!driveLinks || driveLinks.length === 0) {
+    return [];
+  }
+  
+  console.log(`\n🖼️  Processing ${driveLinks.length} Google Drive image link(s)...`);
+  
+  const images = [];
+  
+  for (let i = 0; i < driveLinks.length; i++) {
+    const driveUrl = driveLinks[i];
+    
+    if (!driveUrl || !driveUrl.trim()) {
+      console.log(`  [${i + 1}/${driveLinks.length}] ⏭️  Skipped: Empty URL`);
+      continue;
+    }
+    
+    console.log(`\n  [${i + 1}/${driveLinks.length}] Processing image...`);
+    
+    try {
+      // Extract file ID from Google Drive URL
+      let fileId = null;
+      if (driveUrl.includes('/file/d/')) {
+        const match = driveUrl.match(/\/file\/d\/([^/]+)/);
+        fileId = match ? match[1] : null;
+      } else if (driveUrl.includes('id=')) {
+        const match = driveUrl.match(/id=([^&]+)/);
+        fileId = match ? match[1] : null;
+      }
+      
+      if (!fileId) {
+        console.log(`  ❌ Could not extract file ID from URL: ${driveUrl}`);
+        continue;
+      }
+      
+      console.log(`  🔑 File ID: ${fileId}`);
+      
+      // Download image from Google Drive
+      const downloadUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&authuser=0`;
+      console.log(`  ⬇️  Downloading image...`);
+      
+      const response = await fetch(downloadUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const buffer = await response.buffer();
+      console.log(`  ✅ Downloaded (${buffer.length} bytes)`);
+      
+      // Convert to base64
+      const base64Image = buffer.toString('base64');
+      
+      // Detect image type from content or use default
+      const contentType = response.headers.get('content-type') || 'image/jpeg';
+      const mimeType = contentType.includes('image/') ? contentType : 'image/jpeg';
+      
+      const dataUrl = `data:${mimeType};base64,${base64Image}`;
+      const sizeKb = (base64Image.length / 1024).toFixed(1);
+      console.log(`  ✅ Converted to base64 (${sizeKb} KB)`);
+      
+      images.push(dataUrl);
+      
+    } catch (error) {
+      console.error(`  [${i + 1}/${driveLinks.length}] ❌ Failed: ${error.message}`);
+      // Continue with next image instead of failing completely
+    }
+  }
+  
+  console.log(`\n✅ Successfully downloaded ${images.length} image(s) from ${driveLinks.length} link(s)\n`);
+  
+  return images;
+}
+
+const { Project, Certification, ProExp, Education, Article, About, AIChatLog, VisitorLog, Settings } = require('./models');
 // Projects CRUD
  app.get('/api/projects', async (req, res) => {
   try {
@@ -90,25 +176,70 @@ const { Project, Certification, ProExp, Education, Article, About } = require('.
 // Projects CRUD endpoints
  app.post('/api/projects', auth, async (req, res) => {
   try {
+    const projectData = req.body;
+    
+    console.log('📥 Received project data:', {
+      name: projectData.name,
+      pdf_links: projectData.pdf_links,
+      images_count: projectData.images?.length || 0
+    });
+    
+    // If pdf_links are provided, download images from Google Drive
+    if (projectData.pdf_links && projectData.pdf_links.length > 0) {
+      console.log(`\n🔄 Downloading ${projectData.pdf_links.length} image(s) from Google Drive for project: ${projectData.name}`);
+      console.log('Image Links:', projectData.pdf_links);
+      try {
+        const downloadedImages = await downloadImagesFromDriveLinks(projectData.pdf_links);
+        console.log(`📊 Download result: ${downloadedImages.length} images downloaded`);
+        if (downloadedImages.length > 0) {
+          console.log(`First image preview: ${downloadedImages[0].substring(0, 100)}...`);
+          projectData.images = downloadedImages;
+          console.log(`✅ Successfully downloaded ${downloadedImages.length} image(s)`);
+          console.log(`📝 projectData.images now has ${projectData.images.length} items`);
+        } else {
+          console.log('⚠️  No images were downloaded');
+        }
+      } catch (downloadError) {
+        console.error('⚠️  Error downloading images:', downloadError.message);
+        console.error('Stack:', downloadError.stack);
+        // Continue saving the project even if download fails
+      }
+    } else {
+      console.log('ℹ️  No image links provided, skipping download');
+    }
+    
     // Create new project with request data
     const project = new Project({
-      projectid: req.body.projectid,
-      name: req.body.name,
-      description: req.body.description,
-      enabled: req.body.enabled !== undefined ? req.body.enabled : true,
-      tags: req.body.tags || [],
-      images: req.body.images || [],
-      source_code_link: req.body.source_code_link || '',
-      source_code_link2: req.body.source_code_link2 || '',
-      WebsiteText: req.body.WebsiteText || '',
-      order: req.body.order || 0
+      projectid: projectData.projectid,
+      name: projectData.name,
+      description: projectData.description,
+      enabled: projectData.enabled !== undefined ? projectData.enabled : true,
+      tags: projectData.tags || [],
+      images: projectData.images || [],
+      pdf_links: projectData.pdf_links || [],
+      source_code_link: projectData.source_code_link || '',
+      source_code_link2: projectData.source_code_link2 || '',
+      WebsiteText: projectData.WebsiteText || '',
+      order: projectData.order || 0
     });
 
     // Log the project data before saving
-    console.log('Creating project with data:', project);
+    console.log('💾 Creating project with:', {
+      name: project.name,
+      images_count: project.images?.length || 0,
+      pdf_links_count: project.pdf_links?.length || 0,
+      first_image_preview: project.images?.[0]?.substring(0, 100)
+    });
 
     // Save the project
     const savedProject = await project.save();
+    
+    console.log('✅ Project saved to database:', {
+      id: savedProject._id,
+      name: savedProject.name,
+      images_count: savedProject.images?.length || 0,
+      pdf_links_count: savedProject.pdf_links?.length || 0
+    });
 
     // Send the saved project as response
     res.status(201).json(savedProject);
@@ -124,13 +255,29 @@ const { Project, Certification, ProExp, Education, Article, About } = require('.
  //PUT endpoint to update a project
 app.put('/api/projects/:id', auth, async (req, res) => {
   try {
-    const projectData = req.body;  // Remove the spread operator here
+    const projectData = req.body;
+    
+    // If pdf_links are provided, download images from Google Drive
+    if (projectData.pdf_links && projectData.pdf_links.length > 0) {
+      console.log(`\n🔄 Downloading ${projectData.pdf_links.length} image(s) from Google Drive for project update: ${projectData.name}`);
+      try {
+        const downloadedImages = await downloadImagesFromDriveLinks(projectData.pdf_links);
+        if (downloadedImages.length > 0) {
+          projectData.images = downloadedImages;
+          console.log(`✅ Successfully downloaded ${downloadedImages.length} image(s)`);
+        }
+      } catch (downloadError) {
+        console.error('⚠️  Error downloading images:', downloadError.message);
+        // Continue updating the project even if download fails
+      }
+    }
+    
     const project = await Project.findByIdAndUpdate(
       req.params.id, 
       projectData, 
       { new: true }
     );
-    res.json(project);  // Add this line to send response
+    res.json(project);
 
   } catch (error) {
     console.error('Error updating project:', error);
@@ -150,16 +297,85 @@ app.get('/api/certifications', async (req, res) => {
 });
 
 app.post('/api/certifications', auth, async (req, res) => {
-  const cert = new Certification(req.body);
-  await cert.save();
-  res.json(cert);
+  try {
+    const certData = req.body;
+    
+    // If pdf_links are provided, extract images from PDFs
+    if (certData.pdf_links && certData.pdf_links.length > 0) {
+      console.log(`\n🔄 Extracting images from ${certData.pdf_links.length} PDF(s) for certification: ${certData.name}`);
+      try {
+        const extractedImages = await extractImagesFromPdfLinks(certData.pdf_links);
+        if (extractedImages.length > 0) {
+          certData.images = extractedImages;
+          console.log(`✅ Successfully extracted ${extractedImages.length} image(s)`);
+        }
+      } catch (extractError) {
+        console.error('⚠️  Error extracting images from PDFs:', extractError.message);
+        // Continue saving the certification even if extraction fails
+      }
+    }
+    
+    const cert = new Certification(certData);
+    await cert.save();
+    res.json(cert);
+  } catch (error) {
+    console.error('Error creating certification:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.put('/api/certifications/:id', auth, async (req, res) => {
   try {
+    const certData = req.body;
+    
+    // If pdf_links are provided, extract images from PDFs
+    if (certData.pdf_links && certData.pdf_links.length > 0) {
+      // Get existing certification to compare pdf_links
+      const existingCert = await Certification.findById(req.params.id);
+      const existingPdfLinks = existingCert?.pdf_links || [];
+      
+      // Check if pdf_links array has changed (added, removed, or modified)
+      const linksChanged = JSON.stringify(certData.pdf_links.sort()) !== JSON.stringify(existingPdfLinks.sort());
+      
+      if (linksChanged) {
+        console.log(`\n🔄 PDF links changed for certification: ${certData.name}`);
+        console.log(`   Old links (${existingPdfLinks.length}):`, existingPdfLinks);
+        console.log(`   New links (${certData.pdf_links.length}):`, certData.pdf_links);
+        console.log(`   Re-extracting all images...`);
+        
+        try {
+          const extractedImages = await extractImagesFromPdfLinks(certData.pdf_links);
+          console.log(`   Extraction result: ${extractedImages.length} images extracted`);
+          
+          if (extractedImages.length > 0) {
+            certData.images = extractedImages;
+            console.log(`✅ Successfully extracted ${extractedImages.length} image(s)`);
+          } else {
+            console.log(`⚠️  No images were extracted!`);
+            certData.images = [];
+          }
+        } catch (extractError) {
+          console.error('❌ Error extracting images from PDFs:', extractError);
+          console.error('   Error message:', extractError.message);
+          console.error('   Stack trace:', extractError.stack);
+          // Clear images if extraction fails
+          certData.images = [];
+        }
+      } else {
+        console.log(`\n✓ PDF links unchanged for certification: ${certData.name}`);
+        console.log(`   Keeping existing images`);
+        // Keep existing images
+        certData.images = existingCert?.images || [];
+      }
+    } else {
+      // No pdf_links provided, clear images
+      console.log(`\n⚠️  No PDF links for certification: ${certData.name}`);
+      certData.images = [];
+    }
+    
     const cert = await Certification.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      certData,
       { new: true }
     );
     res.json(cert);
@@ -172,6 +388,41 @@ app.put('/api/certifications/:id', auth, async (req, res) => {
 app.delete('/api/certifications/:id', auth, async (req, res) => {
   await Certification.findByIdAndDelete(req.params.id);
   res.json({ success: true });
+});
+
+// Test endpoint: Extract images for a specific certification
+app.post('/api/certifications/:id/extract-images', auth, async (req, res) => {
+  try {
+    const cert = await Certification.findById(req.params.id);
+    
+    if (!cert) {
+      return res.status(404).json({ error: 'Certification not found' });
+    }
+    
+    if (!cert.pdf_links || cert.pdf_links.length === 0) {
+      return res.status(400).json({ error: 'No pdf_links found for this certification' });
+    }
+    
+    console.log(`\n🔄 Manually extracting images for: ${cert.name}`);
+    
+    const extractedImages = await extractImagesFromPdfLinks(cert.pdf_links);
+    
+    if (extractedImages.length > 0) {
+      cert.images = extractedImages;
+      await cert.save();
+      console.log(`✅ Successfully extracted and saved ${extractedImages.length} image(s)`);
+      res.json({ 
+        success: true, 
+        message: `Extracted ${extractedImages.length} images`,
+        certification: cert 
+      });
+    } else {
+      res.status(500).json({ error: 'Failed to extract any images' });
+    }
+  } catch (error) {
+    console.error('Error extracting images:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // --- ProExp CRUD ---
@@ -308,6 +559,7 @@ app.get('/api/chat', (req, res) => {
 
 // Chat endpoint with OpenRouter AI (MiniMax model)
 app.post('/api/chat', async (req, res) => {
+  const startTime = Date.now(); // Track request start time for logging
   try {
     console.log('=== CHAT ENDPOINT HIT ===');
     const { message } = req.body || {};
@@ -489,8 +741,9 @@ app.post('/api/chat', async (req, res) => {
 
     const describeExperience = exp => {
       if (!exp) return '';
-      const points = (exp.points || []).map(p => sanitize(p?.text)).filter(Boolean).join(' ');
-      return `${formatTimelineEntry(exp)}${points ? ` Highlights: ${points}` : ''}`;
+      const points = (exp.points || []).map(p => sanitize(p?.text)).filter(Boolean);
+      const formattedPoints = points.length > 0 ? points.slice(0, 2).join('. ') + '.' : '';
+      return `Tiago worked as ${exp.title || 'a professional'} at ${exp.company_name || 'the company'}${exp.date ? ` from ${exp.date}` : ''}. ${formattedPoints ? `Key highlights include: ${formattedPoints}` : ''}`;
     };
 
     const describeEducation = edu => {
@@ -814,6 +1067,8 @@ app.post('/api/chat', async (req, res) => {
     // Build the context prompt for OpenRouter
     const contextPrompt = `You are an AI assistant embedded in Tiago Dias's professional portfolio website (https://tiago-dias.onrender.com/). Visitors are ALREADY on this website talking to you through the chat widget.
 
+CRITICAL: You MUST write in a CONVERSATIONAL and NATURAL tone. DO NOT copy-paste or list raw database information. Synthesize the data into friendly, readable sentences. Think of yourself as a helpful person describing Tiago to a visitor, not as a database returning query results.
+
 IMPORTANT CONTEXT AWARENESS:
 - The visitor is ALREADY browsing Tiago's portfolio website right now
 - DO NOT tell them to "visit the portfolio website" - they are already here!
@@ -823,7 +1078,7 @@ ${willShowActionButtons ? '- CRITICAL INSTRUCTION: Interactive action buttons wi
 IMPORTANT ABOUT AUTO-SCROLL: ${scrollTarget ? `The page WILL automatically scroll to the "${scrollTarget}" section when you respond.${filterTag ? ` Additionally, the projects will be automatically filtered to show only ${filterTag} projects.` : ''}` : 'No auto-scrolling will occur for this question.'}
 
 CRITICAL RESPONSE GUIDELINES:
-${scrollTarget ? `- Since the page will scroll to the ${scrollTarget} section${filterTag ? ` and filter by ${filterTag}` : ''}, acknowledge this with: "I've scrolled to the ${scrollTarget.charAt(0).toUpperCase() + scrollTarget.slice(1)} section${filterTag ? ` and filtered the projects to show ${filterTag} projects` : ''} for you!"
+${scrollTarget ? `- The page will automatically scroll to the ${scrollTarget} section${filterTag ? ` and filter by ${filterTag}` : ''} - DO NOT mention scrolling or filtering in your response since it happens automatically
 - Keep it BRIEF (2-3 sentences max) - visitors can SEE the content on the page
 - DON'T list everything in detail since it's already visible` : '- Provide a helpful, concise answer (2-3 sentences)'}
 - Only give detailed descriptions if asked about a SPECIFIC item (e.g., "What is Sonar?")
@@ -847,11 +1102,11 @@ CV Download: Use the "Download CV" button at the top of this page
 GitHub: Projects section on this page shows GitHub links
 
 IMPORTANT FOR CONTACT QUESTIONS: When someone asks how to contact Tiago:
-- Tell them "I've automatically scrolled the page to the Contact section for you" or "The page has been scrolled to the Contact section - you can fill out the form right there"
-- The chat widget AUTOMATICALLY scrolls to the relevant section, so DON'T tell them to scroll manually
-- Mention they can also connect via LinkedIn at https://www.linkedin.com/in/tiagofdias
-- Remind them they can download his CV using the button at the top of THIS page
-- DO NOT say "visit the portfolio website" or "scroll down" - they are already on the page and it auto-scrolls!
+- DO NOT mention scrolling - the page scrolls automatically in the background
+- Simply provide the contact information and available methods
+- Mention they can connect via LinkedIn or use the contact form
+- Remind them they can download his CV using the button at the top of this page
+- DO NOT say "visit the portfolio website" - they are already here!
 
 LANGUAGES:
 Portuguese: Native (C2)
@@ -880,132 +1135,147 @@ User Question: ${message}
 
 Provide a helpful, accurate response in THIRD PERSON about Tiago based on the above information:`;
 
-    // Try OpenRouter AI with primary and fallback models
+    // Use OpenRouter API with free models
     const fetch = require('node-fetch');
     const AbortController = require('abort-controller');
-    const models = [
-      'meta-llama/llama-3.2-3b-instruct:free',
-      'microsoft/phi-3-mini-128k-instruct:free',
-      'qwen/qwen-2-7b-instruct:free'
-    ];
 
     let lastError = null;
-    for (const model of models) {
-      try {
-        console.log(`Calling OpenRouter AI (${model})...`);
-        
-        // Add 10 second timeout
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
-        
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://tiagofdias.com',
-            'X-Title': 'Tiago Dias Portfolio'
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: [
-              {
-                role: 'system',
-                content: contextPrompt
-              },
-              {
-                role: 'user',
-                content: message
-              }
-            ],
-            max_tokens: 200,
-            temperature: 0.7
-          }),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeout);
+    
+    // Get OpenRouter API key from database settings (fallback to env variable)
+    let OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+    try {
+      const apiKeySetting = await Settings.findOne({ key: 'OPENROUTER_API_KEY' });
+      if (apiKeySetting && apiKeySetting.value) {
+        OPENROUTER_API_KEY = apiKeySetting.value;
+        console.log('📊 Using OpenRouter API key from database');
+      } else {
+        console.log('📊 Using OpenRouter API key from environment variables');
+      }
+    } catch (settingsError) {
+      console.warn('⚠️ Could not fetch settings from database, using env variable:', settingsError.message);
+    }
+    
+    if (!OPENROUTER_API_KEY) {
+      lastError = new Error('OPENROUTER_API_KEY not found in settings or environment variables');
+      console.error('❌', lastError.message);
+    } else {
+      // Try different OpenRouter free models
+      const openRouterModels = [
+        'kwaipilot/kat-coder-pro:free',
+        'nvidia/nemotron-nano-12b-v2-vl:free',
+        'alibaba/tongyi-deepresearch-30b-a3b:free'
+      ];
+      
+      for (const modelName of openRouterModels) {
+        try {
+          console.log(`Trying OpenRouter model: ${modelName}...`);
+          
+          // Add 10 second timeout
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000);
+          
+          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+              'HTTP-Referer': 'https://tiago-dias.onrender.com',
+              'X-Title': 'Tiago Dias Portfolio'
+            },
+            body: JSON.stringify({
+              model: modelName,
+              messages: [
+                {
+                  role: 'system',
+                  content: contextPrompt
+                },
+                {
+                  role: 'user',
+                  content: message
+                }
+              ],
+              temperature: 0.7,
+              max_tokens: 200
+            }),
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeout);
 
-        const data = await response.json();
-        console.log(`OpenRouter response received from ${model}`);
-        
-        // Check for rate limit or API errors
-        if (data.error) {
-          console.error(`❌ OpenRouter API Error (${model}):`, data.error);
-          lastError = new Error(data.error.message || JSON.stringify(data.error));
-          continue; // Try next model
-        }
-        
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-          aiResponse = data.choices[0].message.content;
+          const data = await response.json();
           
-          // Remove <think> tags and their content from the response
-          aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>\s*/g, '').trim();
-          
-          // If action buttons will be shown, strip any URLs from the response as a safety net
-          if (willShowActionButtons) {
-            console.log('Stripping URLs from response. willShowActionButtons:', willShowActionButtons);
-            console.log('Original response:', aiResponse);
-            
-            // Remove URLs (http://, https://, www.) - more aggressive matching
-            aiResponse = aiResponse.replace(/https?:\/\/[^\s,;.!?]+\.?/gi, '');
-            aiResponse = aiResponse.replace(/www\.[^\s,;.!?]+\.?/gi, '');
-            
-            // Remove common phrases about buttons and links
-            aiResponse = aiResponse.replace(/\s*(at|on|in|via|through|using|clicking|click)\s+(the\s+)?(link|button|url)\s+(at\s+)?(the\s+)?(top|bottom|above|below)(\s+of\s+(this|the)\s+page)?/gi, '');
-            aiResponse = aiResponse.replace(/\s*using the button at the (top|bottom)/gi, '');
-            aiResponse = aiResponse.replace(/\s*at the (top|bottom) of (this|the) page/gi, '');
-            
-            // Remove phrases like "connect via LinkedIn at" or "através do LinkedIn em"
-            aiResponse = aiResponse.replace(/(connect|conectar|contatar)\s+(via|through|at|em|no)\s+(LinkedIn|GitHub|his\s+LinkedIn|o\s+LinkedIn)/gi, '');
-            
-            // Clean up any leftover punctuation and double spaces
-            aiResponse = aiResponse.replace(/\s*[,;]\s*\./g, '.'); // Fix ", ." or "; ."
-            aiResponse = aiResponse.replace(/\.\s*\./g, '.'); // Fix ".."
-            aiResponse = aiResponse.replace(/\s+/g, ' ').trim();
-            
-            console.log('After URL stripping:', aiResponse);
+          // Check for API errors
+          if (data.error) {
+            console.error(`❌ OpenRouter API Error (${modelName}):`, data.error.message || data.error);
+            lastError = new Error(data.error.message || JSON.stringify(data.error));
+            continue; // Try next model
           }
           
-          // Successfully got response, break out of model loop
-          break;
-        } else {
-          lastError = new Error(`Invalid response format from ${model}`);
-          continue; // Try next model
+          if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+            aiResponse = data.choices[0].message.content;
+            
+            // Remove <think> tags and their content from the response
+            aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>\s*/g, '').trim();
+            
+            // QUALITY CHECK: Detect if AI is returning raw unformatted data instead of conversational response
+            const looksLikeRawData = (
+              aiResponse.includes('Highlights:') && 
+              aiResponse.length > 300 && 
+              !aiResponse.match(/\.\s+[A-Z]/) && 
+              (aiResponse.match(/\./g) || []).length < 3
+            );
+            
+            if (looksLikeRawData) {
+              console.warn(`⚠️ AI response looks like raw data dump from ${modelName}, rejecting`);
+              console.warn('Raw response preview:', aiResponse.substring(0, 200));
+              aiResponse = null;
+              lastError = new Error('AI returned unformatted raw data');
+              continue; // Try next model
+            }
+            
+            // If action buttons will be shown, strip any URLs from the response
+            if (willShowActionButtons) {
+              console.log('Stripping URLs from response');
+              aiResponse = aiResponse.replace(/https?:\/\/[^\s,;.!?]+\.?/gi, '');
+              aiResponse = aiResponse.replace(/www\.[^\s,;.!?]+\.?/gi, '');
+              aiResponse = aiResponse.replace(/\s*(at|on|in|via|through|using|clicking|click)\s+(the\s+)?(link|button|url)\s+(at\s+)?(the\s+)?(top|bottom|above|below)(\s+of\s+(this|the)\s+page)?/gi, '');
+              aiResponse = aiResponse.replace(/\s*using the button at the (top|bottom)/gi, '');
+              aiResponse = aiResponse.replace(/\s*at the (top|bottom) of (this|the) page/gi, '');
+              aiResponse = aiResponse.replace(/(connect|conectar|contatar)\s+(via|through|at|em|no)\s+(LinkedIn|GitHub|his\s+LinkedIn|o\s+LinkedIn)/gi, '');
+              aiResponse = aiResponse.replace(/\s*[,;]\s*\./g, '.');
+              aiResponse = aiResponse.replace(/\.\s*\./g, '.');
+              aiResponse = aiResponse.replace(/\s+/g, ' ').trim();
+            }
+            
+            console.log(`✅ Successfully got response from OpenRouter (${modelName})`);
+            break; // Success! Exit the loop
+          } else {
+            lastError = new Error(`Invalid response format from ${modelName}`);
+            continue; // Try next model
+          }
+        } catch (aiError) {
+          if (aiError.name === 'AbortError') {
+            console.error(`⏱️ OpenRouter API timeout (${modelName}): Request took longer than 10 seconds`);
+            lastError = new Error(`Timeout: ${modelName} took too long to respond`);
+          } else {
+            console.error(`OpenRouter API error (${modelName}):`, aiError.message);
+            lastError = aiError;
+          }
+          // Try next model
         }
-      } catch (aiError) {
-        if (aiError.name === 'AbortError') {
-          console.error(`⏱️ OpenRouter timeout (${model}): Request took longer than 10 seconds`);
-          lastError = new Error(`Timeout: ${model} took too long to respond`);
-        } else {
-          console.error(`OpenRouter AI error (${model}):`, aiError);
-          lastError = aiError;
-        }
-        // Try next model
       }
     }
     
-    // If all models failed, use rule-based fallback
+    // If all models failed, provide a friendly error message
     if (!aiResponse) {
-      console.error('All OpenRouter models failed, using rule-based fallback. Last error:', lastError);
+      console.error('❌ All OpenRouter models failed. Last error:', lastError);
+      console.error('⚠️ Free tier models may have rate limits or availability issues');
       
-      if (matchedProject) {
-        aiResponse = describeProject(matchedProject);
-      } else if (matchedCertification) {
-        aiResponse = describeCertification(matchedCertification);
-      } else if (matchedExperience) {
-        aiResponse = describeExperience(matchedExperience);
-      } else if (matchedEducation) {
-        aiResponse = describeEducation(matchedEducation);
-      } else if (matchedArticle) {
-        aiResponse = describeArticle(matchedArticle);
-      } else if (rankedKnowledge.length > 0) {
-        const topScore = rankedKnowledge[0].score;
-        const topMatches = rankedKnowledge.filter(item => item.score === topScore).slice(0, 2);
-        aiResponse = topMatches.map(item => item.detail).join(' ');
-      } else {
-        aiResponse = respondWithOverview();
-      }
+      // Provide a user-friendly message about the AI being unavailable
+      aiResponse = "I'm sorry, but I'm temporarily unavailable due to high demand or service issues. Please try again in a few moments, or feel free to explore Tiago's portfolio directly by scrolling through the page. You can also contact Tiago directly using the Contact section below!";
+      
+      // Set scroll target to contact for convenience
+      scrollTarget = 'contact';
     }
 
     // Detect language from the message
@@ -1343,6 +1613,42 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
       ];
     }
 
+    // Log AI chat interaction to database
+    try {
+      const responseTime = Date.now() - startTime;
+      const estimatedTokens = Math.ceil((message.length + aiResponse.length) / 4);
+      
+      // Get real IP address, handling proxies and IPv6
+      let clientIp = req.headers['x-forwarded-for'] || 
+                     req.headers['x-real-ip'] || 
+                     req.connection.remoteAddress || 
+                     req.socket.remoteAddress ||
+                     req.ip || 
+                     'unknown';
+      
+      // If multiple IPs in x-forwarded-for, get the first one
+      if (clientIp.includes(',')) {
+        clientIp = clientIp.split(',')[0].trim();
+      }
+      
+      // Convert IPv6 localhost to IPv4
+      if (clientIp === '::1' || clientIp === '::ffff:127.0.0.1') {
+        clientIp = '127.0.0.1';
+      }
+      
+      await AIChatLog.create({
+        ip: clientIp,
+        userQuestion: message,
+        aiResponse: aiResponse,
+        userAgent: req.get('user-agent'),
+        responseTime: responseTime,
+        tokenCount: estimatedTokens
+      });
+    } catch (logError) {
+      console.error('Failed to log chat interaction:', logError);
+      // Don't fail the response if logging fails
+    }
+    
     res.json({ 
       response: aiResponse,
       scrollTarget: scrollTarget,
@@ -1367,6 +1673,413 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
       details: error.message,
       fullError: error.toString()
     });
+  }
+});
+
+// Statistics endpoint for admin dashboard
+// Visitor tracking endpoint (public - no auth required)
+app.post('/api/track-visitor', async (req, res) => {
+  try {
+    const visitorData = req.body;
+    
+    // Get IP address (handle proxies and various formats)
+    let clientIp = req.headers['x-forwarded-for'] || 
+                   req.headers['x-real-ip'] || 
+                   req.connection.remoteAddress || 
+                   req.socket.remoteAddress ||
+                   (req.connection.socket ? req.connection.socket.remoteAddress : null);
+    
+    if (clientIp) {
+      clientIp = clientIp.split(',')[0].trim();
+      if (clientIp.includes('::ffff:')) {
+        clientIp = clientIp.replace('::ffff:', '');
+      }
+      if (clientIp === '::1' || clientIp === '::ffff:127.0.0.1') {
+        clientIp = '127.0.0.1';
+      }
+    }
+    
+    // Check if this is the first ever visit from this session (must check FIRST)
+    const existingVisit = await VisitorLog.findOne({ sessionId: visitorData.sessionId });
+    const isNewVisitor = !existingVisit;
+    
+    // Check if this session already has a visit logged in the last 5 minutes
+    // to avoid duplicate entries for the same page
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const recentVisit = await VisitorLog.findOne({ 
+      sessionId: visitorData.sessionId,
+      page: visitorData.page,
+      timestamp: { $gte: fiveMinutesAgo }
+    }).sort({ timestamp: -1 });
+    
+    // Only create a new entry if no recent visit to the SAME page exists
+    if (!recentVisit) {
+      // Create visitor log entry
+      await VisitorLog.create({
+        ip: clientIp,
+        sessionId: visitorData.sessionId,
+        page: visitorData.page,
+        referrer: visitorData.referrer,
+        userAgent: visitorData.userAgent,
+        browser: visitorData.browser,
+        browserVersion: visitorData.browserVersion,
+        os: visitorData.os,
+        osVersion: visitorData.osVersion,
+        device: visitorData.device,
+        screenWidth: visitorData.screenWidth,
+        screenHeight: visitorData.screenHeight,
+        viewportWidth: visitorData.viewportWidth,
+        viewportHeight: visitorData.viewportHeight,
+        language: visitorData.language,
+        languages: visitorData.languages,
+        timezone: visitorData.timezone,
+        isNewVisitor,
+        visitCount: 1, // Each entry is one page view
+        firstSeen: new Date(),
+        lastSeen: new Date(),
+        timeOnPage: 0,
+        timestamp: new Date()
+      });
+      console.log(`📊 Tracked visitor: ${clientIp} | Session: ${visitorData.sessionId.substring(0, 15)}... | Page: ${visitorData.page} | New: ${isNewVisitor}`);
+    } else {
+      console.log(`⏭️  Skipped duplicate: Same page within 5 min`);
+    }
+    
+    res.json({ success: true, tracked: true });
+  } catch (error) {
+    console.error('Error tracking visitor:', error);
+    res.status(500).json({ error: 'Failed to track visitor' });
+  }
+});
+
+// Heartbeat endpoint to track active time on page
+app.post('/api/visitor-heartbeat', async (req, res) => {
+  try {
+    const { sessionId, page } = req.body;
+    
+    if (!sessionId || !page) {
+      return res.status(400).json({ error: 'Missing sessionId or page' });
+    }
+    
+    // Find the most recent visitor log for this session and page
+    const visitorLog = await VisitorLog.findOne({ 
+      sessionId, 
+      page 
+    }).sort({ timestamp: -1 });
+    
+    if (visitorLog) {
+      const now = new Date();
+      const timeDiff = Math.floor((now - visitorLog.lastSeen) / 1000); // seconds
+      
+      // Only update if less than 60 seconds passed (user is still active)
+      if (timeDiff < 60) {
+        visitorLog.lastSeen = now;
+        visitorLog.timeOnPage += timeDiff;
+        await visitorLog.save();
+        console.log(`⏱️  Updated time: Session ${sessionId.substring(0, 15)}... spent ${visitorLog.timeOnPage}s on ${page}`);
+      }
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating heartbeat:', error);
+    res.status(500).json({ error: 'Failed to update heartbeat' });
+  }
+});
+
+// Visitor analytics endpoint (protected - requires auth)
+app.get('/api/visitor-analytics', auth, async (req, res) => {
+  try {
+    const { period = 'day', startDate, endDate } = req.query;
+    
+    const now = new Date();
+    let dateFilter = {};
+    
+    // Calculate date ranges for different periods
+    if (startDate && endDate) {
+      dateFilter = {
+        timestamp: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate)
+        }
+      };
+    } else {
+      // Default period-based filters
+      const periodMs = {
+        day: 24 * 60 * 60 * 1000,
+        week: 7 * 24 * 60 * 60 * 1000,
+        month: 30 * 24 * 60 * 60 * 1000,
+        year: 365 * 24 * 60 * 60 * 1000
+      };
+      
+      dateFilter = {
+        timestamp: { $gte: new Date(now - periodMs[period] || periodMs.day) }
+      };
+    }
+    
+    // Get total page views and unique visitors (sessions)
+    const totalPageViews = await VisitorLog.countDocuments(dateFilter);
+    const uniqueVisitorSessions = await VisitorLog.distinct('sessionId', dateFilter);
+    
+    // Get new visitors (sessions where isNewVisitor is true)
+    const newVisitorSessions = await VisitorLog.aggregate([
+      { $match: { ...dateFilter, isNewVisitor: true } },
+      { $group: { _id: '$sessionId' } }
+    ]);
+    const newVisitorsCount = newVisitorSessions.length;
+    
+    // Returning visitors = unique sessions - new visitor sessions
+    const returningVisitorsCount = uniqueVisitorSessions.length - newVisitorsCount;
+    
+    // Get page views breakdown
+    const pageViews = await VisitorLog.aggregate([
+      { $match: dateFilter },
+      { $group: { _id: '$page', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    // Get browser statistics
+    const browserStats = await VisitorLog.aggregate([
+      { $match: dateFilter },
+      { $group: { _id: '$browser', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    
+    // Get device statistics
+    const deviceStats = await VisitorLog.aggregate([
+      { $match: dateFilter },
+      { $group: { _id: '$device', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    
+    // Get OS statistics
+    const osStats = await VisitorLog.aggregate([
+      { $match: dateFilter },
+      { $group: { _id: '$os', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+    
+    // Get country statistics (if available)
+    const countryStats = await VisitorLog.aggregate([
+      { $match: { ...dateFilter, country: { $exists: true, $ne: null } } },
+      { $group: { _id: '$country', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    // Get visitors over time (grouped by hour for day, by day for week/month, by month for year)
+    let timeGrouping;
+    if (period === 'day') {
+      timeGrouping = {
+        year: { $year: '$timestamp' },
+        month: { $month: '$timestamp' },
+        day: { $dayOfMonth: '$timestamp' },
+        hour: { $hour: '$timestamp' }
+      };
+    } else if (period === 'week' || period === 'month') {
+      timeGrouping = {
+        year: { $year: '$timestamp' },
+        month: { $month: '$timestamp' },
+        day: { $dayOfMonth: '$timestamp' }
+      };
+    } else {
+      timeGrouping = {
+        year: { $year: '$timestamp' },
+        month: { $month: '$timestamp' }
+      };
+    }
+    
+    const visitorsOverTime = await VisitorLog.aggregate([
+      { $match: dateFilter },
+      {
+        $group: {
+          _id: timeGrouping,
+          count: { $sum: 1 },
+          uniqueVisitors: { $addToSet: '$sessionId' }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          count: 1,
+          uniqueCount: { $size: '$uniqueVisitors' }
+        }
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1, '_id.hour': 1 } }
+    ]);
+    
+    // Get top referrers
+    const topReferrers = await VisitorLog.aggregate([
+      { $match: { ...dateFilter, referrer: { $exists: true, $ne: '', $ne: null } } },
+      { $group: { _id: '$referrer', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    // Get language statistics
+    const languageStats = await VisitorLog.aggregate([
+      { $match: { ...dateFilter, language: { $exists: true, $ne: null } } },
+      { $group: { _id: '$language', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    // Get average time on page and top visitors by time spent
+    const avgTimeOnPage = await VisitorLog.aggregate([
+      { $match: dateFilter },
+      { $group: { _id: null, avgTime: { $avg: '$timeOnPage' } } }
+    ]);
+    
+    const topVisitorsByTime = await VisitorLog.aggregate([
+      { $match: dateFilter },
+      { 
+        $group: { 
+          _id: { ip: '$ip', sessionId: '$sessionId' }, 
+          totalTime: { $sum: '$timeOnPage' },
+          pageViews: { $sum: 1 },
+          pages: { $addToSet: '$page' }
+        } 
+      },
+      { $sort: { totalTime: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    res.json({
+      summary: {
+        totalPageViews,
+        uniqueVisitors: uniqueVisitorSessions.length,
+        newVisitors: newVisitorsCount,
+        returningVisitors: returningVisitorsCount,
+        avgPageViewsPerVisitor: totalPageViews / Math.max(uniqueVisitorSessions.length, 1),
+        avgTimeOnPage: avgTimeOnPage[0]?.avgTime || 0
+      },
+      topVisitorsByTime: topVisitorsByTime.map(v => ({
+        ip: v._id.ip,
+        sessionId: v._id.sessionId,
+        totalTime: v.totalTime,
+        pageViews: v.pageViews,
+        pages: v.pages
+      })),
+      pageViews: pageViews.map(p => ({ page: p._id, views: p.count })),
+      browserStats: browserStats.map(b => ({ browser: b._id || 'Unknown', count: b.count })),
+      deviceStats: deviceStats.map(d => ({ device: d._id || 'Unknown', count: d.count })),
+      osStats: osStats.map(o => ({ os: o._id || 'Unknown', count: o.count })),
+      countryStats: countryStats.map(c => ({ country: c._id, count: c.count })),
+      visitorsOverTime,
+      topReferrers: topReferrers.map(r => ({ referrer: r._id, count: r.count })),
+      languageStats: languageStats.map(l => ({ language: l._id, count: l.count }))
+    });
+  } catch (error) {
+    console.error('Error fetching visitor analytics:', error);
+    res.status(500).json({ error: 'Failed to fetch visitor analytics' });
+  }
+});
+
+// Settings endpoints
+// Get a specific setting
+app.get('/api/settings/:key', auth, async (req, res) => {
+  try {
+    const { key } = req.params;
+    const setting = await Settings.findOne({ key });
+    
+    if (!setting) {
+      return res.status(404).json({ error: 'Setting not found' });
+    }
+    
+    res.json(setting);
+  } catch (error) {
+    console.error('Error fetching setting:', error);
+    res.status(500).json({ error: 'Failed to fetch setting' });
+  }
+});
+
+// Update or create a setting
+app.post('/api/settings/:key', auth, async (req, res) => {
+  try {
+    const { key } = req.params;
+    const { value, description } = req.body;
+    
+    if (!value) {
+      return res.status(400).json({ error: 'Value is required' });
+    }
+    
+    const setting = await Settings.findOneAndUpdate(
+      { key },
+      { 
+        value, 
+        description,
+        updatedAt: new Date()
+      },
+      { 
+        upsert: true, // Create if doesn't exist
+        new: true // Return the updated document
+      }
+    );
+    
+    console.log(`⚙️ Setting updated: ${key} = ${value.substring(0, 20)}...`);
+    res.json(setting);
+  } catch (error) {
+    console.error('Error updating setting:', error);
+    res.status(500).json({ error: 'Failed to update setting' });
+  }
+});
+
+app.get('/api/statistics', auth, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, search = '' } = req.query;
+    
+    // Get health status from health monitor
+    const healthStatus = healthMonitor.checkHealth();
+    
+    // Build search query for chat logs
+    const searchQuery = search ? {
+      $or: [
+        { userQuestion: { $regex: search, $options: 'i' } },
+        { aiResponse: { $regex: search, $options: 'i' } },
+        { ip: { $regex: search, $options: 'i' } }
+      ]
+    } : {};
+    
+    // Get total count for pagination
+    const totalLogs = await AIChatLog.countDocuments(searchQuery);
+    
+    // Get paginated chat logs (most recent first)
+    const chatLogs = await AIChatLog.find(searchQuery)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit))
+      .lean();
+    
+    // Get statistics summary
+    const totalChats = await AIChatLog.countDocuments();
+    const avgResponseTime = await AIChatLog.aggregate([
+      { $group: { _id: null, avgTime: { $avg: '$responseTime' } } }
+    ]);
+    
+    res.json({
+      health: {
+        status: healthStatus.healthy ? 'healthy' : 'unhealthy',
+        lastPing: healthStatus.lastPing,
+        timeSinceLastPing: healthStatus.timeSinceLastPing
+      },
+      chatLogs: {
+        logs: chatLogs,
+        pagination: {
+          total: totalLogs,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          totalPages: Math.ceil(totalLogs / parseInt(limit))
+        }
+      },
+      summary: {
+        totalChats,
+        avgResponseTime: avgResponseTime[0]?.avgTime || 0
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching statistics:', error);
+    res.status(500).json({ error: 'Failed to fetch statistics' });
   }
 });
 
@@ -1400,6 +2113,10 @@ mongoose.connect(process.env.MONGODB_URI, {
   const server = app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
     console.log('Server is ready to accept connections');
+    
+    // Start health monitoring
+    healthMonitor.startMonitoring();
+    console.log('Health monitoring started');
   });
   
   console.log('After app.listen() call');

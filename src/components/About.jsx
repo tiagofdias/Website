@@ -292,8 +292,8 @@ const About = () => {
               viewport={{ once: true }}
               transition={{ delay: 0.8, duration: 0.6 }}
             >
-              <div className="mb-6">
-                <h3 className="text-white font-bold text-2xl sm:text-3xl mb-2 flex items-center gap-3">
+              <div className="mb-6 sm:mb-6">
+                <h3 className="text-white font-bold text-3xl sm:text-3xl mb-2 flex items-center gap-3">
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C6FE] to-purple-500">
                     Tech Stack
                   </span>
@@ -303,7 +303,7 @@ const About = () => {
                     className="w-2 h-2 bg-[#00C6FE] rounded-full shadow-[0_0_10px_rgba(0,198,254,0.8)]"
                   />
                 </h3>
-                <p className="text-gray-400 text-sm">Technologies I work with</p>
+                <p className="text-gray-400 text-base sm:text-sm">Technologies I work with</p>
               </div>
 
               <div className="relative group/skills">
@@ -330,7 +330,7 @@ const About = () => {
                         transition={{ duration: 7, repeat: Infinity }}
                       />
 
-                      <div className="relative grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+                      <div className="relative grid grid-cols-2 gap-6 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
                         {techItems.map((tech, index) => (
                           <motion.div
                             key={`${tech.name}-${index}`}
@@ -349,26 +349,26 @@ const About = () => {
                               className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${TECH_CARD_GRADIENTS[index % TECH_CARD_GRADIENTS.length]} opacity-70 blur-md transition-opacity duration-500 group-hover/tech:opacity-100`}
                             />
 
-                            <div className="relative flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-[rgba(12,19,40,0.85)] px-5 py-6 text-center shadow-[0_8px_24px_rgba(5,8,38,0.45)]">
+                            <div className="relative flex h-full flex-col items-center justify-center gap-4 md:gap-3 rounded-2xl border border-white/10 bg-[rgba(12,19,40,0.85)] px-4 py-8 md:px-5 md:py-6 text-center shadow-[0_8px_24px_rgba(5,8,38,0.45)]">
                               {tech.icon ? (
                                 <motion.img
                                   src={tech.icon}
                                   alt={`${tech.name} icon`}
-                                  className="h-12 w-12 object-contain drop-shadow-[0_6px_18px_rgba(0,198,254,0.35)]"
+                                  className="h-16 w-16 md:h-12 md:w-12 object-contain drop-shadow-[0_6px_18px_rgba(0,198,254,0.35)]"
                                   initial={{ scale: 0.85, opacity: 0.8 }}
                                   animate={{ scale: 1, opacity: 1 }}
                                   transition={{ duration: 0.4 }}
                                 />
                               ) : (
-                                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#00C6FE] to-purple-500 text-sm font-black text-white shadow-[0_8px_16px_rgba(0,198,254,0.35)]">
+                                <span className="flex h-16 w-16 md:h-12 md:w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#00C6FE] to-purple-500 text-lg md:text-sm font-black text-white shadow-[0_8px_16px_rgba(0,198,254,0.35)]">
                                   {tech.initials}
                                 </span>
                               )}
 
-                              <span className="text-sm font-semibold text-white sm:text-base">
+                              <span className="text-lg md:text-base font-semibold text-white leading-tight">
                                 {tech.name}
                               </span>
-                              <span className="text-[10px] uppercase tracking-[0.5em] text-white/40">
+                              <span className="text-[10px] uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/40 font-medium">
                                 Stack
                               </span>
                             </div>
