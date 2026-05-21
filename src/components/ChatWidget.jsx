@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { scroller } from "react-scroll";
 import ReactMarkdown from "react-markdown";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Mobile detection hook
 const useIsMobile = () => {

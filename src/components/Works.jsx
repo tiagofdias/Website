@@ -6,7 +6,7 @@ import { SectionWrapper } from "../hoc";
 import { github, webs } from "../assets";
 import { scroller } from "react-scroll";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Mobile detection hook
 const useIsMobile = () => {

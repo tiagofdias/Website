@@ -110,7 +110,7 @@ const FloatingParticles = () => {
 const Hero = () => {
   const [cvUrl, setCvUrl] = useState("");
   const [stats, setStats] = useState({ projects: 0, certifications: 0, experiences: 0 });
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || '/api';
   
   useEffect(() => {
     // Fetch CV URL

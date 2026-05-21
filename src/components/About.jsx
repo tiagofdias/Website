@@ -21,7 +21,7 @@ import {
   threejs,
 } from "../assets";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const normalizeTechKey = (value = "") =>
   value.toLowerCase().replace(/[^a-z0-9]/g, "");

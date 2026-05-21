@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { startAuthentication } from "@simplewebauthn/browser";
 
 const AdminLogin = ({ onLogin }) => {
   const [username, setUsername] = useState("");
@@ -7,7 +8,7 @@ const AdminLogin = ({ onLogin }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || '/api';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,6 +25,38 @@ const AdminLogin = ({ onLogin }) => {
       onLogin(data.token);
     } catch (err) {
       setError("Login failed. Please check your credentials.");
+      setLoading(false);
+    }
+  };
+
+  const handlePasskeyLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      // 1. Get authentication options
+      const optResp = await fetch(`${API_URL}/webauthn/generate-authentication-options`);
+      const options = await optResp.json();
+      if (options.error) throw new Error(options.error);
+
+      // 2. Perform authentication using the user's authenticator (Yubikey/TouchID)
+      const authResp = await startAuthentication(options);
+
+      // 3. Verify the authentication response
+      const verificationResp = await fetch(`${API_URL}/webauthn/verify-authentication`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(authResp),
+      });
+
+      const verificationJSON = await verificationResp.json();
+      if (verificationJSON && verificationJSON.verified) {
+        onLogin(verificationJSON.token);
+      } else {
+        throw new Error(verificationJSON.error || "Authentication failed");
+      }
+    } catch (err) {
+      setError(err.message || "Passkey login failed.");
       setLoading(false);
     }
   };
@@ -246,8 +279,54 @@ const AdminLogin = ({ onLogin }) => {
                 Signing in...
               </span>
             ) : (
-              "Sign In"
+              "Sign In with Password"
             )}
+          </motion.button>
+          
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            margin: "24px 0",
+            color: "#94a3b8",
+            fontSize: "14px",
+            textTransform: "uppercase",
+            letterSpacing: "1px"
+          }}>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+            <span style={{ padding: "0 16px" }}>or</span>
+            <div style={{ flex: 1, height: "1px", background: "#e2e8f0" }} />
+          </div>
+
+          <motion.button
+            type="button"
+            onClick={handlePasskeyLogin}
+            disabled={loading}
+            whileHover={{ scale: loading ? 1 : 1.02 }}
+            whileTap={{ scale: loading ? 1 : 0.98 }}
+            style={{
+              width: "100%",
+              padding: "16px",
+              fontSize: "16px",
+              fontWeight: "600",
+              color: "#fff",
+              background: loading
+                ? "#94a3b8"
+                : "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              border: "none",
+              borderRadius: "12px",
+              cursor: loading ? "not-allowed" : "pointer",
+              transition: "all 0.3s ease",
+              boxShadow: loading
+                ? "none"
+                : "0 4px 14px rgba(16, 185, 129, 0.4)",
+              fontFamily: "inherit",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px"
+            }}
+          >
+            🔑 Sign In with Passkey
           </motion.button>
         </form>
 

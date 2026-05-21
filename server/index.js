@@ -1,3 +1,8 @@
+// Node 18 WebCrypto Polyfill for @simplewebauthn/server
+if (!globalThis.crypto) {
+  globalThis.crypto = require('crypto').webcrypto;
+}
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -5,6 +10,8 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const path = require('path');
 const fetch = require('node-fetch');
+const { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } = require('@simplewebauthn/server');
+const { PasskeyCredential } = require('./models');
 const { extractImagesFromPdfLinks } = require('./pdfExtractor');
 const healthMonitor = require('./healthMonitor');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -62,6 +69,15 @@ app.post('/api/login', (req, res) => {
   }
 });
 
+// Passkey configuration
+const rpName = 'Admin Panel';
+const rpID = process.env.NODE_ENV === 'production' ? 'tiago-dias.onrender.com' : 'localhost';
+const origin = process.env.NODE_ENV === 'production' ? `https://${rpID}` : `http://${rpID}:5173`;
+
+// Store challenges in memory (works for single admin setup)
+let currentRegistrationChallenge;
+let currentAuthenticationChallenge;
+
 // Middleware to protect routes
 function auth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -73,6 +89,131 @@ function auth(req, res, next) {
     next();
   });
 }
+
+// WebAuthn Registration (Requires Auth since only admin should register their key)
+app.get('/api/webauthn/generate-registration-options', auth, async (req, res) => {
+  try {
+    const user = {
+      id: 'admin-user-id',
+      username: USER.username,
+    };
+
+    const options = await generateRegistrationOptions({
+      rpName,
+      rpID,
+      userID: Buffer.from(user.id),
+      userName: user.username,
+      attestationType: 'none',
+      authenticatorSelection: {
+        residentKey: 'required',
+        userVerification: 'preferred',
+        authenticatorAttachment: 'cross-platform',
+      },
+    });
+
+    currentRegistrationChallenge = options.challenge;
+    res.json(options);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to generate registration options' });
+  }
+});
+
+app.post('/api/webauthn/verify-registration', auth, async (req, res) => {
+  const body = req.body;
+  try {
+    const verification = await verifyRegistrationResponse({
+      response: body,
+      expectedChallenge: currentRegistrationChallenge,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+    });
+
+    if (verification.verified && verification.registrationInfo) {
+      const { credentialPublicKey, credentialID, counter } = verification.registrationInfo;
+
+      // Store credentialID directly (it is already Base64URL string in v10)
+      const newCred = new PasskeyCredential({
+        credentialID: credentialID,
+        credentialPublicKey: Buffer.from(credentialPublicKey),
+        counter,
+        transports: body.response.transports || [],
+      });
+      await newCred.save();
+
+      res.json({ verified: true });
+    } else {
+      res.status(400).json({ error: 'Verification failed' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Authentication
+app.get('/api/webauthn/generate-authentication-options', async (req, res) => {
+  try {
+    const credentials = await PasskeyCredential.find();
+    if (credentials.length === 0) {
+      return res.status(400).json({ error: 'No passkeys registered' });
+    }
+
+    const options = await generateAuthenticationOptions({
+      rpID,
+      allowCredentials: credentials.map(cred => ({
+        id: cred.credentialID,
+        type: 'public-key',
+        transports: cred.transports,
+      })),
+      userVerification: 'preferred',
+    });
+
+    currentAuthenticationChallenge = options.challenge;
+    res.json(options);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to generate auth options' });
+  }
+});
+
+app.post('/api/webauthn/verify-authentication', async (req, res) => {
+  const body = req.body;
+  try {
+    const cred = await PasskeyCredential.findOne({ credentialID: body.id });
+    if (!cred) {
+      return res.status(400).json({ error: 'Passkey not found' });
+    }
+
+    const verification = await verifyAuthenticationResponse({
+      response: body,
+      expectedChallenge: currentAuthenticationChallenge,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+      authenticator: {
+        credentialPublicKey: cred.credentialPublicKey,
+        credentialID: cred.credentialID,
+        counter: cred.counter,
+        transports: cred.transports,
+      },
+    });
+
+    if (verification.verified) {
+      // Update counter
+      cred.counter = verification.authenticationInfo.newCounter;
+      await cred.save();
+
+      // Issue JWT
+      const token = jwt.sign({ username: USER.username }, SECRET, { expiresIn: '1h' });
+      res.json({ verified: true, token });
+    } else {
+      res.status(400).json({ error: 'Verification failed' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: error.message });
+  }
+});
 
 app.get('/api/ping', (req, res) => {
   healthMonitor.updatePing();

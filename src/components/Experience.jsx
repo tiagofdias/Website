@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "react-vertical-timeline-component/style.min.css";
 import { SectionWrapper } from "../hoc";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const TimelineItem = ({ item }) => (
   <div className="bg-tertiary p-5 rounded-2xl relative shadow-lg">

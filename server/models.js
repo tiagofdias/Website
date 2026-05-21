@@ -262,6 +262,28 @@ const SettingsSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// Passkey Credential Schema
+const PasskeyCredentialSchema = new mongoose.Schema({
+  credentialID: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  credentialPublicKey: {
+    type: Buffer,
+    required: true
+  },
+  counter: {
+    type: Number,
+    required: true
+  },
+  transports: [String],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 module.exports = {
   Project: mongoose.model('Project', ProjectSchema),
   Certification: mongoose.model('Certification', CertificationSchema),
@@ -271,5 +293,6 @@ module.exports = {
   About: mongoose.model('About', AboutSchema),
   AIChatLog: mongoose.model('AIChatLog', AIChatLogSchema),
   VisitorLog: mongoose.model('VisitorLog', VisitorLogSchema),
-  Settings: mongoose.model('Settings', SettingsSchema)
+  Settings: mongoose.model('Settings', SettingsSchema),
+  PasskeyCredential: mongoose.model('PasskeyCredential', PasskeyCredentialSchema)
 };

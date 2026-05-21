@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import { startRegistration } from "@simplewebauthn/browser";
 import axios from 'axios';
 
 function ImagesInput({ images, onChange }) {
@@ -269,6 +270,8 @@ const AdminPanel = ({ token, onLogout }) => {
   const [statsSearch, setStatsSearch] = useState("");
   const [currentTime, setCurrentTime] = useState(Date.now());
   
+  const API_URL = import.meta.env.VITE_API_URL || '/api';
+  
   // Visitor analytics state
   const [visitorAnalytics, setVisitorAnalytics] = useState(null);
   const [analyticsPeriod, setAnalyticsPeriod] = useState('day'); // day, week, month, year
@@ -278,9 +281,6 @@ const AdminPanel = ({ token, onLogout }) => {
   const [openRouterApiKey, setOpenRouterApiKey] = useState('');
   const [apiKeyLoading, setApiKeyLoading] = useState(false);
   const [apiKeySaved, setApiKeySaved] = useState(false);
-
-  // Helper to get the API URL
-  const API_URL = import.meta.env.VITE_API_URL;
 
   // Fetch configuration
   const fetchConfig = {
@@ -1730,6 +1730,40 @@ const AdminPanel = ({ token, onLogout }) => {
     }
   };
 
+  const handleRegisterPasskey = async () => {
+    try {
+      const resp = await fetch(`${API_URL}/webauthn/generate-registration-options`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const options = await resp.json();
+      
+      if (options.error) {
+        throw new Error(options.error);
+      }
+      
+      const attResp = await startRegistration(options);
+      
+      const verificationResp = await fetch(`${API_URL}/webauthn/verify-registration`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(attResp),
+      });
+
+      const verificationJSON = await verificationResp.json();
+      if (verificationJSON && verificationJSON.verified) {
+        alert("Passkey registered successfully!");
+      } else {
+        alert("Passkey registration failed: " + (verificationJSON.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error registering passkey: " + error.message);
+    }
+  };
+
   return (
     <>
       <style>{`
@@ -1870,32 +1904,62 @@ const AdminPanel = ({ token, onLogout }) => {
               </p>
             </div>
             
-            {/* Logout Button */}
-            <button
-              onClick={onLogout}
-              style={{
-                background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "12px",
-                padding: "12px 28px",
-                fontWeight: "600",
-                fontSize: "15px",
-                cursor: "pointer",
-                boxShadow: "0 4px 14px rgba(239, 68, 68, 0.4)",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = "translateY(-2px)";
-                e.target.style.boxShadow = "0 6px 20px rgba(239, 68, 68, 0.5)";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = "translateY(0)";
-                e.target.style.boxShadow = "0 4px 14px rgba(239, 68, 68, 0.4)";
-              }}
-            >
-              🚪 Logout
-            </button>
+            {/* Header Actions */}
+            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+              {/* Register Passkey Button */}
+              <button
+                onClick={handleRegisterPasskey}
+                style={{
+                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "12px",
+                  padding: "12px 28px",
+                  fontWeight: "600",
+                  fontSize: "15px",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 14px rgba(16, 185, 129, 0.4)",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = "translateY(-2px)";
+                  e.target.style.boxShadow = "0 6px 20px rgba(16, 185, 129, 0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = "translateY(0)";
+                  e.target.style.boxShadow = "0 4px 14px rgba(16, 185, 129, 0.4)";
+                }}
+              >
+                🔑 Register Passkey
+              </button>
+              
+              {/* Logout Button */}
+              <button
+                onClick={onLogout}
+                style={{
+                  background: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "12px",
+                  padding: "12px 28px",
+                  fontWeight: "600",
+                  fontSize: "15px",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 14px rgba(239, 68, 68, 0.4)",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = "translateY(-2px)";
+                  e.target.style.boxShadow = "0 6px 20px rgba(239, 68, 68, 0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = "translateY(0)";
+                  e.target.style.boxShadow = "0 4px 14px rgba(239, 68, 68, 0.4)";
+                }}
+              >
+                🚪 Logout
+              </button>
+            </div>
           </div>
 
           {/* Section Selector */}
