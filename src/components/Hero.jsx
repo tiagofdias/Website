@@ -176,19 +176,19 @@ const Hero = () => {
       {/* Floating particles */}
       <FloatingParticles />
 
-      {/* Main content container - OPTIMIZED LAYOUT */}
+      {/* Main content container - OPTIMIZED FOR 24-INCH & ALL MONITORS */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="relative z-10 w-full h-full min-h-screen flex flex-col"
+        className="relative z-10 w-full h-full min-h-screen lg:h-screen lg:min-h-[680px] lg:max-h-[1080px] flex flex-col justify-between"
       >
         {/* Top badges section - Desktop Only */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="hidden lg:flex w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 pt-24 pb-4 flex-wrap justify-between items-center gap-4"
+          className="hidden lg:flex w-full max-w-[1600px] mx-auto px-6 lg:px-12 pt-20 lg:pt-22 xl:pt-24 pb-2 lg:pb-3 flex-wrap justify-between items-center gap-4"
         >
           {/* Open to Work Badge - Premium Style */}
           <motion.div
@@ -464,19 +464,19 @@ const Hero = () => {
           </motion.div>
         </div>
 
-        {/* DESKTOP LAYOUT - TWO COLUMN */}
-        <div className="hidden lg:flex flex-1 w-full max-w-[1600px] mx-auto px-12 flex-row items-center justify-between gap-20">
+        {/* DESKTOP LAYOUT - TWO COLUMN (OPTIMIZED FOR 24" & 1080P MONITORS) */}
+        <div className="hidden lg:flex flex-1 w-full max-w-[1600px] mx-auto px-8 xl:px-12 flex-row items-center justify-between gap-10 xl:gap-16 2xl:gap-20 my-auto py-2 xl:py-4">
           {/* LEFT SIDE - Main content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex-1 space-y-8 text-left"
+            className="flex-1 space-y-5 xl:space-y-7 text-left"
           >
             {/* Name and intro */}
-            <div className="space-y-6">
+            <div className="space-y-4 xl:space-y-5">
               <motion.h1 
-                className="text-7xl xl:text-8xl font-black text-white leading-tight"
+                className="text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black text-white leading-[1.08] tracking-tight"
                 animate={{ 
                   textShadow: [
                     "0 0 20px rgba(0,198,254,0.5)",
@@ -496,7 +496,7 @@ const Hero = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-2xl text-gray-300 leading-relaxed max-w-2xl"
+                className="text-lg lg:text-xl xl:text-2xl text-gray-300 leading-relaxed max-w-2xl"
               >
                 Passionate about building{" "}
                 <span className="text-[#00C6FE] font-semibold">efficient</span> and{" "}
@@ -678,12 +678,12 @@ const Hero = () => {
           </motion.div>
         </div>
 
-        {/* Scroll indicator */}
+        {/* Scroll indicator - safely positioned for 24" displays */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
-          className="absolute bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 hidden sm:flex"
+          className="absolute bottom-3 lg:bottom-4 xl:bottom-6 left-1/2 -translate-x-1/2 hidden sm:flex pointer-events-auto"
         >
           <ScrollLink
             to="projects"

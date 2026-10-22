@@ -13,10 +13,10 @@ if (typeof window !== "undefined") {
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 /**
- * PDFPage: High-DPI Canvas renderer for a single PDF page.
- * Eliminates all browser PDF plugin frames, grey letterboxing, and default toolbars.
+ * PDFPage: High-DPI Canvas renderer optimized for 24-inch monitors and responsive displays.
+ * Eliminates all browser grey frames and provides perfect Fit-Page / Fit-Width scaling.
  */
-const PDFPage = ({ pdfDoc, pageNum, scale, fitWidth, containerWidth }) => {
+const PDFPage = ({ pdfDoc, pageNum, scale, fitMode, containerWidth, viewportHeight }) => {
   const canvasRef = useRef(null);
   const renderTaskRef = useRef(null);
   const [pageSize, setPageSize] = useState({ width: 0, height: 0 });
@@ -30,27 +30,37 @@ const PDFPage = ({ pdfDoc, pageNum, scale, fitWidth, containerWidth }) => {
         const page = await pdfDoc.getPage(pageNum);
         if (isCancelled) return;
 
-        // Base unscaled viewport
+        // Base unscaled viewport (A4 is ~595 x ~842)
         const unscaledViewport = page.getViewport({ scale: 1.0 });
 
-        // Calculate dynamic scale
+        // Available dimensions
+        const availWidth = Math.max((containerWidth || window.innerWidth) - 48, 320);
+        // Available vertical height on 24" monitors (minus header 56px and padding)
+        const availHeight = Math.max((viewportHeight || window.innerHeight) - 120, 500);
+
         let computedScale = scale;
-        if (fitWidth && containerWidth) {
-          // Fit container with comfortable margins
-          const availableWidth = Math.max(Math.min(containerWidth - 32, 1080), 320);
-          computedScale = availableWidth / unscaledViewport.width;
+
+        if (fitMode === "page") {
+          // Fit Page: Scale so the entire document fits comfortably in the screen height on 24" monitors
+          const scaleHeight = (availHeight * 0.98) / unscaledViewport.height;
+          const scaleWidth = availWidth / unscaledViewport.width;
+          computedScale = Math.min(scaleHeight, scaleWidth) * (scale / 100);
+        } else if (fitMode === "width") {
+          // Fit Width: Scale to comfortably fill container width (~850px-1050px) for zoomed-in reading
+          const targetWidth = Math.min(availWidth, 1020);
+          computedScale = (targetWidth / unscaledViewport.width) * (scale / 100);
         } else {
-          // Base comfortable desktop scale ~ 1.35x of A4 (approx 800px width at 100%)
-          const maxContainer = containerWidth ? Math.min(containerWidth - 32, 850) : 850;
-          const baseScale = Math.min(maxContainer / unscaledViewport.width, 1.4);
-          computedScale = baseScale * scale;
+          // Custom / default scale
+          const defaultTarget = Math.min(availWidth, 850);
+          const baseScale = Math.min(defaultTarget / unscaledViewport.width, 1.35);
+          computedScale = baseScale * (scale / 100);
         }
 
         const viewport = page.getViewport({ scale: computedScale });
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // Retina high-DPI scaling (capped at 2.5 for performance)
+        // High-DPI retina scaling (capped at 2.5 for smooth rendering)
         const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
         canvas.width = Math.floor(viewport.width * dpr);
         canvas.height = Math.floor(viewport.height * dpr);
@@ -65,7 +75,7 @@ const PDFPage = ({ pdfDoc, pageNum, scale, fitWidth, containerWidth }) => {
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Cancel previous task if still rendering
+        // Cancel previous render task if active
         if (renderTaskRef.current) {
           try {
             renderTaskRef.current.cancel();
@@ -98,7 +108,7 @@ const PDFPage = ({ pdfDoc, pageNum, scale, fitWidth, containerWidth }) => {
         } catch {}
       }
     };
-  }, [pdfDoc, pageNum, scale, fitWidth, containerWidth]);
+  }, [pdfDoc, pageNum, scale, fitMode, containerWidth, viewportHeight]);
 
   return (
     <div className="relative group transition-all duration-300 flex justify-center">
@@ -122,8 +132,10 @@ const CVViewer = () => {
   const [downloadUrl, setDownloadUrl] = useState("/CV.pdf");
   const [isCustom, setIsCustom] = useState(false);
   const [viewMode, setViewMode] = useState("pdf"); // "pdf" or "web"
+  
+  // Scaling modes: "page" (Fit entire page in screen height - perfect for 24" monitors), "width" (Fit width), "custom"
+  const [fitMode, setFitMode] = useState("page");
   const [zoom, setZoom] = useState(100);
-  const [fitWidth, setFitWidth] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -134,7 +146,10 @@ const CVViewer = () => {
   const [pdfLoading, setPdfLoading] = useState(true);
   const [pdfError, setPdfError] = useState(null);
   const [containerWidth, setContainerWidth] = useState(
-    typeof window !== "undefined" ? window.innerWidth : 1000
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== "undefined" ? window.innerHeight : 900
   );
 
   // Email action state
@@ -157,7 +172,7 @@ const CVViewer = () => {
     setIsAdmin(!!token);
   }, []);
 
-  // Track container width for responsive scaling
+  // Track container width and height for responsive 24-inch scaling
   useEffect(() => {
     const handleResize = () => {
       if (viewerContainerRef.current) {
@@ -165,6 +180,7 @@ const CVViewer = () => {
       } else {
         setContainerWidth(window.innerWidth);
       }
+      setViewportHeight(window.innerHeight);
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -230,22 +246,23 @@ const CVViewer = () => {
 
   // Zoom handlers
   const handleZoomIn = () => {
-    setFitWidth(false);
+    setFitMode("custom");
     setZoom((prev) => Math.min(prev + 15, 200));
   };
 
   const handleZoomOut = () => {
-    setFitWidth(false);
+    setFitMode("custom");
     setZoom((prev) => Math.max(prev - 15, 50));
   };
 
-  const handleResetZoom = () => {
-    setFitWidth(false);
+  const handleSetFitPage = () => {
+    setFitMode("page");
     setZoom(100);
   };
 
-  const handleToggleFitWidth = () => {
-    setFitWidth((prev) => !prev);
+  const handleSetFitWidth = () => {
+    setFitMode("width");
+    setZoom(100);
   };
 
   // Fullscreen handler
@@ -277,10 +294,9 @@ const CVViewer = () => {
     }
   };
 
-  // Robust Email handler (works on any OS, browser, or webmail)
+  // Robust Email handler
   const handleEmailAction = (e) => {
     e?.preventDefault?.();
-    // Copy email to clipboard immediately
     try {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(CORRECT_EMAIL);
@@ -288,7 +304,6 @@ const CVViewer = () => {
       setEmailCopied(true);
       setTimeout(() => setEmailCopied(false), 3000);
     } catch {}
-    // Open action modal with Gmail, Outlook Web, Mailto, and Copy
     setIsEmailModalOpen(true);
   };
 
@@ -409,8 +424,8 @@ const CVViewer = () => {
       ref={containerRef}
       className="min-h-screen bg-[#050816] text-white flex flex-col selection:bg-[#00C6FE]/30 selection:text-white"
     >
-      {/* Top Header & Controls Bar */}
-      <header className="sticky top-0 z-30 backdrop-blur-2xl bg-[#050816]/90 border-b border-white/10 px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      {/* Top Header & Controls Bar - Well proportioned for 24-inch screens */}
+      <header className="sticky top-0 z-30 backdrop-blur-2xl bg-[#050816]/90 border-b border-white/10 px-4 sm:px-8 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-3 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         {/* Left: Branding & Back Navigation */}
         <div className="flex items-center gap-3 sm:gap-4">
           <Link
@@ -474,14 +489,40 @@ const CVViewer = () => {
           </button>
         </div>
 
-        {/* Right: Controls & Actions */}
+        {/* Right: Controls & Actions (Optimized for 24-inch screens) */}
         <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* Zoom & Fit Controls (Active in PDF mode) */}
+          {/* Smart Fit & Zoom Controls (PDF Mode) */}
           {viewMode === "pdf" && (
-            <div className="hidden md:flex items-center bg-white/5 rounded-xl border border-white/10 px-1 py-0.5">
+            <div className="hidden md:flex items-center bg-white/5 rounded-xl border border-white/10 p-0.5">
+              <button
+                onClick={handleSetFitPage}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  fitMode === "page"
+                    ? "bg-[#00C6FE]/30 text-[#00EAFF] border border-[#00C6FE]/50 shadow-sm"
+                    : "text-gray-300 hover:text-white hover:bg-white/10"
+                }`}
+                title="Fit Entire Page to Screen (Optimal for 24-inch displays)"
+              >
+                Fit Page
+              </button>
+
+              <button
+                onClick={handleSetFitWidth}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  fitMode === "width"
+                    ? "bg-[#00C6FE]/30 text-[#00EAFF] border border-[#00C6FE]/50 shadow-sm"
+                    : "text-gray-300 hover:text-white hover:bg-white/10"
+                }`}
+                title="Fit Document to Width (Zoomed in reading)"
+              >
+                Fit Width
+              </button>
+
+              <div className="h-4 w-px bg-white/15 mx-1"></div>
+
               <button
                 onClick={handleZoomOut}
-                disabled={zoom <= 50 || fitWidth}
+                disabled={zoom <= 50}
                 className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-300 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 title="Zoom Out (-)"
               >
@@ -490,39 +531,19 @@ const CVViewer = () => {
                 </svg>
               </button>
 
-              <button
-                onClick={handleResetZoom}
-                className={`px-2 text-xs font-mono font-semibold hover:underline ${
-                  fitWidth ? "text-gray-400" : "text-[#00EAFF]"
-                }`}
-                title="Reset Zoom (100%)"
-              >
-                {fitWidth ? "Auto" : `${zoom}%`}
-              </button>
+              <span className="px-1.5 text-xs font-mono font-semibold text-[#00EAFF]">
+                {zoom}%
+              </span>
 
               <button
                 onClick={handleZoomIn}
-                disabled={zoom >= 200 || fitWidth}
+                disabled={zoom >= 200}
                 className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-300 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 title="Zoom In (+)"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                 </svg>
-              </button>
-
-              <div className="h-4 w-px bg-white/15 mx-1"></div>
-
-              <button
-                onClick={handleToggleFitWidth}
-                className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
-                  fitWidth
-                    ? "bg-[#00C6FE]/30 text-[#00EAFF] border border-[#00C6FE]/50"
-                    : "text-gray-300 hover:text-white hover:bg-white/10"
-                }`}
-                title="Toggle Fit to Screen Width"
-              >
-                Fit Width
               </button>
             </div>
           )}
@@ -610,12 +631,12 @@ const CVViewer = () => {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 p-3 sm:p-6 flex flex-col items-center justify-start overflow-auto">
+      <main className="flex-1 p-3 sm:p-5 lg:p-6 flex flex-col items-center justify-start overflow-auto">
         {viewMode === "pdf" ? (
-          /* PDF Viewer Mode - Rendered directly via HTML5 Canvas (ZERO grey area, ZERO browser toolbar) */
+          /* PDF Viewer Mode - Perfectly scaled for 24-inch monitors */
           <div 
             ref={viewerContainerRef}
-            className="w-full flex flex-col items-center justify-start min-h-[calc(100vh-140px)] py-2 transition-all duration-300"
+            className="w-full flex flex-col items-center justify-start min-h-[calc(100vh-120px)] py-1 transition-all duration-300"
           >
             {pdfLoading ? (
               <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -650,15 +671,16 @@ const CVViewer = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-8 w-full max-w-full overflow-x-auto pb-16">
+              <div className="flex flex-col items-center gap-6 w-full max-w-full overflow-x-auto pb-10">
                 {Array.from({ length: numPages }, (_, i) => (
                   <PDFPage
                     key={i + 1}
                     pdfDoc={pdfDoc}
                     pageNum={i + 1}
-                    scale={zoom / 100}
-                    fitWidth={fitWidth}
+                    scale={zoom}
+                    fitMode={fitMode}
                     containerWidth={containerWidth}
+                    viewportHeight={viewportHeight}
                   />
                 ))}
               </div>
@@ -673,7 +695,7 @@ const CVViewer = () => {
                 -
               </button>
               <span className="text-xs font-mono font-semibold text-[#00EAFF] px-1">
-                {fitWidth ? "Fit" : `${zoom}%`}
+                {zoom}%
               </span>
               <button 
                 onClick={handleZoomIn} 
@@ -682,12 +704,10 @@ const CVViewer = () => {
                 +
               </button>
               <button 
-                onClick={handleToggleFitWidth} 
-                className={`text-[11px] font-semibold px-2.5 py-1.5 rounded-xl border transition-all ${
-                  fitWidth ? "bg-[#00C6FE]/20 text-[#00EAFF] border-[#00C6FE]/40" : "bg-white/10 text-gray-300 border-white/10"
-                }`}
+                onClick={() => setFitMode((prev) => (prev === "page" ? "width" : "page"))} 
+                className="text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] border border-[#00C6FE]/40"
               >
-                Fit
+                {fitMode === "page" ? "Width" : "Page"}
               </button>
               <button 
                 onClick={handleEmailAction}
@@ -698,18 +718,18 @@ const CVViewer = () => {
             </div>
           </div>
         ) : (
-          /* Interactive Web CV Mode */
-          <div className="w-full max-w-4xl bg-gradient-to-br from-[#1a3b50]/60 via-[#0d1f2d]/80 to-[#050816] rounded-3xl p-6 sm:p-10 border-2 border-[#00C6FE]/30 shadow-[0_0_60px_rgba(0,198,254,0.15)] backdrop-blur-2xl">
+          /* Interactive Web CV Mode - 2-Column Executive Layout on 24-inch Screens */
+          <div className="w-full max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl bg-gradient-to-br from-[#1a3b50]/60 via-[#0d1f2d]/80 to-[#050816] rounded-3xl p-6 sm:p-8 xl:p-10 border-2 border-[#00C6FE]/30 shadow-[0_0_60px_rgba(0,198,254,0.15)] backdrop-blur-2xl">
             {/* Header */}
-            <div className="border-b border-white/10 pb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="border-b border-white/10 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                   Tiago <span className="text-[#00EAFF]">Dias</span>
                 </h2>
-                <p className="text-lg text-purple-300 font-semibold mt-1">
+                <p className="text-base sm:text-lg text-purple-300 font-semibold mt-1">
                   Gen AI Software Engineer • Banco BPI
                 </p>
-                <div className="text-sm text-gray-300 mt-2 flex flex-wrap items-center gap-3">
+                <div className="text-xs sm:text-sm text-gray-300 mt-2 flex flex-wrap items-center gap-3">
                   <span>📍 Lisbon, Portugal</span>
                   <span>•</span>
                   <span className="text-emerald-400 font-medium">Open to Remote / Hybrid / Relocation</span>
@@ -720,7 +740,7 @@ const CVViewer = () => {
                     title="Click to copy email / get in touch"
                   >
                     <span>✉️</span>
-                    <span>{CORRECT_EMAIL}</span>
+                    <span className="font-mono">{CORRECT_EMAIL}</span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#00C6FE]/15 border border-[#00C6FE]/30 group-hover:bg-[#00C6FE]/30 transition-colors">
                       {emailCopied ? "Copied!" : "Copy"}
                     </span>
@@ -730,7 +750,6 @@ const CVViewer = () => {
 
               {/* Contact Actions */}
               <div className="flex flex-wrap gap-2.5">
-                {/* Email Button (Guaranteed to work on all browsers & webmail) */}
                 <button
                   type="button"
                   onClick={handleEmailAction}
@@ -766,167 +785,176 @@ const CVViewer = () => {
               </div>
             </div>
 
-            {/* Executive Summary */}
-            <section className="py-6 border-b border-white/10">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#00EAFF] mb-3">
-                Executive Profile
-              </h3>
-              <p className="text-gray-200 text-sm sm:text-base leading-relaxed">
-                Gen AI Software Engineer holding a Master's degree in Computer Science from ISTEC. Specialized in architecting and deploying enterprise Generative AI modernization initiatives, autonomous multi-agent systems, RAG pipelines, and high-throughput .NET 8 / Python backends. Experienced in modernizing large-scale legacy banking systems, building production full-stack software, and leading AI transformation.
-              </p>
-            </section>
+            {/* 2-Column Responsive Executive Dashboard for 24-inch Screens */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 pt-6">
+              {/* Left Column (5 of 12 cols): Summary, Education, Credentials */}
+              <div className="lg:col-span-5 flex flex-col gap-6">
+                {/* Executive Profile */}
+                <section className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-2.5 flex items-center gap-2">
+                    <span>🎯</span> Executive Profile
+                  </h3>
+                  <p className="text-gray-200 text-xs sm:text-sm leading-relaxed">
+                    Gen AI Software Engineer holding a Master's degree in Computer Science from ISTEC. Specialized in architecting and deploying enterprise Generative AI modernization initiatives, autonomous multi-agent systems, RAG pipelines, and high-throughput .NET 8 / Python backends. Experienced in modernizing large-scale legacy banking systems, building production full-stack software, and leading AI transformation.
+                  </p>
+                </section>
 
-            {/* Professional Experience */}
-            <section className="py-6 border-b border-white/10">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#00EAFF] mb-4">
-                Professional Experience
-              </h3>
-              
-              <div className="space-y-6">
-                {/* Banco BPI */}
-                <div className="relative pl-4 border-l-2 border-[#00C6FE]">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h4 className="text-base font-bold text-white">Gen AI Software Engineer</h4>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-emerald-300">July 2025 – Present</span>
-                  </div>
-                  <p className="text-xs text-purple-300 font-medium">Banco BPI • Lisbon, Portugal</p>
-                  <ul className="mt-2 text-xs sm:text-sm text-gray-300 space-y-1.5 list-disc list-inside">
-                    <li>Led enterprise modernization of 500K+ lines of core legacy banking systems using <strong>Python, LLMs, and .NET 8</strong>.</li>
-                    <li>Designed agentic workflows and automated code translation pipelines, increasing overall system maintainability by 30%.</li>
-                    <li>Implemented strict compliance validations and automated testing suites for high-security banking environments.</li>
-                  </ul>
-                </div>
+                {/* Education */}
+                <section className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3.5 flex items-center gap-2">
+                    <span>🎓</span> Education & Qualifications
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="border-l-2 border-[#00C6FE] pl-3">
+                      <div className="flex flex-wrap justify-between items-baseline gap-1">
+                        <h4 className="font-bold text-white text-xs sm:text-sm">Master's Degree in Computer Science</h4>
+                        <span className="text-[11px] font-mono text-[#00EAFF]">Oct 2022 – Sep 2025</span>
+                      </div>
+                      <p className="text-xs text-purple-300 font-medium">ISTEC - Instituto Superior de Tecnologias Avançadas</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">Specialization: Artificial Intelligence, Intelligent Systems, Distributed Systems.</p>
+                    </div>
 
-                {/* Capgemini */}
-                <div className="relative pl-4 border-l-2 border-purple-500">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h4 className="text-base font-bold text-white">Gen AI Software Engineer Intern</h4>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300">Mar 2025 – Jun 2025</span>
-                  </div>
-                  <p className="text-xs text-purple-300 font-medium">Capgemini Portugal • Lisbon, Portugal</p>
-                  <ul className="mt-2 text-xs sm:text-sm text-gray-300 space-y-1.5 list-disc list-inside">
-                    <li>Engineered enterprise RAG pipelines and autonomous conversational agents with Python, FAISS vector search, and Spacy/NLTK.</li>
-                    <li>Cut compliance document research latency by 40% while improving response accuracy by 25%.</li>
-                  </ul>
-                </div>
+                    <div className="border-l-2 border-purple-500 pl-3">
+                      <div className="flex flex-wrap justify-between items-baseline gap-1">
+                        <h4 className="font-bold text-white text-xs sm:text-sm">Bachelor's Degree in Computer Science</h4>
+                        <span className="text-[11px] font-mono text-[#00EAFF]">Sep 2019 – Oct 2021</span>
+                      </div>
+                      <p className="text-xs text-purple-300 font-medium">ISTEC - Instituto Superior de Tecnologias Avançadas</p>
+                    </div>
 
-                {/* Consulteware */}
-                <div className="relative pl-4 border-l-2 border-white/30">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h4 className="text-base font-bold text-white">.NET Developer Intern</h4>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300">Mar 2019 – Aug 2019</span>
+                    <div className="border-l-2 border-white/30 pl-3">
+                      <div className="flex flex-wrap justify-between items-baseline gap-1">
+                        <h4 className="font-bold text-white text-xs sm:text-sm">Superior Vocational Course in CS Management</h4>
+                        <span className="text-[11px] font-mono text-[#00EAFF]">Sep 2017 – Oct 2021</span>
+                      </div>
+                      <p className="text-xs text-purple-300 font-medium">ISTEC - Instituto Superior de Tecnologias Avançadas</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-purple-300 font-medium">Consulteware</p>
-                  <ul className="mt-2 text-xs sm:text-sm text-gray-300 space-y-1.5 list-disc list-inside">
-                    <li>Built an employee time-clock tracking system using C#, .NET, and SQL Server handling 5,000+ monthly hours.</li>
-                    <li>Reduced database reporting latency by 30% through index optimizations and stored procedures.</li>
-                  </ul>
-                </div>
+                </section>
 
-                {/* OGMA */}
-                <div className="relative pl-4 border-l-2 border-white/20">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h4 className="text-base font-bold text-white">IT Help Desk Technician Intern</h4>
-                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300">Apr 2017 – Jul 2017</span>
+                {/* Certifications Highlights */}
+                <section className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3 flex items-center gap-2">
+                    <span>🏆</span> Certifications (15 Credentials)
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5 text-[11px]">
+                    {[
+                      "MOS: Microsoft Office 2016 Master",
+                      "MTA: Software Development Fundamentals",
+                      "MTA: Database Administration",
+                      "MTA: Security Fundamentals",
+                      "MTA: Networking Fundamentals",
+                      "MTA: HTML5 Application Development",
+                      "MTA: Windows Operating System",
+                      "MTA: Windows Server Administration",
+                      "Google Digital Marketing",
+                    ].map((cert, cIdx) => (
+                      <span
+                        key={cIdx}
+                        className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:border-[#00C6FE]/40 transition-colors"
+                      >
+                        🏅 {cert}
+                      </span>
+                    ))}
                   </div>
-                  <p className="text-xs text-purple-300 font-medium">OGMA - Indústria Aeronáutica de Portugal</p>
-                  <ul className="mt-2 text-xs sm:text-sm text-gray-300 space-y-1.5 list-disc list-inside">
-                    <li>Provided hardware, networking, and Windows enterprise OS support, resolving 15+ daily tickets.</li>
-                    <li>Automated internal reporting workflows using Excel VBA macros, increasing administrative efficiency by 50%.</li>
-                  </ul>
-                </div>
+                </section>
               </div>
-            </section>
 
-            {/* Education */}
-            <section className="py-6 border-b border-white/10">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#00EAFF] mb-4">
-                Education & Qualifications
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex flex-wrap justify-between items-baseline">
-                    <h4 className="font-bold text-white text-sm sm:text-base">Master's Degree in Computer Science</h4>
-                    <span className="text-xs font-mono text-[#00EAFF]">Oct 2022 – Sep 2025</span>
+              {/* Right Column (7 of 12 cols): Professional Experience & Technical Stack */}
+              <div className="lg:col-span-7 flex flex-col gap-6">
+                {/* Professional Experience */}
+                <section className="p-5 sm:p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-4 flex items-center gap-2">
+                    <span>💼</span> Professional Experience
+                  </h3>
+                  
+                  <div className="space-y-5">
+                    {/* Banco BPI */}
+                    <div className="relative pl-4 border-l-2 border-[#00C6FE]">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h4 className="text-sm sm:text-base font-bold text-white">Gen AI Software Engineer</h4>
+                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">July 2025 – Present</span>
+                      </div>
+                      <p className="text-xs text-purple-300 font-medium">Banco BPI • Lisbon, Portugal</p>
+                      <ul className="mt-2 text-xs text-gray-300 space-y-1.5 list-disc list-inside">
+                        <li>Led enterprise modernization of 500K+ lines of core legacy banking systems using <strong>Python, LLMs, and .NET 8</strong>.</li>
+                        <li>Designed agentic workflows and automated code translation pipelines, increasing overall system maintainability by 30%.</li>
+                        <li>Implemented strict compliance validations and automated testing suites for high-security banking environments.</li>
+                      </ul>
+                    </div>
+
+                    {/* Capgemini */}
+                    <div className="relative pl-4 border-l-2 border-purple-500">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h4 className="text-sm sm:text-base font-bold text-white">Gen AI Software Engineer Intern</h4>
+                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300">Mar 2025 – Jun 2025</span>
+                      </div>
+                      <p className="text-xs text-purple-300 font-medium">Capgemini Portugal • Lisbon, Portugal</p>
+                      <ul className="mt-2 text-xs text-gray-300 space-y-1.5 list-disc list-inside">
+                        <li>Engineered enterprise RAG pipelines and autonomous conversational agents with Python, FAISS vector search, and Spacy/NLTK.</li>
+                        <li>Cut compliance document research latency by 40% while improving response accuracy by 25%.</li>
+                      </ul>
+                    </div>
+
+                    {/* Consulteware */}
+                    <div className="relative pl-4 border-l-2 border-white/30">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h4 className="text-sm sm:text-base font-bold text-white">.NET Developer Intern</h4>
+                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300">Mar 2019 – Aug 2019</span>
+                      </div>
+                      <p className="text-xs text-purple-300 font-medium">Consulteware</p>
+                      <ul className="mt-2 text-xs text-gray-300 space-y-1.5 list-disc list-inside">
+                        <li>Built an employee time-clock tracking system using C#, .NET, and SQL Server handling 5,000+ monthly hours.</li>
+                        <li>Reduced database reporting latency by 30% through index optimizations and stored procedures.</li>
+                      </ul>
+                    </div>
+
+                    {/* OGMA */}
+                    <div className="relative pl-4 border-l-2 border-white/20">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h4 className="text-sm sm:text-base font-bold text-white">IT Help Desk Technician Intern</h4>
+                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300">Apr 2017 – Jul 2017</span>
+                      </div>
+                      <p className="text-xs text-purple-300 font-medium">OGMA - Indústria Aeronáutica de Portugal</p>
+                      <ul className="mt-2 text-xs text-gray-300 space-y-1.5 list-disc list-inside">
+                        <li>Provided hardware, networking, and Windows enterprise OS support, resolving 15+ daily tickets.</li>
+                        <li>Automated internal reporting workflows using Excel VBA macros, increasing administrative efficiency by 50%.</li>
+                      </ul>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-300">ISTEC - Instituto Superior de Tecnologias Avançadas</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Specialization: Artificial Intelligence, Intelligent Systems, Distributed Systems.</p>
-                </div>
+                </section>
 
-                <div>
-                  <div className="flex flex-wrap justify-between items-baseline">
-                    <h4 className="font-bold text-white text-sm sm:text-base">Bachelor's Degree in Computer Science</h4>
-                    <span className="text-xs font-mono text-[#00EAFF]">Sep 2019 – Oct 2021</span>
+                {/* Core Tech Stack */}
+                <section className="p-5 sm:p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3 flex items-center gap-2">
+                    <span>⚙️</span> Core Technical Stack
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                      <span className="font-bold text-white">🤖 Gen AI & LLMs:</span>
+                      <p className="text-gray-300 mt-1">Python, RAG, FAISS Vector Search, Multi-Agent Workflows, Prompt Engineering, Model Fine-Tuning</p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                      <span className="font-bold text-white">⚙️ Backend & Architecture:</span>
+                      <p className="text-gray-300 mt-1">C# (.NET 8, ASP.NET Core), Node.js, Express, REST APIs, Microservices, WebAuthn Passkeys</p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                      <span className="font-bold text-white">🗄️ Databases & Storage:</span>
+                      <p className="text-gray-300 mt-1">MongoDB, PostgreSQL, SQL Server, Redis, Vector Databases</p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                      <span className="font-bold text-white">💻 Frontend & DevOps:</span>
+                      <p className="text-gray-300 mt-1">React 18, TypeScript, TailwindCSS, Three.js, Docker, Git, Vite, Postman</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-300">ISTEC - Instituto Superior de Tecnologias Avançadas</p>
-                </div>
-
-                <div>
-                  <div className="flex flex-wrap justify-between items-baseline">
-                    <h4 className="font-bold text-white text-sm sm:text-base">Superior Vocational Course in Computer Science Management</h4>
-                    <span className="text-xs font-mono text-[#00EAFF]">Sep 2017 – Oct 2021</span>
-                  </div>
-                  <p className="text-xs text-gray-300">ISTEC - Instituto Superior de Tecnologias Avançadas</p>
-                </div>
+                </section>
               </div>
-            </section>
-
-            {/* Core Tech Stack */}
-            <section className="py-6 border-b border-white/10">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#00EAFF] mb-3">
-                Core Technical Stack
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                  <span className="font-bold text-white">🤖 Gen AI & LLMs:</span>
-                  <p className="text-gray-300 mt-1">Python, RAG, FAISS Vector Search, Multi-Agent Workflows, Prompt Engineering, Model Fine-Tuning</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                  <span className="font-bold text-white">⚙️ Backend & Architecture:</span>
-                  <p className="text-gray-300 mt-1">C# (.NET 8, ASP.NET Core), Node.js, Express, REST APIs, Microservices, WebAuthn Passkeys</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                  <span className="font-bold text-white">🗄️ Databases & Storage:</span>
-                  <p className="text-gray-300 mt-1">MongoDB, PostgreSQL, SQL Server, Redis, Vector Databases</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                  <span className="font-bold text-white">💻 Frontend & DevOps:</span>
-                  <p className="text-gray-300 mt-1">React 18, TypeScript, TailwindCSS, Three.js, Docker, Git, Vite, Postman</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Certifications Highlights */}
-            <section className="py-6">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#00EAFF] mb-3">
-                Certifications (15 Credentials)
-              </h3>
-              <div className="flex flex-wrap gap-2 text-xs">
-                {[
-                  "MOS: Microsoft Office 2016 Master",
-                  "MTA: Software Development Fundamentals",
-                  "MTA: Database Administration Fundamentals",
-                  "MTA: Security Fundamentals",
-                  "MTA: Networking Fundamentals",
-                  "MTA: HTML5 Application Development",
-                  "MTA: Windows Operating System Fundamentals",
-                  "MTA: Windows Server Administration",
-                  "Google Digital Marketing Fundamentals",
-                ].map((cert, cIdx) => (
-                  <span
-                    key={cIdx}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-300"
-                  >
-                    🏆 {cert}
-                  </span>
-                ))}
-              </div>
-            </section>
+            </div>
           </div>
         )}
       </main>
 
-      {/* Robust Email Action Modal (Handles Gmail Web, Outlook Web, Mailto, and Instant Copy) */}
+      {/* Robust Email Action Modal */}
       <AnimatePresence>
         {isEmailModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
