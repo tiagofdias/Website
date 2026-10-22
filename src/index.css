@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -80,8 +80,11 @@
 }
 
 @font-face {
-  font-family: 'Thunder';
-  src: url('/path-to-font/thunder.woff2') format('woff2');
+  font-family: 'Poppins';
+  src: url('/fonts/Poppins/Poppins-Regular.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
 }
 
 
@@ -328,3 +331,40 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Accessibility: respect prefers-reduced-motion for corporate/low-power/accessibility users */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print styles for recruiters printing or saving CV/portfolio as PDF */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+  nav, #chat-widget-root, .chat-widget-container, footer, canvas {
+    display: none !important;
+  }
+  .bg-primary, .bg-tertiary, .black-gradient {
+    background: transparent !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+  }
+  * {
+    color: #111827 !important;
+    text-shadow: none !important;
+  }
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 80%;
+  }
+}
+

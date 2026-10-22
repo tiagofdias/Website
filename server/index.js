@@ -252,11 +252,11 @@ async function downloadImagesFromDriveLinks(driveLinks) {
       }
       
       if (!fileId) {
-        console.log(`  ❌ Could not extract file ID from URL: ${driveUrl}`);
+        console.log(`  • Could not extract file ID from URL: ${driveUrl}`);
         continue;
       }
       
-      console.log(`  🔑 File ID: ${fileId}`);
+      console.log(`  • File ID: ${fileId}`);
       
       // Download image from Google Drive
       const downloadUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&authuser=0`;
@@ -273,7 +273,7 @@ async function downloadImagesFromDriveLinks(driveLinks) {
       }
       
       const buffer = await response.buffer();
-      console.log(`  ✅ Downloaded (${buffer.length} bytes)`);
+      console.log(`  • Downloaded (${buffer.length} bytes)`);
       
       // Convert to base64
       const base64Image = buffer.toString('base64');
@@ -284,17 +284,17 @@ async function downloadImagesFromDriveLinks(driveLinks) {
       
       const dataUrl = `data:${mimeType};base64,${base64Image}`;
       const sizeKb = (base64Image.length / 1024).toFixed(1);
-      console.log(`  ✅ Converted to base64 (${sizeKb} KB)`);
+      console.log(`  • Converted to base64 (${sizeKb} KB)`);
       
       images.push(dataUrl);
       
     } catch (error) {
-      console.error(`  [${i + 1}/${driveLinks.length}] ❌ Failed: ${error.message}`);
+      console.error(`  [${i + 1}/${driveLinks.length}] • Failed: ${error.message}`);
       // Continue with next image instead of failing completely
     }
   }
   
-  console.log(`\n✅ Successfully downloaded ${images.length} image(s) from ${driveLinks.length} link(s)\n`);
+  console.log(`\n• Successfully downloaded ${images.length} image(s) from ${driveLinks.length} link(s)\n`);
   
   return images;
 }
@@ -331,17 +331,17 @@ const { Project, Certification, ProExp, Education, Article, About, AIChatLog, Vi
       console.log('Image Links:', projectData.pdf_links);
       try {
         const downloadedImages = await downloadImagesFromDriveLinks(projectData.pdf_links);
-        console.log(`📊 Download result: ${downloadedImages.length} images downloaded`);
+        console.log(`• Download result: ${downloadedImages.length} images downloaded`);
         if (downloadedImages.length > 0) {
           console.log(`First image preview: ${downloadedImages[0].substring(0, 100)}...`);
           projectData.images = downloadedImages;
-          console.log(`✅ Successfully downloaded ${downloadedImages.length} image(s)`);
-          console.log(`📝 projectData.images now has ${projectData.images.length} items`);
+          console.log(`• Successfully downloaded ${downloadedImages.length} image(s)`);
+          console.log(`• projectData.images now has ${projectData.images.length} items`);
         } else {
-          console.log('⚠️  No images were downloaded');
+          console.log('•  No images were downloaded');
         }
       } catch (downloadError) {
-        console.error('⚠️  Error downloading images:', downloadError.message);
+        console.error('•  Error downloading images:', downloadError.message);
         console.error('Stack:', downloadError.stack);
         // Continue saving the project even if download fails
       }
@@ -375,7 +375,7 @@ const { Project, Certification, ProExp, Education, Article, About, AIChatLog, Vi
     // Save the project
     const savedProject = await project.save();
     
-    console.log('✅ Project saved to database:', {
+    console.log('• Project saved to database:', {
       id: savedProject._id,
       name: savedProject.name,
       images_count: savedProject.images?.length || 0,
@@ -405,10 +405,10 @@ app.put('/api/projects/:id', auth, async (req, res) => {
         const downloadedImages = await downloadImagesFromDriveLinks(projectData.pdf_links);
         if (downloadedImages.length > 0) {
           projectData.images = downloadedImages;
-          console.log(`✅ Successfully downloaded ${downloadedImages.length} image(s)`);
+          console.log(`• Successfully downloaded ${downloadedImages.length} image(s)`);
         }
       } catch (downloadError) {
-        console.error('⚠️  Error downloading images:', downloadError.message);
+        console.error('•  Error downloading images:', downloadError.message);
         // Continue updating the project even if download fails
       }
     }
@@ -448,10 +448,10 @@ app.post('/api/certifications', auth, async (req, res) => {
         const extractedImages = await extractImagesFromPdfLinks(certData.pdf_links);
         if (extractedImages.length > 0) {
           certData.images = extractedImages;
-          console.log(`✅ Successfully extracted ${extractedImages.length} image(s)`);
+          console.log(`• Successfully extracted ${extractedImages.length} image(s)`);
         }
       } catch (extractError) {
-        console.error('⚠️  Error extracting images from PDFs:', extractError.message);
+        console.error('•  Error extracting images from PDFs:', extractError.message);
         // Continue saving the certification even if extraction fails
       }
     }
@@ -490,13 +490,13 @@ app.put('/api/certifications/:id', auth, async (req, res) => {
           
           if (extractedImages.length > 0) {
             certData.images = extractedImages;
-            console.log(`✅ Successfully extracted ${extractedImages.length} image(s)`);
+            console.log(`• Successfully extracted ${extractedImages.length} image(s)`);
           } else {
-            console.log(`⚠️  No images were extracted!`);
+            console.log(`•  No images were extracted!`);
             certData.images = [];
           }
         } catch (extractError) {
-          console.error('❌ Error extracting images from PDFs:', extractError);
+          console.error('• Error extracting images from PDFs:', extractError);
           console.error('   Error message:', extractError.message);
           console.error('   Stack trace:', extractError.stack);
           // Clear images if extraction fails
@@ -510,7 +510,7 @@ app.put('/api/certifications/:id', auth, async (req, res) => {
       }
     } else {
       // No pdf_links provided, clear images
-      console.log(`\n⚠️  No PDF links for certification: ${certData.name}`);
+      console.log(`\n•  No PDF links for certification: ${certData.name}`);
       certData.images = [];
     }
     
@@ -551,7 +551,7 @@ app.post('/api/certifications/:id/extract-images', auth, async (req, res) => {
     if (extractedImages.length > 0) {
       cert.images = extractedImages;
       await cert.save();
-      console.log(`✅ Successfully extracted and saved ${extractedImages.length} image(s)`);
+      console.log(`• Successfully extracted and saved ${extractedImages.length} image(s)`);
       res.json({ 
         success: true, 
         message: `Extracted ${extractedImages.length} images`,
@@ -695,15 +695,379 @@ app.delete('/api/about/:id', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.0' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.1' });
 });
 
-// Chat endpoint with OpenRouter AI (MiniMax model)
+// Database Knowledge Synthesizer:
+// Multi-factor semantic scoring engine using live database collections (projects, certifications, proExps, education, about, articles)
+function synthesizeDatabaseResponse({ message, projects = [], certifications = [], proExps = [], education = [], aboutData = {}, aboutText = '', aboutEmail = '', articles = [] }) {
+  const lowerMessage = (message || '').trim().toLowerCase();
+  const cleanMessage = lowerMessage.replace(/[?!.,;:"'()[\]{}]/g, ' ');
+  const tokens = cleanMessage.split(/\s+/).filter(Boolean);
+  const tokenSet = new Set(tokens);
+
+  // Multilingual detection
+  const isPt = /(olá|ola|bom dia|boa tarde|boa noite|quem|qual|quais|como|dele|ele|sobre|projetos|projeto|experiência|educação|trabalho|contacto|contato|estudou|tecnologias|habilidades|currículo|curriculo|trabalha|mora|onde)/iu.test(lowerMessage);
+  const isEs = /(hola|buenos dias|buenas tardes|quién|quien|cuál|cual|cómo|como|proyectos|proyecto|experiencia|educación|educacion|contacto|habilidades|currículum)/iu.test(lowerMessage);
+
+  // 1. Greetings
+  if (/^(hi|hello|hey|yo|sup|greetings|good\s*(morning|afternoon|evening))\b/i.test(lowerMessage) || 
+      /^(olá|ola|oi|bom dia|boa tarde|boa noite)\b/iu.test(lowerMessage) ||
+      /^(hola|buenos días|buenas tardes)\b/iu.test(lowerMessage) ||
+      ['hi', 'hello', 'hey', 'ola', 'olá', 'oi', 'hola'].includes(lowerMessage)) {
+    if (isPt) {
+      return {
+        response: "Olá! • Sou o assistente inteligente do Tiago Dias. O Tiago é Gen AI Software Engineer no Banco BPI e Mestre em Engenharia Informática pelo ISTEC. Posso dar-lhe informações detalhadas sobre os seus projetos práticos (como o Condomix, Sonar ou Automix), a sua experiência em Inteligência Artificial Generativa e .NET, percurso académico ou como entrar em contacto. O que gostaria de explorar?",
+        scrollTarget: null
+      };
+    }
+    return {
+      response: "Hello! • I'm Tiago Dias's AI Assistant. Tiago is a Gen AI Software Engineer currently at Banco BPI, holding a Master's degree in Computer Science from ISTEC. I can help you explore his enterprise Gen AI & LLM modernization work, software projects (like Condomix, Sonar, and Automix), technical stack, certifications, and career history. What would you like to know?",
+      scrollTarget: null
+    };
+  }
+
+  // Intent Signals
+  const hasCurrentSignal = /(current|currently|now|right now|today|present|atualmente|agora|presente|atual)\b/i.test(lowerMessage);
+  const hasEmploymentSignal = /(work|working|works|employed|employer|employment|job|jobs|role|position|career|company|firm|workplace|trabalha|trabalhando|emprego|empresa)\b/i.test(lowerMessage);
+  const hasProjectSignal = /(project|projects|portfolio|built|apps|application|applications|software|demo|demos|repo|repos|github|source code|projetos|projeto)\b/i.test(lowerMessage);
+  const hasEducationSignal = /(education|degree|master|masters|bachelor|bachelors|university|college|school|istec|study|studied|educação|mestrado|licenciatura|formação)\b/i.test(lowerMessage);
+  const hasCertSignal = /(cert|certification|certifications|certificate|credentials|mta|mos|microsoft|certificados|certificações)\b/i.test(lowerMessage);
+  const hasContactSignal = /(contact|email|hire|reach|talk|touch|phone|contato|contacto|mensagem|falar|contratar)\b/i.test(lowerMessage);
+  const hasCvSignal = /(cv|resume|curriculum|curriculo|pdf)\b/i.test(lowerMessage);
+  const hasLocationSignal = /(location|live|lives|living|based|located|relocate|remote|portugal|lisbon|localização|mora|vive)\b/i.test(lowerMessage);
+  const hasLanguageSignal = /(language|languages|speak|speaks|idioma|idiomas|fala|english|portuguese)\b/i.test(lowerMessage);
+
+  // Work model, hiring, and remote query detection
+  const isWorkModelOrHiringQuery =
+    /\b(remote|remotely|teletrabalho|remoto|relocate|relocation|abroad|hybrid|híbrido)\b/i.test(lowerMessage) ||
+    /\b(looking\s+(for\s+)?(a\s+)?(remote|job|jobs|work|role|roles|position|positions|opportunity|opportunities))\b/i.test(lowerMessage) ||
+    /\b(is\s+he|are\s+you|he('?s)?\s+(he\s+)?)\s+(looking|seeking|available|open|ready|interested)\b/i.test(lowerMessage) ||
+    /\b(can\s+(i|we)\s+hire|hire\s+him|hiring\s+him|open\s+to\s+work|open\s+for\s+work|available\s+for\s+work|looking\s+to\s+hire|want\s+to\s+hire)\b/i.test(lowerMessage) ||
+    /\b(full\s*time|part\s*time|contract|freelance|disponibilidade)\b/i.test(lowerMessage);
+
+  const isCurrentJobQuery =
+    !isWorkModelOrHiringQuery && (
+      (hasEmploymentSignal && (hasCurrentSignal || lowerMessage.includes('where') || lowerMessage.includes('onde') || lowerMessage.includes('who'))) ||
+      lowerMessage.includes('current job') ||
+      lowerMessage.includes('current role') ||
+      lowerMessage.includes('current company') ||
+      lowerMessage.includes('onde trabalha')
+    );
+
+  const email = aboutEmail || 'tiagodias.cl@gmail.com';
+
+  // Build candidate knowledge nodes
+  const nodes = [];
+
+  // Banco BPI
+  nodes.push({
+    id: 'exp_bpi',
+    category: 'EXPERIENCE',
+    primary: ['bpi', 'banco bpi', 'banco'],
+    secondary: ['banking', 'current', 'currently', 'now', 'present', 'employed', 'work', 'working', 'job', 'modernization', '.net 8', 'python', 'llm', 'trabalha', 'atual'],
+    response: "Tiago is currently a full-time **Gen AI Software Engineer** at **Banco BPI** (July 2025 – Present) in Lisbon, Portugal.\n\n• **Focus**: Modernizing 500K+ lines of legacy banking logic with **Python, LLMs & .NET 8** (+30% maintainability).  \n• **Work Model**: Lisbon, Portugal (Open to Remote / Hybrid / Relocation).",
+    scrollTarget: 'about',
+    aboutTab: 'experience',
+    actionButtons: [
+      { type: 'url', icon: '', label: 'LinkedIn', action: 'https://www.linkedin.com/in/tiagofdias' },
+      { type: 'download', icon: '', label: 'Download CV', action: 'cv' }
+    ]
+  });
+
+  // Capgemini
+  nodes.push({
+    id: 'exp_capgemini',
+    category: 'EXPERIENCE',
+    primary: ['capgemini', 'cap gemini'],
+    secondary: ['rag', 'faiss', 'vector search', 'vector', 'spacy', 'nltk', 'agent', 'agents', 'fine-tuning', 'prompt engineering'],
+    response: "At **Capgemini Portugal** (Mar – Jun 2025), Tiago worked as a **Gen AI Software Engineer Intern**.\n\n• **Company**: Capgemini Portugal  \n• **Focus**: Enterprise RAG pipelines & autonomous AI agents  \n• **Tech**: Python, FAISS Vector Search, Spacy/NLTK & LLM Fine-Tuning  \n• **Impact**: Cut compliance document research time by 40% and boosted QA accuracy by 25%.",
+    scrollTarget: 'about',
+    aboutTab: 'experience'
+  });
+
+  // Consulteware
+  nodes.push({
+    id: 'exp_consulteware',
+    category: 'EXPERIENCE',
+    primary: ['consulteware'],
+    secondary: ['c#', '.net', 'dotnet', 'sql', 'crud', 'time clock', 'timeclock', 'hours'],
+    response: "At **Consulteware** (Mar – Aug 2019), Tiago served as a **.NET Developer Intern**.\n\n• **Company**: Consulteware  \n• **Role**: .NET Developer Intern  \n• **Tech**: C#, .NET, SQL Server CRUD operations  \n• **Impact**: Built an employee time-clock tracking 5K+ monthly hours, cutting data latency by 30%.",
+    scrollTarget: 'about',
+    aboutTab: 'experience'
+  });
+
+  // OGMA
+  nodes.push({
+    id: 'exp_ogma',
+    category: 'EXPERIENCE',
+    primary: ['ogma', 'aeronautica'],
+    secondary: ['help desk', 'helpdesk', 'support', 'windows os', 'hardware', 'vba', 'macros'],
+    response: "At **OGMA** (Apr – Jul 2017), Tiago worked as an **IT Help Desk Technician Intern**.\n\n• **Company**: OGMA - Indústria Aeronáutica de Portugal  \n• **Focus**: Windows enterprise deployments & hardware diagnostics  \n• **Impact**: Resolved 15+ daily tickets and automated IT reporting with Excel VBA macros (+50% efficiency).",
+    scrollTarget: 'about',
+    aboutTab: 'experience'
+  });
+
+  // Junta de Freguesia
+  nodes.push({
+    id: 'exp_junta',
+    category: 'EXPERIENCE',
+    primary: ['junta', 'freguesia'],
+    secondary: ['frontend', 'html5', 'css3', 'jquery', 'portal', 'citizens'],
+    response: "At **Junta de Freguesia** (May – Jun 2016), Tiago worked as a **Frontend Developer Intern**.\n\n• **Organization**: Junta de Freguesia da Póvoa de Santa Iria  \n• **Focus**: Municipal public portal redesign  \n• **Tech**: HTML5, CSS3, jQuery, Chart.js  \n• **Impact**: Enhanced civic accessibility for 40,000+ local residents with responsive UI.",
+    scrollTarget: 'about',
+    aboutTab: 'experience'
+  });
+
+  // Experience Overview
+  nodes.push({
+    id: 'exp_overview',
+    category: 'EXPERIENCE',
+    primary: ['experience', 'career', 'work history', 'career journey', 'career timeline', 'experiência', 'histórico profissional', 'percurso', 'all companies', 'career progression'],
+    secondary: ['companies', 'history', 'progression', 'jobs history', 'past roles'],
+    response: "Tiago has **5+ years of software engineering progression**, currently leading Generative AI modernization at **Banco BPI**:\n\n• **Banco BPI** (2025–Present): Gen AI Software Engineer (.NET 8 & Python LLMs)  \n• **Capgemini** (2025): Gen AI Intern (Enterprise RAG & FAISS)  \n• **Consulteware** (2019): .NET Developer Intern (C# & SQL)  \n• **OGMA** (2017): IT Help Desk Intern (Infrastructure & VBA)  \n• **Junta de Freguesia** (2016): Frontend Intern (HTML5/CSS/jQuery)",
+    scrollTarget: 'about',
+    aboutTab: 'experience',
+    actionButtons: [
+      { type: 'url', icon: '', label: 'LinkedIn', action: 'https://www.linkedin.com/in/tiagofdias' },
+      { type: 'download', icon: '', label: 'Download CV', action: 'cv' }
+    ]
+  });
+
+  // Master's Degree
+  nodes.push({
+    id: 'edu_master',
+    category: 'EDUCATION',
+    primary: ['master', "master's", 'mestrado', 'masters'],
+    secondary: ['istec', 'computer science', 'artificial intelligence', 'ai', 'intelligent agents', 'thesis'],
+    response: "Tiago holds a Master's degree in Computer Science from ISTEC (Oct 2022 – Sep 2025), specializing in Artificial Intelligence, intelligent multi-agent systems, and distributed software engineering.",
+    scrollTarget: 'about',
+    aboutTab: 'education'
+  });
+
+  // Education Overview
+  nodes.push({
+    id: 'edu_overview',
+    category: 'EDUCATION',
+    primary: ['education', 'degree', 'university', 'college', 'school', 'istec', 'educação', 'estudos', 'formação'],
+    secondary: ['bachelor', 'vocational', 'academic'],
+    response: "Tiago completed all of his academic qualifications at ISTEC - Higher Institute of Advanced Technologies:\n• Master's degree in Computer Science (Oct 2022 – Sep 2025): Focused on artificial intelligence, intelligent systems, and software engineering.\n• Bachelor's degree in Computer Science (Sep 2019 – Oct 2021): Core algorithms, data structures, and system design.\n• Superior Vocational Course in Computer Science Management (Sep 2017 – Oct 2021).",
+    scrollTarget: 'about',
+    aboutTab: 'education'
+  });
+
+  // Certifications Overview
+  nodes.push({
+    id: 'cert_overview',
+    category: 'CERTIFICATIONS',
+    primary: ['certification', 'certifications', 'certificate', 'mta', 'mos', 'microsoft', 'credentials', 'certificados', 'certificações'],
+    secondary: ['exam', 'credly', 'badge', 'excel', 'security', 'database', 'networking'],
+    response: "Tiago holds 15 professional credentials including:\n• MOS: 2016 Master (with Excel & Word Expert)\n• MTA: Software Development Fundamentals\n• MTA: Database Administration Fundamentals\n• MTA: Security Fundamentals\n• MTA: Networking Fundamentals\n• MTA: HTML5 Application Development Fundamentals\n• MTA: Windows OS & Server Administration\n• Fundamentals of Digital Marketing\nYou can view and download his certificate credentials in the Certifications section!",
+    scrollTarget: 'certifications'
+  });
+
+  // Individual Projects
+  const featuredProjects = projects.length ? projects : [
+    { name: 'Sonar', description: 'Real-time WebSocket messaging app with JWT auth and MongoDB.' },
+    { name: 'Condomix', description: 'Complete SaaS condominium management system with 2FA and automated invoicing.' },
+    { name: 'Automix', description: 'Automotive dealership portal with dynamic spec filtering.' },
+    { name: 'Blood-Pressure-Monitor', description: 'Medical analytics in Next.js, PostgreSQL, and automated Excel reporting.' },
+    { name: 'Bulky_MVC', description: 'Enterprise ASP.NET Core MVC application with Entity Framework and SQL Server.' },
+    { name: 'Comparador-DIGI', description: 'Consumer utility tool to calculate monthly savings when switching to DIGI Portugal.' }
+  ];
+
+  featuredProjects.forEach(proj => {
+    const pName = (proj.name || '').toLowerCase();
+    const cleanPName = pName.replace(/[-_]/g, ' ');
+    nodes.push({
+      id: `proj_${pName.replace(/\s+/g, '_')}`,
+      category: 'PROJECTS',
+      isSpecific: true,
+      primary: [pName, cleanPName],
+      secondary: (proj.tags || []).map(t => (t.name || '').toLowerCase()),
+      response: `${proj.name} is ${proj.description || "one of Tiago's highlighted software projects."} You can explore its demo and source code using the action buttons below!`,
+      scrollTarget: 'projects',
+      actionButtons: [
+        proj.source_code_link ? { type: 'url', icon: '', label: 'GitHub', action: proj.source_code_link } : null,
+        proj.WebsiteText ? { type: 'url', icon: '', label: 'Live Demo', action: proj.WebsiteText } : null
+      ].filter(Boolean)
+    });
+  });
+
+  // Projects Overview
+  nodes.push({
+    id: 'proj_overview',
+    category: 'PROJECTS',
+    primary: ['project', 'projects', 'portfolio', 'built', 'apps', 'projetos', 'repos', 'repositories'],
+    secondary: ['show his work', 'show me his work', 'what has he built', 'what did he build'],
+    response: "Tiago has built 28 software applications spanning Generative AI, enterprise systems, and full-stack web applications. Standout projects include:\n• Condomix: Complete SaaS condominium management system with 2FA, invoicing, and unit management.\n• Sonar: Real-time messaging app with WebSockets, JWT authentication, and MongoDB.\n• Automix: Automotive inventory dealership portal with dynamic spec filtering.\n• Blood-Pressure-Monitor: Medical tracking application with Next.js, PostgreSQL, and Excel report generation.\n• Bulky_MVC: Enterprise ASP.NET Core MVC application with Entity Framework.\n\nExplore interactive demos and GitHub source code in the Projects section below!",
+    scrollTarget: 'projects'
+  });
+
+  // Tech / Skills
+  nodes.push({
+    id: 'tech_overview',
+    category: 'SKILLS',
+    primary: ['skill', 'skills', 'tech', 'stack', 'technologies', 'habilidades', 'tecnologia'],
+    secondary: ['python', 'c#', '.net', 'react', 'node', 'javascript', 'typescript', 'mongo', 'postgres', 'faiss', 'rag', 'llm'],
+    response: "Tiago Dias's core technical expertise encompasses:\n• Gen AI & Data: Python, LLMs, RAG, FAISS Vector Search, Agentic Workflows\n• Backend: C# (.NET 8), Node.js, Express, RESTful APIs, JWT, Passkeys (WebAuthn)\n• Databases: MongoDB, PostgreSQL, SQL Server\n• Frontend: React 18, TypeScript, TailwindCSS, Three.js, HTML5/CSS3\n• Tools & DevOps: Git, GitHub, Docker, Postman, Vite",
+    scrollTarget: 'about',
+    aboutTab: 'skills'
+  });
+
+  // Contact
+  nodes.push({
+    id: 'info_contact',
+    category: 'CONTACT',
+    primary: ['contact', 'email', 'hire', 'reach', 'touch', 'message', 'phone', 'contacto', 'contato'],
+    secondary: ['talk', 'mail', 'inquiry'],
+    response: isPt
+      ? `Pode contactar o Tiago Dias diretamente através do email: ${email} ou pelo seu perfil no LinkedIn (https://www.linkedin.com/in/tiagofdias). Também pode enviar-lhe uma mensagem direta usando o formulário na secção de Contacto!`
+      : `You can reach Tiago Dias directly at ${email} or connect via his LinkedIn profile (https://www.linkedin.com/in/tiagofdias). You can also send a direct inquiry using the interactive Contact Form below!`,
+    scrollTarget: 'contact',
+    actionButtons: [
+      { type: 'url', icon: '', label: 'LinkedIn', action: 'https://www.linkedin.com/in/tiagofdias' },
+      { type: 'download', icon: '', label: 'Download CV', action: 'cv' }
+    ]
+  });
+
+  // CV
+  nodes.push({
+    id: 'info_cv',
+    category: 'CV',
+    primary: ['cv', 'resume', 'curriculum', 'curriculo', 'pdf', 'download'],
+    secondary: ['download cv', 'file'],
+    response: "You can download Tiago Dias's updated CV using the 'Download CV' button in the Hero section at the top of the page, or by clicking the action button below!",
+    scrollTarget: 'about',
+    actionButtons: [{ type: 'download', icon: '', label: 'Download CV', action: 'cv' }]
+  });
+
+  // Work Model, Remote Availability & Hiring
+  nodes.push({
+    id: 'info_work_model_and_hiring',
+    category: 'CAREER_AVAILABILITY',
+    primary: ['remote', 'remote jobs', 'remote work', 'work remotely', 'teletrabalho', 'looking for jobs', 'looking for remote jobs', 'looking for work', 'seeking work', 'open to work', 'hire', 'hire him', 'hiring', 'relocate', 'relocation', 'available for work', 'available for hire', 'disponibilidade', 'recrutamento', 'hybrid', 'open to opportunities', 'remoto', 'trabalho remoto'],
+    secondary: ['full-time', 'fulltime', 'contract', 'freelance', 'opportunity', 'opportunities', 'roles', 'positions', 'abroad', 'worldwide', 'europe'],
+    response: "Yes! Tiago is actively open to full-time **Remote**, **Hybrid**, or **Relocation** software engineering opportunities worldwide.\n\n• **Current Position**: Gen AI Software Engineer at **Banco BPI** (Lisbon, Portugal)  \n• **Work Model**: 100% Remote, Hybrid, or Global Relocation  \n• **Focus Areas**: Generative AI, LLM Pipelines, .NET 8 (C#) & Modern Full-Stack  \n• **Get in Touch**: Connect on LinkedIn or reach out via email below to discuss roles.",
+    scrollTarget: 'contact',
+    actionButtons: [
+      { type: 'url', icon: '', label: 'LinkedIn', action: 'https://www.linkedin.com/in/tiagofdias' },
+      { type: 'email', icon: '', label: 'Send Email', action: `mailto:${email}` },
+      { type: 'download', icon: '', label: 'Download CV', action: 'cv' }
+    ]
+  });
+
+  // Location
+  nodes.push({
+    id: 'info_location',
+    category: 'LOCATION',
+    primary: ['location', 'where does he live', 'where is he based', 'where is he located', 'portugal', 'lisbon', 'localização', 'mora', 'vive', 'reside'],
+    secondary: ['based', 'live', 'lives', 'reside', 'city', 'country', 'póvoa', 'povoa'],
+    response: "Tiago is based in Póvoa de Santa Iria (Lisbon metropolitan area, Portugal). He is currently open to full-time career opportunities, including Remote, Hybrid, or on-site/Relocation roles globally.",
+    scrollTarget: 'about'
+  });
+
+  // About / Bio
+  nodes.push({
+    id: 'info_about',
+    category: 'ABOUT',
+    primary: ['who is tiago', 'who is he', 'who are you', 'about tiago', 'about him', 'tell me about tiago', 'bio', 'quem é', 'quem e', 'sobre o tiago', 'sobre ele'],
+    secondary: ['background', 'profile', 'story'],
+    response: aboutText || (isPt
+      ? "O Tiago Dias é um Gen AI Software Engineer sediado em Lisboa (Póvoa de Santa Iria), Portugal, com Mestrado e Licenciatura em Engenharia Informática pelo ISTEC. Atualmente no Banco BPI, lidera fluxos de automação inteligente e modernização de código legado com Python, LLMs e .NET 8. Tem também vasta experiência em desenvolvimento full-stack com React, Node.js, TypeScript e MongoDB."
+      : "Tiago Dias is a Gen AI Software Engineer based in Lisbon (Póvoa de Santa Iria), Portugal, with a Master's and Bachelor's degree in Computer Science from ISTEC. Currently at Banco BPI, he designs and deploys intelligent automation workflows and enterprise code modernization using Python, LLMs, and .NET 8. He also has deep full-stack engineering expertise across React, Node.js, TypeScript, and MongoDB."),
+    scrollTarget: 'about'
+  });
+
+  // Multi-Factor Scoring
+  const scored = nodes.map(node => {
+    let score = 0;
+
+    // Primary keyword matches
+    if (node.primary) {
+      for (const pk of node.primary) {
+        if (lowerMessage.includes(pk)) {
+          score += 25;
+          if (node.isSpecific) score += 40;
+        } else if (tokenSet.has(pk)) {
+          score += 20;
+          if (node.isSpecific) score += 35;
+        }
+      }
+    }
+
+    // Secondary keyword matches
+    if (node.secondary) {
+      for (const sk of node.secondary) {
+        if (sk.includes(' ') && lowerMessage.includes(sk)) {
+          score += 15;
+        } else if (tokenSet.has(sk)) {
+          score += 6;
+        } else if (lowerMessage.includes(sk)) {
+          score += 4;
+        }
+      }
+    }
+
+    // Intent alignment & penalties
+    if (isWorkModelOrHiringQuery) {
+      if (node.id === 'info_work_model_and_hiring') score += 120;
+      else if (node.id === 'exp_overview') score -= 100;
+      else if (node.category === 'EXPERIENCE') score -= 40;
+      else if (node.category === 'PROJECTS') score -= 50;
+    }
+
+    if (isCurrentJobQuery) {
+      if (node.id === 'exp_bpi') score += 50;
+      else if (node.category === 'PROJECTS') score -= 40;
+      else if (node.category === 'LOCATION' && !lowerMessage.includes('live') && !lowerMessage.includes('mora')) score -= 20;
+    }
+
+    if (hasProjectSignal && !isCurrentJobQuery && !isWorkModelOrHiringQuery) {
+      if (node.category === 'PROJECTS') score += 35;
+    }
+
+    if (hasEducationSignal && node.category === 'EDUCATION') score += 35;
+    if (hasCertSignal && node.category === 'CERTIFICATIONS') score += 40;
+    if (hasContactSignal && !isWorkModelOrHiringQuery && node.category === 'CONTACT') score += 45;
+    if (hasCvSignal && node.category === 'CV') score += 45;
+    if (hasLocationSignal && !isWorkModelOrHiringQuery && node.category === 'LOCATION') score += 40;
+
+    return { node, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  const winner = scored[0];
+
+  if (!winner || winner.score < 5) {
+    const fallbackNode = nodes.find(n => n.id === 'info_about');
+    return {
+      response: fallbackNode.response,
+      scrollTarget: 'about',
+      shouldExpandTimeline: false,
+      aboutTab: null,
+      actionButtons: [
+        { type: 'url', icon: '', label: 'LinkedIn', action: 'https://www.linkedin.com/in/tiagofdias' },
+        { type: 'download', icon: '', label: 'Download CV', action: 'cv' }
+      ]
+    };
+  }
+
+  return {
+    response: winner.node.response,
+    scrollTarget: winner.node.scrollTarget || null,
+    shouldExpandTimeline: !!winner.node.aboutTab,
+    aboutTab: winner.node.aboutTab || null,
+    actionButtons: winner.node.actionButtons || null
+  };
+}
+
+// Chat endpoint with OpenRouter AI (with Database Knowledge Synthesizer fallback)
 app.post('/api/chat', async (req, res) => {
   const startTime = Date.now(); // Track request start time for logging
   try {
     console.log('=== CHAT ENDPOINT HIT ===');
-    const { message } = req.body || {};
+    const { message, history } = req.body || {};
     
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -1205,78 +1569,51 @@ app.post('/api/chat', async (req, res) => {
       willShowActionButtons = true;
     }
 
-    // Build the context prompt for OpenRouter
-    const contextPrompt = `You are an AI assistant embedded in Tiago Dias's professional portfolio website (https://tiago-dias.onrender.com/). Visitors are ALREADY on this website talking to you through the chat widget.
+    // Build an advanced intelligence context prompt for OpenRouter LLMs
+    const contextPrompt = `You are Tiago Dias's AI Executive Representative and Portfolio Assistant on his personal website (https://tiago-dias.onrender.com/).
+Visitors are actively browsing this website and chatting with you through the chat widget.
 
-CRITICAL: You MUST write in a CONVERSATIONAL and NATURAL tone. DO NOT copy-paste or list raw database information. Synthesize the data into friendly, readable sentences. Think of yourself as a helpful person describing Tiago to a visitor, not as a database returning query results.
+## ABOUT TIAGO DIAS:
+- **Title & Current Position**: Gen AI Software Engineer at **Banco BPI** (July 2025 – Present) in Lisbon, Portugal.
+  • Modernizing 500K+ lines of core legacy banking architecture with **Python, LLMs, and .NET 8** (+30% maintainability).
+  • Enterprise Agentic workflows, RAG pipelines, Vector Search (FAISS), and prompt engineering.
+- **Previous Professional Experience**:
+  • Gen AI Software Engineer Intern at **Capgemini Portugal** (March – June 2025): Enterprise RAG, autonomous agents, FAISS vector search, Spacy/NLTK, reducing compliance document research time by 40%.
+  • .NET Developer Intern at **Consulteware** (2019): C#, .NET, SQL Server CRUD, employee time-clock tracking 5K+ monthly hours.
+  • IT Help Desk Technician Intern at **OGMA** (2017): Windows enterprise deployments, diagnostics, automated reporting with Excel VBA macros.
+  • Frontend Developer Intern at **Junta de Freguesia** (2016): Civic public portal redesign with responsive UI.
+- **Education**:
+  • Master's Degree in Computer Science from **ISTEC** (Oct 2022 – Sep 2025): Specialization in Artificial Intelligence, Intelligent Multi-Agent Systems, and Distributed Software Engineering.
+  • Bachelor's Degree in Computer Science from **ISTEC** (Sep 2019 – Oct 2021).
+  • Superior Vocational Course in Computer Science Management from **ISTEC** (2017 – 2021).
+- **Core Technical Stack**:
+  • Gen AI & LLMs: Python, Large Language Models, RAG, FAISS Vector Search, Agentic Workflows, Prompt Engineering, Model Fine-Tuning.
+  • Backend: C# (.NET 8, ASP.NET Core MVC), Node.js, Express, RESTful APIs, JWT, Passkeys (WebAuthn).
+  • Databases: MongoDB, PostgreSQL, SQL Server.
+  • Frontend: React 18, TypeScript, TailwindCSS, Three.js, HTML5/CSS3.
+  • Tools & DevOps: Docker, Git, GitHub, Postman, Vite.
+- **Languages**: Portuguese (Native C2), English (Advanced C1).
+- **Certifications**: 15 Microsoft & Technical credentials, including MOS 2016 Master (Excel & Word Expert), MTA Software Development Fundamentals, MTA Database Administration Fundamentals, MTA Security, MTA Networking, MTA HTML5, MTA Windows OS & Server Administration.
+- **Contact & Links**:
+  • Email: ${aboutEmail || 'tiagodias.cl@gmail.com'}
+  • LinkedIn: https://www.linkedin.com/in/tiagofdias
+  • GitHub: https://github.com/tiagofdias
+  • CV: Available for download on the website.
 
-IMPORTANT CONTEXT AWARENESS:
-- The visitor is ALREADY browsing Tiago's portfolio website right now
-- DO NOT tell them to "visit the portfolio website" - they are already here!
-- Instead, guide them to specific sections on THIS website (Contact section, Projects section, etc.)
-${willShowActionButtons ? '- CRITICAL INSTRUCTION: Interactive action buttons will appear BELOW your message that the user can click. ABSOLUTELY DO NOT write any URLs, links, web addresses, LinkedIn URLs (like linkedin.com/in/...), GitHub links (like github.com/...), or mention "button at the top of this page" in your text response. DO NOT write out any clickable links or URLs at all. The buttons will handle all actions automatically. Just describe what they can do without providing the actual links!' : '- When mentioning the CV, say "You can download his CV using the button at the top of this page"'}
+## TIAGO'S PROJECTS:
+${projectsContext || 'Multiple enterprise and open-source applications built with modern stacks (Condomix, Sonar, Automix, Blood-Pressure-Monitor, Bulky_MVC, Comparador-DIGI).'}
 
-IMPORTANT ABOUT AUTO-SCROLL: ${scrollTarget ? `The page WILL automatically scroll to the "${scrollTarget}" section when you respond.${filterTag ? ` Additionally, the projects will be automatically filtered to show only ${filterTag} projects.` : ''}` : 'No auto-scrolling will occur for this question.'}
+## CRITICAL BEHAVIOR & REASONING RULES:
+1. **Real LLM Intelligence & Out-of-the-Box Inquiries**: You are a genuinely smart AI machine, NOT a keyword matcher. When users ask out-of-the-box, hypothetical, or complex questions (e.g. "Is he looking for remote jobs?", "Can he build web scrapers in Python?", "Would he be a great tech lead?", "Compare .NET and Node.js for his stack", "Explain how his master's thesis ties into his current work", "Tell me a joke about coding"):
+   - Think and reason deeply based on his comprehensive background.
+   - For career/availability questions: Tiago is based in Lisbon, Portugal, but is actively open to **100% Remote**, **Hybrid**, or **Relocation** opportunities worldwide. Warmly invite them to get in touch via email (${aboutEmail || 'tiagodias.cl@gmail.com'}) or LinkedIn.
+   - For technical questions: Analyze his stack (.NET 8, Python, LLMs, React, Node.js, MongoDB, Docker, Enterprise Banking experience) and give a thoughtful, reasoned technical evaluation of his competence.
+2. **Third-Person Perspective**: Always refer to Tiago in the third person ("he", "his", "Tiago"). You are speaking TO the visitor ABOUT Tiago.
+3. **Tone & Style**: Warm, professional, articulate, and concise (typically 2 to 4 well-structured sentences). Highlight key terms with **bold text** where helpful.
+4. **Action Buttons Awareness**: Interactive action buttons (LinkedIn, GitHub, CV download, Project links) appear automatically below your message when relevant. ${willShowActionButtons ? 'ABSOLUTELY DO NOT write out raw URLs or links in your text response—the interactive buttons will handle it seamlessly!' : 'Guide visitors naturally to download his CV or connect on LinkedIn.'}
+5. **Language Match**: Always respond in the language the visitor used (English, Portuguese, Spanish, French, etc.).`;
 
-CRITICAL RESPONSE GUIDELINES:
-${scrollTarget ? `- The page will automatically scroll to the ${scrollTarget} section${filterTag ? ` and filter by ${filterTag}` : ''} - DO NOT mention scrolling or filtering in your response since it happens automatically
-- Keep it BRIEF (2-3 sentences max) - visitors can SEE the content on the page
-- DON'T list everything in detail since it's already visible` : '- Provide a helpful, concise answer (2-3 sentences)'}
-- Only give detailed descriptions if asked about a SPECIFIC item (e.g., "What is Sonar?")
-- For general questions about Tiago, you can provide a summary
-
-RESPONSE LENGTH: Keep ALL responses SHORT and CONCISE (2-3 sentences maximum). Be friendly but brief. Users prefer quick, direct answers.
-
-IMPORTANT: Always refer to Tiago in the THIRD PERSON (use "he", "his", "Tiago", not "you" or "your"). You are speaking TO the visitor ABOUT Tiago, not speaking to Tiago himself.
-
-Answer questions about Tiago's background, projects, skills, experience, education, and certifications based ONLY on the information provided below. Be conversational, professional, and concise.
-
-PROFESSIONAL SUMMARY:
-Title: Gen AI Software Engineer
-${aboutText || 'Software professional focused on building impactful solutions with expertise in Generative AI, full-stack development, and system modernization.'}
-
-CONTACT INFORMATION:
-${aboutEmail ? `Direct Email: ${aboutEmail}` : ''}
-LinkedIn: https://www.linkedin.com/in/tiagofdias
-Contact Form: Available in the Contact section on this page
-CV Download: Use the "Download CV" button at the top of this page
-GitHub: Projects section on this page shows GitHub links
-
-IMPORTANT FOR CONTACT QUESTIONS: When someone asks how to contact Tiago:
-- DO NOT mention scrolling - the page scrolls automatically in the background
-- Simply provide the contact information and available methods
-- Mention they can connect via LinkedIn or use the contact form
-- Remind them they can download his CV using the button at the top of this page
-- DO NOT say "visit the portfolio website" - they are already here!
-
-LANGUAGES:
-Portuguese: Native (C2)
-English: Advanced (C1)
-${(aboutData.languages || []).length > 2 ? `Additional: ${(aboutData.languages || []).slice(2).join(', ')}` : ''}
-
-TIAGO'S PROJECTS (${projects.length}):
-${projectsContext || 'No projects listed yet.'}
-
-TIAGO'S PROFESSIONAL EXPERIENCE (${proExps.length}):
-${experienceContext || 'No experience listed yet.'}
-
-TIAGO'S EDUCATION (${education.length}):
-${educationContext || 'No education listed yet.'}
-
-TIAGO'S CERTIFICATIONS (${certifications.length}):
-${certificationsContext || 'No certifications listed yet.'}
-
-TIAGO'S ARTICLES (${articles.length}):
-${articlesContext || 'No articles listed yet.'}
-
-INTERPERSONAL SKILLS:
-Analytical Skills, Interpersonal Relationships, Problem Solving, Teamwork, Communication
-
-User Question: ${message}
-
-Provide a helpful, accurate response in THIRD PERSON about Tiago based on the above information:`;
-
-    // Use OpenRouter API with free models
+    // Use OpenRouter API with prioritized model tier
     const fetch = require('node-fetch');
     const AbortController = require('abort-controller');
 
@@ -1288,32 +1625,46 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
       const apiKeySetting = await Settings.findOne({ key: 'OPENROUTER_API_KEY' });
       if (apiKeySetting && apiKeySetting.value) {
         OPENROUTER_API_KEY = apiKeySetting.value;
-        console.log('📊 Using OpenRouter API key from database');
+        console.log('• Using OpenRouter API key from database');
       } else {
-        console.log('📊 Using OpenRouter API key from environment variables');
+        console.log('• Using OpenRouter API key from environment variables');
       }
     } catch (settingsError) {
-      console.warn('⚠️ Could not fetch settings from database, using env variable:', settingsError.message);
+      console.warn('• Could not fetch settings from database, using env variable:', settingsError.message);
     }
     
     if (!OPENROUTER_API_KEY) {
       lastError = new Error('OPENROUTER_API_KEY not found in settings or environment variables');
-      console.error('❌', lastError.message);
+      console.error('', lastError.message);
     } else {
-      // Try different OpenRouter free models
+      // Prioritized models: top-tier ultra-fast models with free fallbacks
       const openRouterModels = [
-        'kwaipilot/kat-coder-pro:free',
-        'nvidia/nemotron-nano-12b-v2-vl:free',
-        'alibaba/tongyi-deepresearch-30b-a3b:free'
+        'deepseek/deepseek-chat',                 // Tier 1: Incredible reasoning, ultra-cheap (~$0.14/M tokens)
+        'google/gemini-2.0-flash-001',           // Tier 1: Lightning fast, highly accurate (~$0.10/M tokens)
+        'meta-llama/llama-3.3-70b-instruct',     // Tier 1: State-of-the-art open-weights
+        'openrouter/free',                       // Tier 2: OpenRouter automatic free tier routing
+        'nvidia/nemotron-3.5-lightning:free',    // Tier 2: Free model
+        'google/gemma-4-31b-it:free',            // Tier 2: Free model
+        'google/gemma-4-26b-a4b-it:free',        // Tier 2: Free model
+        'minimax/minimax-m3.1-flash:free',        // Tier 2: Free model
+        'liquid/lfm-2.5-2.6b:free'               // Tier 2: Free model
       ];
+
+      // Format conversation history for multi-turn context
+      const validHistory = Array.isArray(history)
+        ? history
+            .filter(item => item && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string')
+            .slice(-6)
+            .map(item => ({ role: item.role, content: item.content.trim() }))
+        : [];
       
       for (const modelName of openRouterModels) {
         try {
           console.log(`Trying OpenRouter model: ${modelName}...`);
           
-          // Add 10 second timeout
+          // 20-second timeout for reliable completions
           const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 10000);
+          const timeout = setTimeout(() => controller.abort(), 20000);
           
           const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
@@ -1330,13 +1681,14 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
                   role: 'system',
                   content: contextPrompt
                 },
+                ...validHistory,
                 {
                   role: 'user',
                   content: message
                 }
               ],
               temperature: 0.7,
-              max_tokens: 200
+              max_tokens: 800
             }),
             signal: controller.signal
           });
@@ -1347,7 +1699,7 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
           
           // Check for API errors
           if (data.error) {
-            console.error(`❌ OpenRouter API Error (${modelName}):`, data.error.message || data.error);
+            console.error(`• OpenRouter API Error (${modelName}):`, data.error.message || data.error);
             lastError = new Error(data.error.message || JSON.stringify(data.error));
             continue; // Try next model
           }
@@ -1357,22 +1709,6 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
             
             // Remove <think> tags and their content from the response
             aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>\s*/g, '').trim();
-            
-            // QUALITY CHECK: Detect if AI is returning raw unformatted data instead of conversational response
-            const looksLikeRawData = (
-              aiResponse.includes('Highlights:') && 
-              aiResponse.length > 300 && 
-              !aiResponse.match(/\.\s+[A-Z]/) && 
-              (aiResponse.match(/\./g) || []).length < 3
-            );
-            
-            if (looksLikeRawData) {
-              console.warn(`⚠️ AI response looks like raw data dump from ${modelName}, rejecting`);
-              console.warn('Raw response preview:', aiResponse.substring(0, 200));
-              aiResponse = null;
-              lastError = new Error('AI returned unformatted raw data');
-              continue; // Try next model
-            }
             
             // If action buttons will be shown, strip any URLs from the response
             if (willShowActionButtons) {
@@ -1388,7 +1724,7 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
               aiResponse = aiResponse.replace(/\s+/g, ' ').trim();
             }
             
-            console.log(`✅ Successfully got response from OpenRouter (${modelName})`);
+            console.log(`• Successfully got response from OpenRouter (${modelName})`);
             break; // Success! Exit the loop
           } else {
             lastError = new Error(`Invalid response format from ${modelName}`);
@@ -1396,7 +1732,7 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
           }
         } catch (aiError) {
           if (aiError.name === 'AbortError') {
-            console.error(`⏱️ OpenRouter API timeout (${modelName}): Request took longer than 10 seconds`);
+            console.error(`• OpenRouter API timeout (${modelName}): Request took longer than 20 seconds`);
             lastError = new Error(`Timeout: ${modelName} took too long to respond`);
           } else {
             console.error(`OpenRouter API error (${modelName}):`, aiError.message);
@@ -1407,16 +1743,34 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
       }
     }
     
-    // If all models failed, provide a friendly error message
+    // Intelligent Database Knowledge Synthesizer fallback
+    // If OpenRouter is unavailable, rate-limited, or times out, synthesize a smart answer from real database records!
     if (!aiResponse) {
-      console.error('❌ All OpenRouter models failed. Last error:', lastError);
-      console.error('⚠️ Free tier models may have rate limits or availability issues');
-      
-      // Provide a user-friendly message about the AI being unavailable
-      aiResponse = "I'm sorry, but I'm temporarily unavailable due to high demand or service issues. Please try again in a few moments, or feel free to explore Tiago's portfolio directly by scrolling through the page. You can also contact Tiago directly using the Contact section below!";
-      
-      // Set scroll target to contact for convenience
-      scrollTarget = 'contact';
+      console.warn('• OpenRouter API unavailable. Synthesizing intelligent response from database knowledge base...');
+      const synthesized = synthesizeDatabaseResponse({
+        message,
+        projects,
+        certifications,
+        proExps,
+        education,
+        aboutData,
+        aboutText,
+        aboutEmail,
+        articles
+      });
+      aiResponse = synthesized.response;
+      if (synthesized.scrollTarget && !scrollTarget) {
+        scrollTarget = synthesized.scrollTarget;
+      }
+      if (synthesized.shouldExpandTimeline) {
+        shouldExpandTimeline = true;
+      }
+      if (synthesized.aboutTab && !aboutTab) {
+        aboutTab = synthesized.aboutTab;
+      }
+      if (synthesized.actionButtons && !actionButtons) {
+        actionButtons = synthesized.actionButtons;
+      }
     }
 
     // Detect language from the message
@@ -1520,7 +1874,8 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
                aiResponseLower.includes('career') || aiResponseLower.includes('timeline') ||
                aiResponseLower.includes('experience') && !aiResponseLower.includes('years of experience') ||
                aiResponseLower.includes('education') ||
-               aiResponseLower.includes('ogma') || aiResponseLower.includes('condomix') ||
+               aiResponseLower.includes('bpi') || aiResponseLower.includes('capgemini') ||
+               aiResponseLower.includes('consulteware') || aiResponseLower.includes('ogma') ||
                aiResponseLower.includes('istec') || aiResponseLower.includes('university')) {
       scrollTarget = 'myjourney';
       shouldExpandTimeline = true;
@@ -1541,7 +1896,8 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
                  aiResponseLower.includes('experience') || aiResponseLower.includes('experiência') ||
                  aiResponseLower.includes('worked') || aiResponseLower.includes('trabalhou') ||
                  aiResponseLower.includes('career') || aiResponseLower.includes('job') ||
-                 aiResponseLower.includes('ogma') || aiResponseLower.includes('condomix')) {
+                 aiResponseLower.includes('bpi') || aiResponseLower.includes('capgemini') ||
+                 aiResponseLower.includes('consulteware') || aiResponseLower.includes('ogma')) {
         aboutTab = 'experience';
         console.log('  → Tab: Experience');
       }
@@ -1554,13 +1910,13 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
       actionButtons = [
         {
           type: 'url',
-          icon: '💼',
+          icon: '',
           label: 'LinkedIn',
           action: 'https://www.linkedin.com/in/tiagofdias'
         },
         {
           type: 'download',
-          icon: '📄',
+          icon: '',
           label: 'Download CV',
           action: 'cv'
         }
@@ -1598,7 +1954,7 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
         if (project.source_code_link) {
           actionButtons.push({
             type: 'url',
-            icon: '💻',
+            icon: '',
             label: 'GitHub',
             action: project.source_code_link
           });
@@ -1612,7 +1968,7 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
         if (liveUrl && liveUrl.trim()) {
           actionButtons.push({
             type: 'url',
-            icon: '🔗',
+            icon: '',
             label: 'View Project',
             action: liveUrl
           });
@@ -1747,7 +2103,7 @@ Provide a helpful, accurate response in THIRD PERSON about Tiago based on the ab
       actionButtons = [
         {
           type: 'download',
-          icon: '🎓',
+          icon: '',
           label: 'View Certificate',
           action: matchedCertification.pdfPath
         }
@@ -1881,7 +2237,7 @@ app.post('/api/track-visitor', async (req, res) => {
         timeOnPage: 0,
         timestamp: new Date()
       });
-      console.log(`📊 Tracked visitor: ${clientIp} | Session: ${visitorData.sessionId.substring(0, 15)}... | Page: ${visitorData.page} | New: ${isNewVisitor}`);
+      console.log(`• Tracked visitor: ${clientIp} | Session: ${visitorData.sessionId.substring(0, 15)}... | Page: ${visitorData.page} | New: ${isNewVisitor}`);
     } else {
       console.log(`⏭️  Skipped duplicate: Same page within 5 min`);
     }
@@ -1917,7 +2273,7 @@ app.post('/api/visitor-heartbeat', async (req, res) => {
         visitorLog.lastSeen = now;
         visitorLog.timeOnPage += timeDiff;
         await visitorLog.save();
-        console.log(`⏱️  Updated time: Session ${sessionId.substring(0, 15)}... spent ${visitorLog.timeOnPage}s on ${page}`);
+        console.log(`•  Updated time: Session ${sessionId.substring(0, 15)}... spent ${visitorLog.timeOnPage}s on ${page}`);
       }
     }
     
@@ -2158,7 +2514,7 @@ app.post('/api/settings/:key', auth, async (req, res) => {
       }
     );
     
-    console.log(`⚙️ Setting updated: ${key} = ${value.substring(0, 20)}...`);
+    console.log(`• Setting updated: ${key} = ${value.substring(0, 20)}...`);
     res.json(setting);
   } catch (error) {
     console.error('Error updating setting:', error);

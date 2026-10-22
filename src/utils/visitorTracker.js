@@ -145,19 +145,21 @@ export function initializeTracking() {
   
   const trackIfNeeded = (currentPath = window.location.pathname) => {
     const now = Date.now();
-    // Only track if path changed OR if 30+ seconds passed since last track
-    if (currentPath !== lastTrackedPath || now - lastTrackTime > 30000) {
+    // Only track if path changed OR if 60+ seconds passed since last track
+    if (currentPath !== lastTrackedPath || now - lastTrackTime > 60000) {
       lastTrackedPath = currentPath;
       lastTrackTime = now;
       trackVisitor(currentPath);
       
-      // Start/restart heartbeat for this page
+      // Start/restart heartbeat for this page (every 30 seconds instead of 10s)
       if (heartbeatInterval) {
         clearInterval(heartbeatInterval);
       }
       heartbeatInterval = setInterval(() => {
-        sendHeartbeat(sessionId, currentPath);
-      }, 10000); // Every 10 seconds
+        if (!document.hidden) {
+          sendHeartbeat(sessionId, currentPath);
+        }
+      }, 30000);
     }
   };
   
@@ -165,26 +167,20 @@ export function initializeTracking() {
   if (document.readyState === 'complete') {
     trackIfNeeded();
   } else {
-    window.addEventListener('load', () => trackIfNeeded());
+    window.addEventListener('load', () => trackIfNeeded(), { once: true });
   }
   
-  // Track navigation changes (for SPAs)
-  let lastPath = window.location.pathname;
-  const checkPathChange = () => {
-    const currentPath = window.location.pathname;
-    if (currentPath !== lastPath) {
-      lastPath = currentPath;
-      trackIfNeeded(currentPath);
-    }
-  };
-  
-  // Check for path changes every 2 seconds (less frequent)
-  setInterval(checkPathChange, 2000);
-  
-  // Also track on popstate (browser back/forward)
+  // Track on history navigation
   window.addEventListener('popstate', () => trackIfNeeded());
+
+  // Page visibility changes - pause/resume
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      trackIfNeeded();
+    }
+  });
   
-  // Stop heartbeat when user leaves the page
+  // Clean up heartbeat when user leaves the page
   window.addEventListener('beforeunload', () => {
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);

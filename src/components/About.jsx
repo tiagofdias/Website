@@ -5,6 +5,8 @@ import "react-vertical-timeline-component/style.min.css";
 
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
+import useIsMobile from "../utils/useIsMobile";
+import { fallbackAbout, fallbackEducation, fallbackProexp } from "../data/fallbackData";
 import {
   css,
   docker,
@@ -69,36 +71,19 @@ const getInitials = (name = "") =>
     .join("")
     .slice(0, 2);
 
-// -------------------------
-// Custom hook to detect mobile devices based on viewport width
-// -------------------------
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return isMobile;
-};
 
 // -------------------------
 // About Section
 // -------------------------
 const About = () => {
-  const [about, setAbout] = useState(null);
+  const [about, setAbout] = useState(fallbackAbout);
   const isMobile = useIsMobile();
 
   const techItems = useMemo(() => {
     if (!about?.devskills) return [];
 
     try {
-      const parsed = JSON.parse(about.devskills);
+      const parsed = typeof about.devskills === "string" ? JSON.parse(about.devskills) : about.devskills;
       const entries = Array.isArray(parsed)
         ? parsed
         : Array.isArray(parsed?.items)
@@ -152,9 +137,13 @@ const About = () => {
       .then((res) => res.json())
       .then((data) => {
         const aboutData = Array.isArray(data) ? data[0] : data;
-        setAbout(aboutData);
+        if (aboutData) {
+          setAbout(aboutData);
+        }
       })
-      .catch(console.error);
+      .catch(() => {
+        // Fallback data already loaded
+      });
   }, []);
 
   if (!about) return null;
@@ -558,45 +547,54 @@ const Timeline = () => {
   const isMobile = useIsMobile();
   const [showAll, setShowAll] = useState(true);
   const [activeTab, setActiveTab] = useState("education"); // "education" or "experience"
-  const [education, setEducation] = useState([]);
-  const [proexp, setProexp] = useState([]);
+  const [education, setEducation] = useState(fallbackEducation);
+  const [proexp, setProexp] = useState(fallbackProexp);
 
   useEffect(() => {
     // Fetch and filter education data
     fetch(`${API_URL}/education`)
       .then((res) => res.json())
       .then((data) => {
-        const enabledEducation = data
-          .filter(item => item.enabled)
-          .sort((a, b) => a.order - b.order);
-        setEducation(enabledEducation);
+        if (Array.isArray(data) && data.length > 0) {
+          const enabledEducation = data
+            .filter(item => item.enabled)
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+          if (enabledEducation.length > 0) {
+            setEducation(enabledEducation);
+          }
+        }
       })
-      .catch((err) => console.error("Failed to fetch education:", err));
+      .catch(() => {
+        // Fallback data already loaded
+      });
 
     // Fetch and filter professional experience data
     fetch(`${API_URL}/proexp`)
       .then((res) => res.json())
       .then((data) => {
-        const enabledProexp = data
-          .filter(item => item.enabled)
-          .sort((a, b) => a.order - b.order);
-        setProexp(enabledProexp);
+        if (Array.isArray(data) && data.length > 0) {
+          const enabledProexp = data
+            .filter(item => item.enabled)
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+          if (enabledProexp.length > 0) {
+            setProexp(enabledProexp);
+          }
+        }
       })
-      .catch((err) => console.error("Failed to fetch proexp:", err));
+      .catch(() => {
+        // Fallback data already loaded
+      });
 
     // Listen for tab change events from chat
     const handleTabChange = (event) => {
       const { tab, expand } = event.detail;
-      console.log('📋 My Journey tab change event received:', { tab, expand });
       
       if (expand) {
         setShowAll(true);
-        console.log('  ✓ Expanded timeline');
       }
       
       if (tab === 'education' || tab === 'experience') {
         setActiveTab(tab);
-        console.log('  ✓ Switched to tab:', tab);
       }
     };
 

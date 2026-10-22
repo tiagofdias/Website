@@ -108,12 +108,12 @@ const FloatingParticles = () => {
 };
 
 const Hero = () => {
-  const [cvUrl, setCvUrl] = useState("");
-  const [stats, setStats] = useState({ projects: 0, certifications: 0, experiences: 0 });
+  const [cvUrl, setCvUrl] = useState("/CV.pdf");
+  const [stats, setStats] = useState({ projects: 8, certifications: 16, experiences: 3 });
   const API_URL = import.meta.env.VITE_API_URL || '/api';
   
   useEffect(() => {
-    // Fetch CV URL
+    // Fetch CV URL with fallback
     fetch(`${API_URL}/about`)
       .then((res) => res.json())
       .then((data) => {
@@ -122,9 +122,11 @@ const Hero = () => {
           setCvUrl(aboutData.PDFCV);
         }
       })
-      .catch((error) => console.error("Error fetching CV URL:", error));
+      .catch(() => {
+        // Fallback already set to /CV.pdf
+      });
 
-    // Fetch accurate stats
+    // Fetch accurate stats with fallback
     Promise.all([
       fetch(`${API_URL}/projects`).then(res => res.json()),
       fetch(`${API_URL}/certifications`).then(res => res.json()),
@@ -132,12 +134,14 @@ const Hero = () => {
     ])
       .then(([projectsData, certificationsData, proexpData]) => {
         setStats({
-          projects: projectsData.filter(p => p.enabled).length,
-          certifications: certificationsData.filter(c => c.enabled).length,
-          experiences: proexpData.filter(e => e.enabled).length
+          projects: projectsData.filter(p => p.enabled).length || 8,
+          certifications: certificationsData.filter(c => c.enabled).length || 16,
+          experiences: proexpData.filter(e => e.enabled).length || 3
         });
       })
-      .catch((error) => console.error("Error fetching stats:", error));
+      .catch(() => {
+        // Fallback stats already populated
+      });
   }, []);
 
   return (
@@ -229,7 +233,8 @@ const Hero = () => {
               transition={{ duration: 0.3 }}
             />
             <a
-              href={cvUrl}
+              href={cvUrl || "/CV.pdf"}
+              download="Tiago_Dias_CV.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="relative flex items-center justify-center gap-2 bg-gradient-to-r from-[#00C6FE] to-purple-500 px-6 py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 hover:shadow-[0_0_30px_rgba(0,198,254,0.5)] transition-all duration-300"
@@ -275,7 +280,8 @@ const Hero = () => {
             {/* Download CV Button */}
             <motion.div whileTap={{ scale: 0.95 }} className="relative group">
               <a
-                href={cvUrl}
+                href={cvUrl || "/CV.pdf"}
+                download="Tiago_Dias_CV.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="relative flex items-center justify-center gap-2 bg-gradient-to-r from-[#00C6FE] to-purple-500 px-5 py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 active:shadow-[0_0_30px_rgba(0,198,254,0.5)] transition-all duration-300 w-full"
@@ -323,6 +329,25 @@ const Hero = () => {
               <span className="text-purple-400 font-semibold">user-friendly</span>{" "}
               software solutions that make a difference
             </motion.p>
+
+            {/* Recruiter Badges - Mobile */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="flex flex-col items-center gap-2 pt-1"
+            >
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] text-gray-300">
+                <svg className="w-3.5 h-3.5 text-[#00C6FE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Portugal • Open to Remote & Relocation</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Available for Full-Time Roles
+              </span>
+            </motion.div>
           </motion.div>
 
           {/* Animated Roles - Mobile */}
@@ -485,6 +510,25 @@ const Hero = () => {
                 <span className="text-purple-400 font-semibold">user-friendly</span>{" "}
                 software solutions that make a difference
               </motion.p>
+
+              {/* Recruiter Badges - Desktop */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="flex flex-wrap items-center gap-3 pt-2"
+              >
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-gray-300 shadow-sm backdrop-blur-sm">
+                  <svg className="w-3.5 h-3.5 text-[#00C6FE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Portugal • Open to Remote & Relocation</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium shadow-sm backdrop-blur-sm">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Available for Full-Time Opportunities
+                </span>
+              </motion.div>
             </div>
 
             {/* Social Links & CTA */}

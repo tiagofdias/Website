@@ -11,9 +11,9 @@ import {
 import { AboutSection, MyJourney } from "./components/About";
 import Certifications from "./components/Certifications";
 import ChatWidget from "./components/ChatWidget";
-import { SnowOverlay } from "react-snow-overlay";
-import AdminLogin from "./components/Login";
-import AdminPanel from "./components/AdminPanel";
+
+const AdminLogin = React.lazy(() => import("./components/Login"));
+const AdminPanel = React.lazy(() => import("./components/AdminPanel"));
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem("token") || "");
@@ -30,7 +30,6 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      {/* <SnowOverlay maxParticles={25} disabledOnSingleCpuDevices={true} /> */}
       <Routes>
         <Route
           path="/"
@@ -54,13 +53,19 @@ const App = () => {
         <Route
           path="/admin"
           element={
-            token ? (
-              <>
+            <React.Suspense
+              fallback={
+                <div className="min-h-screen bg-primary flex items-center justify-center text-white font-medium">
+                  <div className="w-8 h-8 border-2 border-[#00C6FE] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              }
+            >
+              {token ? (
                 <AdminPanel token={token} onLogout={handleLogout} />
-              </>
-            ) : (
-              <AdminLogin onLogin={handleLogin} />
-            )
+              ) : (
+                <AdminLogin onLogin={handleLogin} />
+              )}
+            </React.Suspense>
           }
         />
       </Routes>

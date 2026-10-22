@@ -5,19 +5,10 @@ import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
 import { github, webs } from "../assets";
 import { scroller } from "react-scroll";
+import useIsMobile from "../utils/useIsMobile";
+import { fallbackProjects } from "../data/fallbackData";
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-// Mobile detection hook
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  return isMobile;
-};
 
 const ProjectCard = ({
   index,
@@ -187,6 +178,8 @@ const ProjectCard = ({
             key={idx}
             src={image}
             alt={`project-${idx}`}
+            loading="lazy"
+            decoding="async"
             className={`w-full h-full object-cover rounded-xl absolute top-0 left-0 transition-all duration-500 group-hover/card:scale-110 ${
               previewIndex === idx ? "opacity-100" : "opacity-0"
             }`}
@@ -469,66 +462,58 @@ const Projects = () => {
   const isMobile = useIsMobile();
   const [showAll, setShowAll] = useState(false);
   const [activeTag, setActiveTag] = useState(null);
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState(fallbackProjects);
 
   useEffect(() => {
     // Fetch projects from backend API and filter enabled ones
     fetch(`${API_URL}/projects`)
       .then((res) => res.json())
       .then((data) => {
-        // Filter enabled projects and sort by order
-        const enabledProjects = data
-          .filter((project) => project.enabled)
-          .sort((a, b) => a.order - b.order);
-        setProjects(enabledProjects);
+        if (Array.isArray(data) && data.length > 0) {
+          const enabledProjects = data
+            .filter((project) => project.enabled)
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+          if (enabledProjects.length > 0) {
+            setProjects(enabledProjects);
+          }
+        }
       })
-      .catch((err) => console.error("Failed to fetch projects:", err));
+      .catch(() => {
+        // Fallback data already loaded
+      });
   }, []);
 
   // Listen for filter events from ChatWidget
   useEffect(() => {
     const handleFilterProjects = (event) => {
-      console.log('Projects component received filter event:', event.detail);
       const { tag } = event.detail;
       
       if (tag === 'clear') {
-        console.log('Clearing all filters');
         setActiveTag(null);
         setShowAll(true);
       } else {
-        console.log('Setting active tag to:', tag);
         setActiveTag(tag);
         setShowAll(true);
       }
     };
 
     window.addEventListener("filterProjects", handleFilterProjects);
-    console.log('Projects component listening for filterProjects events');
     return () => {
       window.removeEventListener("filterProjects", handleFilterProjects);
-      console.log('Projects component stopped listening for filterProjects events');
     };
   }, []);
 
   const filteredProjects = activeTag
     ? projects.filter((p) => {
-        const hasTag = p.tags.some((t) => t.name.toLowerCase() === activeTag.toLowerCase());
-        if (hasTag) console.log('Project matches tag:', p.name);
-        return hasTag;
+        return p.tags.some((t) => t.name.toLowerCase() === activeTag.toLowerCase());
       })
     : projects;
-
-  console.log('Active tag:', activeTag);
-  console.log('Filtered projects count:', filteredProjects.length);
-  console.log('Show all:', showAll);
 
   const projectsToDisplay = activeTag
     ? filteredProjects
     : showAll
     ? filteredProjects
     : filteredProjects.slice(0, 3);
-  
-  console.log('Projects to display:', projectsToDisplay.length);
 
   return (
     <div className="relative">
@@ -593,7 +578,7 @@ const Projects = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-6 text-secondary text-[17px] max-w-3xl mx-auto leading-[30px]"
         >
-          Explore my portfolio of innovative projects showcasing modern web technologies 🚀
+          Explore my portfolio of innovative projects showcasing modern web technologies.
         </motion.p>
       </motion.div>
 
@@ -612,8 +597,11 @@ const Projects = () => {
             <button
               onClick={() => setActiveTag(null)}
               className="ml-2 w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all duration-300"
+              aria-label="Clear filter"
             >
-              <span className="text-white text-sm">✕</span>
+              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </motion.div>

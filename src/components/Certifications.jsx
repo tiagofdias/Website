@@ -4,19 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { styles } from "../styles";
 import { webs, github } from "../assets";
 import { SectionWrapper } from "../hoc";
+import useIsMobile from "../utils/useIsMobile";
+import { fallbackCertifications } from "../data/fallbackData";
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-// Mobile detection hook
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  return isMobile;
-};
 
 const ProjectCard = ({
   index,
@@ -201,6 +192,8 @@ const ProjectCard = ({
             key={idx}
             src={image}
             alt={`certification-${idx}`}
+            loading="lazy"
+            decoding="async"
             className={`w-full h-full object-cover rounded-xl absolute top-0 left-0 transition-all duration-500 group-hover/card:scale-110 ${
               previewIndex === idx ? "opacity-100" : "opacity-0"
             }`}
@@ -464,20 +457,25 @@ const ProjectCard = ({
 
 const Certifications = () => {
   const isMobile = useIsMobile();
-  const [certifications, setCertifications] = useState([]);
+  const [certifications, setCertifications] = useState(fallbackCertifications);
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     fetch(`${API_URL}/certifications`)
       .then((res) => res.json())
       .then((data) => {
-        // Filter enabled certifications and sort by order
-        const enabledCertifications = data
-          .filter((cert) => cert.enabled)
-          .sort((a, b) => a.order - b.order);
-        setCertifications(enabledCertifications);
+        if (Array.isArray(data) && data.length > 0) {
+          const enabledCertifications = data
+            .filter((cert) => cert.enabled)
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+          if (enabledCertifications.length > 0) {
+            setCertifications(enabledCertifications);
+          }
+        }
       })
-      .catch((err) => console.error("Failed to fetch certifications:", err));
+      .catch(() => {
+        // Fallback data already loaded
+      });
   }, []);
 
   const certificationsToDisplay = showAll
@@ -546,7 +544,7 @@ const Certifications = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-6 text-secondary text-[17px] max-w-3xl mx-auto leading-[30px]"
         >
-          Professional certifications and achievements that validate my expertise 🏆
+          Professional certifications and achievements that validate my expertise.
         </motion.p>
       </motion.div>
 

@@ -2,19 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
+import useIsMobile from "../utils/useIsMobile";
+import { fallbackArticles } from "../data/fallbackData";
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-// Mobile detection hook
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  return isMobile;
-};
 
 // Memoized Article Card
 const ArticleCard = React.memo(function ArticleCard({ article, onClick, index, isMobile }) {
@@ -44,7 +35,9 @@ const ArticleCard = React.memo(function ArticleCard({ article, onClick, index, i
         </div>
       ) : (
         <div className="bg-gradient-to-br from-purple-500/20 to-[#00C6FE]/20 rounded-t-2xl aspect-video flex items-center justify-center">
-          <span className="text-6xl">📄</span>
+          <svg className="w-16 h-16 text-[#00C6FE]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
         </div>
       )}
       <div className="p-5">
@@ -61,20 +54,25 @@ const ArticleCard = React.memo(function ArticleCard({ article, onClick, index, i
 const Blog = () => {
   const isMobile = useIsMobile();
   const [showAll, setShowAll] = useState(false);
-  const [articles, setArticles] = useState([]);
+  const [articles, setArticles] = useState(fallbackArticles);
 
   // Add useEffect to fetch articles
   useEffect(() => {
     fetch(`${API_URL}/articles`)
       .then((res) => res.json())
       .then((data) => {
-        // Filter enabled articles and sort by order
-        const enabledArticles = data
-          .filter(article => article.enabled)
-          .sort((a, b) => a.order - b.order);
-        setArticles(enabledArticles);
+        if (Array.isArray(data) && data.length > 0) {
+          const enabledArticles = data
+            .filter(article => article.enabled)
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+          if (enabledArticles.length > 0) {
+            setArticles(enabledArticles);
+          }
+        }
       })
-      .catch((err) => console.error("Failed to fetch articles:", err));
+      .catch(() => {
+        // Fallback data already loaded
+      });
   }, []);
 
   const visibleArticles = showAll ? articles : articles.slice(0, 4);
@@ -145,7 +143,7 @@ const Blog = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-6 text-secondary text-[17px] max-w-3xl mx-auto leading-[30px]"
         >
-          {showAll ? "All articles - Explore my thoughts and tutorials" : "Latest articles - Stay updated with my recent posts"} 📝
+          {showAll ? "All articles - Explore my thoughts and tutorials" : "Latest articles - Stay updated with my recent posts"}
         </motion.p>
       </motion.div>
 
