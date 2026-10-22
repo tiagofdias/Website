@@ -18,29 +18,6 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    chunkSizeWarningLimit: 1200,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('three') || id.includes('@react-three')) {
-              return 'vendor-three';
-            }
-            if (id.includes('@fortawesome')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('framer-motion') || id.includes('react-vertical-timeline-component')) {
-              return 'vendor-animations';
-            }
-            if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype')) {
-              return 'vendor-markdown';
-            }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'vendor-react';
-            }
-          }
-        },
-      },
-    },
+    chunkSizeWarningLimit: 1600,
   },
 }));
