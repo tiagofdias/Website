@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { startRegistration } from "@simplewebauthn/browser";
 import axios from 'axios';
@@ -1507,44 +1507,151 @@ const AdminPanel = ({ token, onLogout }) => {
             </div>
 
             {/* PDF CV Section */}
+            {/* PDF CV Section */}
             <div className="about-section" style={{
-              background: "linear-gradient(135deg, #fecaca 0%, #fca5a5 100%)",
+              background: "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
               borderRadius: 16,
               padding: 24,
               marginBottom: 24,
-              border: "2px solid #ef4444",
-              boxShadow: "0 4px 12px rgba(239, 68, 68, 0.1)",
+              border: "2px solid #00C6FE",
+              boxShadow: "0 4px 20px rgba(0, 198, 254, 0.15)",
+              color: "#fff",
             }}>
-              <h3 style={{
-                margin: "0 0 8px 0",
-                fontSize: 18,
-                fontWeight: 700,
-                color: "#ef4444",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}>
-                📄 PDF CV
-              </h3>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: "#00EAFF",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}>
+                  📄 Curriculum Vitae (CV) Manager
+                </h3>
+                <a
+                  href="/cv"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: 8,
+                    background: "rgba(0, 198, 254, 0.15)",
+                    color: "#00EAFF",
+                    border: "1px solid rgba(0, 198, 254, 0.4)",
+                    textDecoration: "none",
+                    fontSize: 13,
+                    fontWeight: 600,
+                  }}
+                >
+                  👁️ Open Live CV Page (/cv)
+                </a>
+              </div>
+
               <p style={{
                 margin: "0 0 16px 0",
                 fontSize: 13,
-                color: "#991b1b",
+                color: "#94a3b8",
                 lineHeight: 1.5,
               }}>
-                Add a direct link to your PDF resume (Dropbox, Google Drive, etc.)
+                Upload a new PDF file directly, or provide a direct PDF URL. No Google sign-in required!
               </p>
-              <input
-                name="PDFCV"
-                placeholder="https://www.dropbox.com/s/..."
-                value={form.PDFCV || ""}
-                onChange={handleChange}
-                style={{
-                  ...inputStyle,
-                  width: "100%",
-                  boxSizing: "border-box",
-                }}
-              />
+
+              {/* Status Badge */}
+              <div style={{
+                padding: "8px 12px",
+                borderRadius: 8,
+                background: "rgba(255, 255, 255, 0.05)",
+                marginBottom: 16,
+                fontSize: 13,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}>
+                <span style={{ color: "#cbd5e1" }}>Active CV Source:</span>
+                <span style={{
+                  fontWeight: 700,
+                  color: form.PDFCV ? (form.PDFCV.startsWith("data:") ? "#34d399" : "#38bdf8") : "#94a3b8"
+                }}>
+                  {form.PDFCV ? (form.PDFCV.startsWith("data:") ? "✅ Custom Uploaded PDF File" : "🔗 Custom URL") : "📄 Default /CV.pdf"}
+                </span>
+              </div>
+
+              {/* Direct File Upload */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#38bdf8", marginBottom: 6 }}>
+                  Direct PDF Upload:
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 25 * 1024 * 1024) {
+                      alert("File exceeds 25MB limit.");
+                      return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      setForm((prev) => ({ ...prev, PDFCV: reader.result }));
+                      alert(`✅ Loaded PDF: ${file.name} (${(file.size / 1024).toFixed(1)} KB). Click "Save About" to publish live!`);
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 8,
+                    background: "rgba(255, 255, 255, 0.1)",
+                    border: "1px dashed #38bdf8",
+                    color: "#fff",
+                    width: "100%",
+                    boxSizing: "border-box",
+                    cursor: "pointer",
+                  }}
+                />
+              </div>
+
+              {/* Or Manual URL */}
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 6 }}>
+                  Or Direct PDF URL (optional):
+                </label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    name="PDFCV"
+                    placeholder="https://example.com/my_cv.pdf (or leave empty for default /CV.pdf)"
+                    value={form.PDFCV && !form.PDFCV.startsWith("data:") ? form.PDFCV : ""}
+                    onChange={handleChange}
+                    style={{
+                      ...inputStyle,
+                      flex: 1,
+                      background: "rgba(15, 23, 42, 0.8)",
+                      color: "#fff",
+                      borderColor: "#334155",
+                    }}
+                  />
+                  {form.PDFCV && (
+                    <button
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, PDFCV: "" }))}
+                      style={{
+                        padding: "0 16px",
+                        borderRadius: 8,
+                        background: "#ef4444",
+                        color: "#fff",
+                        border: "none",
+                        fontWeight: 600,
+                        fontSize: 13,
+                        cursor: "pointer",
+                      }}
+                      title="Reset to default /CV.pdf"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </>
         );
@@ -3103,6 +3210,7 @@ const AdminPanel = ({ token, onLogout }) => {
                         )}
 
                         {/* PDF CV section */}
+                        {/* PDF CV section */}
                         {item.PDFCV && (
                           <div style={{ marginBottom: 8 }}>
                             <b
@@ -3116,17 +3224,21 @@ const AdminPanel = ({ token, onLogout }) => {
                               PDF CV:
                             </b>
                             <a
-                              href={item.PDFCV}
+                              href="/cv"
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
                                 color: "#2563eb",
                                 textDecoration: "underline",
                                 fontSize: 15,
+                                fontWeight: 600,
                               }}
                             >
-                              {item.PDFCV}
+                              📄 Open & View CV Page (/cv)
                             </a>
+                            <span style={{ fontSize: 13, color: "#64748b", marginLeft: 8 }}>
+                              ({item.PDFCV.startsWith("data:") ? "Custom Uploaded Base64 File" : item.PDFCV.substring(0, 40) + "..."})
+                            </span>
                           </div>
                         )}
                       </div>

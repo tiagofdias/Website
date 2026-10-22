@@ -693,6 +693,127 @@ app.delete('/api/about/:id', auth, async (req, res) => {
   res.json({ success: true });
 });
 
+// --- Dedicated CV Endpoints (No Google Sign-in Required) ---
+// Get current active CV status & URL
+app.get('/api/cv', async (req, res) => {
+  try {
+    const about = await About.findOne();
+    const pdfCv = about?.PDFCV || '';
+    
+    // Check if CV is stored as base64 in MongoDB
+    if (pdfCv.startsWith('data:application/pdf;base64,')) {
+      return res.json({
+        url: '/api/cv/file',
+        downloadUrl: '/api/cv/download',
+        type: 'base64',
+        isCustom: true,
+      });
+    }
+
+    // Check if it's a direct valid URL (excluding google drive which requires sign-in)
+    if (pdfCv && !pdfCv.includes('drive.google.com') && (pdfCv.startsWith('http://') || pdfCv.startsWith('https://') || pdfCv.startsWith('/'))) {
+      return res.json({
+        url: pdfCv,
+        downloadUrl: pdfCv,
+        type: 'url',
+        isCustom: true,
+      });
+    }
+
+    // Default bundled static CV file
+    return res.json({
+      url: '/CV.pdf',
+      downloadUrl: '/CV.pdf',
+      type: 'static',
+      isCustom: false,
+    });
+  } catch (error) {
+    console.error('Error fetching CV info:', error);
+    res.status(500).json({ error: 'Failed to fetch CV information' });
+  }
+});
+
+// Stream PDF inline for viewer
+app.get('/api/cv/file', async (req, res) => {
+  try {
+    const about = await About.findOne();
+    const pdfCv = about?.PDFCV || '';
+    if (pdfCv.startsWith('data:application/pdf;base64,')) {
+      const base64Data = pdfCv.replace(/^data:application\/pdf;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; filename="Tiago_Dias_CV.pdf"');
+      return res.send(buffer);
+    }
+    // If not base64 or empty, redirect to static bundled /CV.pdf
+    res.redirect('/CV.pdf');
+  } catch (error) {
+    console.error('Error serving CV file:', error);
+    res.redirect('/CV.pdf');
+  }
+});
+
+// Binary download endpoint
+app.get('/api/cv/download', async (req, res) => {
+  try {
+    const about = await About.findOne();
+    const pdfCv = about?.PDFCV || '';
+    if (pdfCv.startsWith('data:application/pdf;base64,')) {
+      const base64Data = pdfCv.replace(/^data:application\/pdf;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="Tiago_Dias_CV.pdf"');
+      return res.send(buffer);
+    }
+    res.redirect('/CV.pdf');
+  } catch (error) {
+    console.error('Error downloading CV file:', error);
+    res.redirect('/CV.pdf');
+  }
+});
+
+// Admin upload / modify CV endpoint
+app.post('/api/cv/upload', auth, async (req, res) => {
+  try {
+    const { pdfBase64, url } = req.body;
+    let targetCv = '';
+
+    if (pdfBase64 && typeof pdfBase64 === 'string' && pdfBase64.startsWith('data:application/pdf;base64,')) {
+      targetCv = pdfBase64;
+    } else if (url && typeof url === 'string') {
+      targetCv = url.trim();
+    } else {
+      return res.status(400).json({ error: 'Valid PDF data or URL required' });
+    }
+
+    await About.findOneAndUpdate(
+      {},
+      { PDFCV: targetCv },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'CV updated successfully',
+      url: targetCv.startsWith('data:application/pdf;base64,') ? '/api/cv/file' : targetCv,
+    });
+  } catch (error) {
+    console.error('Error updating CV:', error);
+    res.status(500).json({ error: 'Failed to update CV' });
+  }
+});
+
+// Admin reset CV to default bundled static file
+app.delete('/api/cv', auth, async (req, res) => {
+  try {
+    await About.findOneAndUpdate({}, { PDFCV: '' });
+    res.json({ success: true, url: '/CV.pdf' });
+  } catch (error) {
+    console.error('Error resetting CV:', error);
+    res.status(500).json({ error: 'Failed to reset CV' });
+  }
+});
+
 // Test endpoint
 app.get('/api/chat', (req, res) => {
   res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.1' });
@@ -1913,6 +2034,12 @@ ${projectsContext || 'Multiple enterprise and open-source applications built wit
           icon: '',
           label: 'LinkedIn',
           action: 'https://www.linkedin.com/in/tiagofdias'
+        },
+        {
+          type: 'url',
+          icon: '',
+          label: 'View CV',
+          action: '/cv'
         },
         {
           type: 'download',

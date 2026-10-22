@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Link as ScrollLink } from "react-scroll";
 import { styles } from "../styles";
 import { navLinks } from "../constants";
@@ -73,6 +74,14 @@ const Navbar = () => {
               </ScrollLink>
             </li>
           ))}
+          <li className="flex items-center">
+            <Link
+              to="/cv"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#00C6FE]/15 to-purple-500/15 hover:from-[#00C6FE]/30 hover:to-purple-500/30 text-[#00EAFF] hover:text-white border border-[#00C6FE]/40 hover:border-[#00C6FE] text-[15px] font-bold shadow-sm transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              <span>📄 CV</span>
+            </Link>
+          </li>
         </ul>
 
         {/* Mobile Menu Button */}
@@ -160,6 +169,19 @@ const Navbar = () => {
                     )}
                   </li>
                 ))}
+                <li>
+                  <Link
+                    to="/cv"
+                    onClick={() => setToggle(false)}
+                    className="group flex items-center justify-between px-4 py-3 rounded-xl mt-2 bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 border border-[#00C6FE]/40 text-[#00EAFF] font-bold transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-base">📄</span>
+                      <span className="text-white text-base">Curriculum Vitae</span>
+                    </div>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#00C6FE]/20 text-[#00EAFF] border border-[#00C6FE]/30">VIEW</span>
+                  </Link>
+                </li>
               </ul>
             </div>
           </>

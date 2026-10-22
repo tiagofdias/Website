@@ -7,6 +7,7 @@ import {
   Navbar,
   Works,
   Footer,
+  CVViewer,
 } from "./components";
 import { AboutSection, MyJourney } from "./components/About";
 import Certifications from "./components/Certifications";
@@ -50,6 +51,7 @@ const App = () => {
             </div>
           }
         />
+        <Route path="/cv" element={<CVViewer />} />
         <Route
           path="/admin"
           element={

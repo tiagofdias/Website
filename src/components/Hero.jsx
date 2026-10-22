@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLinkedin, faGithub } from "@fortawesome/free-brands-svg-icons";
 import { Link as ScrollLink } from "react-scroll";
@@ -113,17 +114,16 @@ const Hero = () => {
   const API_URL = import.meta.env.VITE_API_URL || '/api';
   
   useEffect(() => {
-    // Fetch CV URL with fallback
-    fetch(`${API_URL}/about`)
+    // Fetch CV info from dedicated CV endpoint (guaranteed no Google Drive sign-in requirement)
+    fetch(`${API_URL}/cv`)
       .then((res) => res.json())
       .then((data) => {
-        const aboutData = Array.isArray(data) ? data[0] : data;
-        if (aboutData?.PDFCV) {
-          setCvUrl(aboutData.PDFCV);
+        if (data?.url) {
+          setCvUrl(data.url);
         }
       })
       .catch(() => {
-        // Fallback already set to /CV.pdf
+        setCvUrl("/CV.pdf");
       });
 
     // Fetch accurate stats with fallback
@@ -222,27 +222,33 @@ const Hero = () => {
             </ScrollLink>
           </motion.div>
 
-          {/* Download CV Button */}
+          {/* CV Action Buttons: View CV & Download */}
           <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="relative group"
+            whileHover={{ scale: 1.03 }}
+            className="flex items-center gap-2.5"
           >
-            <motion.div
-              className="absolute -inset-1 bg-gradient-to-r from-[#00C6FE] to-purple-500 rounded-2xl blur-md opacity-0 group-hover:opacity-100"
-              transition={{ duration: 0.3 }}
-            />
+            <Link
+              to="/cv"
+              className="relative group flex items-center justify-center gap-2 bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] px-5 py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 hover:shadow-[0_0_30px_rgba(0,198,254,0.5)] transition-all duration-300 hover:scale-105 active:scale-95"
+              style={{ backgroundSize: "200% 200%" }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span className="tracking-wide">VIEW CV</span>
+            </Link>
+
             <a
               href={cvUrl || "/CV.pdf"}
               download="Tiago_Dias_CV.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative flex items-center justify-center gap-2 bg-gradient-to-r from-[#00C6FE] to-purple-500 px-6 py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 hover:shadow-[0_0_30px_rgba(0,198,254,0.5)] transition-all duration-300"
+              className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-3 rounded-2xl font-semibold text-white border-2 border-white/15 hover:border-[#00C6FE]/50 transition-all duration-300 hover:scale-105 active:scale-95"
+              title="Direct Download Tiago Dias CV (PDF)"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg className="w-5 h-5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              <span className="tracking-wide">DOWNLOAD CV</span>
+              <span className="text-xs uppercase tracking-wider hidden xl:inline">PDF</span>
             </a>
           </motion.div>
         </motion.div>
@@ -277,21 +283,30 @@ const Hero = () => {
               </ScrollLink>
             </motion.div>
 
-            {/* Download CV Button */}
-            <motion.div whileTap={{ scale: 0.95 }} className="relative group">
+            {/* Mobile CV Buttons: View CV & Download */}
+            <div className="grid grid-cols-2 gap-2.5 w-full">
+              <Link
+                to="/cv"
+                className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#00C6FE] to-purple-500 py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 active:scale-95 transition-all text-xs tracking-wider"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>VIEW CV</span>
+              </Link>
+
               <a
                 href={cvUrl || "/CV.pdf"}
                 download="Tiago_Dias_CV.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative flex items-center justify-center gap-2 bg-gradient-to-r from-[#00C6FE] to-purple-500 px-5 py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 active:shadow-[0_0_30px_rgba(0,198,254,0.5)] transition-all duration-300 w-full"
+                className="flex items-center justify-center gap-1.5 bg-white/10 active:bg-white/20 py-3 rounded-2xl font-bold text-white border-2 border-white/20 active:scale-95 transition-all text-xs tracking-wider"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg className="w-4 h-4 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                <span className="tracking-wide text-sm">DOWNLOAD CV</span>
+                <span>DOWNLOAD</span>
               </a>
-            </motion.div>
+            </div>
           </motion.div>
 
           {/* Name Section */}
