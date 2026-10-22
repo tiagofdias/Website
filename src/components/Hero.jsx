@@ -222,14 +222,14 @@ const Hero = () => {
             </ScrollLink>
           </motion.div>
 
-          {/* CV Action Buttons: View CV & Download */}
+          {/* CV Action Button: View CV */}
           <motion.div
-            whileHover={{ scale: 1.03 }}
-            className="flex items-center gap-2.5"
+            whileHover={{ scale: 1.04 }}
+            className="flex items-center"
           >
             <Link
               to="/cv"
-              className="relative group flex items-center justify-center gap-2 bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] px-5 py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 hover:shadow-[0_0_30px_rgba(0,198,254,0.5)] transition-all duration-300 hover:scale-105 active:scale-95"
+              className="relative group flex items-center justify-center gap-2 bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] px-6 py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 hover:shadow-[0_0_30px_rgba(0,198,254,0.5)] transition-all duration-300 hover:scale-105 active:scale-95"
               style={{ backgroundSize: "200% 200%" }}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,18 +238,6 @@ const Hero = () => {
               </svg>
               <span className="tracking-wide">VIEW CV</span>
             </Link>
-
-            <a
-              href={cvUrl || "/CV.pdf"}
-              download="Tiago_Dias_CV.pdf"
-              className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-3 rounded-2xl font-semibold text-white border-2 border-white/15 hover:border-[#00C6FE]/50 transition-all duration-300 hover:scale-105 active:scale-95"
-              title="Direct Download Tiago Dias CV (PDF)"
-            >
-              <svg className="w-5 h-5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              <span className="text-xs uppercase tracking-wider hidden xl:inline">PDF</span>
-            </a>
           </motion.div>
         </motion.div>
 
@@ -283,11 +271,12 @@ const Hero = () => {
               </ScrollLink>
             </motion.div>
 
-            {/* Mobile CV Buttons: View CV & Download */}
-            <div className="grid grid-cols-2 gap-2.5 w-full">
+            {/* Mobile CV Button: View CV */}
+            <div className="w-full">
               <Link
                 to="/cv"
-                className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#00C6FE] to-purple-500 py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 active:scale-95 transition-all text-xs tracking-wider"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] py-3 rounded-2xl font-bold text-white shadow-xl border-2 border-white/20 active:scale-95 transition-all text-xs tracking-wider"
+                style={{ backgroundSize: "200% 200%" }}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -295,17 +284,6 @@ const Hero = () => {
                 </svg>
                 <span>VIEW CV</span>
               </Link>
-
-              <a
-                href={cvUrl || "/CV.pdf"}
-                download="Tiago_Dias_CV.pdf"
-                className="flex items-center justify-center gap-1.5 bg-white/10 active:bg-white/20 py-3 rounded-2xl font-bold text-white border-2 border-white/20 active:scale-95 transition-all text-xs tracking-wider"
-              >
-                <svg className="w-4 h-4 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                <span>DOWNLOAD</span>
-              </a>
             </div>
           </motion.div>
 
