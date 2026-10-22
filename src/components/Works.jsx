@@ -203,7 +203,10 @@ const ProjectCard = ({
 
       <div className="mt-5 flex-1 flex flex-col">
         <div className="flex items-start justify-between">
-          <h3 className="text-white font-bold text-[22px] pr-4 break-words flex-1 group-hover/card:text-transparent group-hover/card:bg-gradient-to-r group-hover/card:from-[#00C6FE] group-hover/card:to-purple-500 group-hover/card:bg-clip-text transition-all duration-300">
+          <h3 
+            className="text-white font-bold text-[22px] pr-4 break-words flex-1 group-hover/card:text-transparent group-hover/card:bg-gradient-to-r group-hover/card:from-[#00C6FE] group-hover/card:to-purple-500 group-hover/card:bg-clip-text transition-all duration-300 cursor-pointer"
+            onClick={() => openPreview(0)}
+          >
             {(name || "").replace(/-/g, " ")}
           </h3>
           <div className="flex gap-2 ml-2 mt-[-4px]">
@@ -280,20 +283,18 @@ const ProjectCard = ({
             transition={{ duration: 0.2 }}
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto custom-scrollbar"
             onClick={closePreview}
           >
             {/* Backdrop with blur effect */}
-            <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
+            <div className="fixed inset-0 bg-black/90 backdrop-blur-xl" />
             
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.92, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              className={`relative rounded-2xl p-4 sm:p-6 flex flex-col items-center focus:outline-none shadow-2xl bg-gradient-to-br from-[#1a1a2e]/95 to-[#0f0f1e]/95 border border-white/10 ${
-                isMobile ? "max-w-[95vw] w-full" : "max-w-[90vw] w-auto"
-              }`}
+              exit={{ scale: 0.92, opacity: 0, y: 15 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="relative my-auto w-full max-w-[96vw] sm:max-w-[90vw] md:max-w-4xl xl:max-w-5xl max-h-[92vh] flex flex-col rounded-2xl p-3 sm:p-5 md:p-6 shadow-2xl bg-gradient-to-br from-[#1a1a2e]/98 to-[#0f0f1e]/98 border border-white/10 focus:outline-none overflow-hidden"
               onClick={(e) => e.stopPropagation()}
               tabIndex={0}
             >
@@ -304,16 +305,16 @@ const ProjectCard = ({
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}
-                className="absolute top-4 right-4 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 border border-red-500/30 hover:border-red-500/50 shadow-lg"
+                className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-30 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all duration-200 border border-red-500/30 hover:border-red-500/50 shadow-lg cursor-pointer"
                 onClick={closePreview}
                 aria-label="Close preview"
               >
                 <svg
-                  className="w-5 h-5"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                   fill="none"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
@@ -322,25 +323,59 @@ const ProjectCard = ({
               </motion.button>
 
               {/* Project title */}
-              <h2 className="text-white text-xl font-bold mb-3 sm:mb-4 mt-2 text-center bg-gradient-to-r from-[#00C6FE] to-purple-500 bg-clip-text text-transparent">
+              <h2 className="text-white text-sm sm:text-base md:text-xl font-bold mb-2 sm:mb-3 mt-0 sm:mt-1 text-center px-10 max-w-full truncate bg-gradient-to-r from-[#00C6FE] to-purple-500 bg-clip-text text-transparent flex-shrink-0">
                 {(name || "").replace(/-/g, " ")}
               </h2>
               
-              {/* Enhanced Image Container */}
-              <div className="w-full max-h-[75vh] flex items-center justify-center relative rounded-xl overflow-hidden">
+              {/* Enhanced Responsive Image Container */}
+              <div className="relative w-full flex-1 min-h-0 max-h-[50vh] sm:max-h-[56vh] md:max-h-[62vh] xl:max-h-[68vh] flex items-center justify-center rounded-xl overflow-hidden bg-black/40">
                 {/* Loading shimmer effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer pointer-events-none" />
                 
+                {/* Floating Navigation Arrows - Desktop only */}
+                {projectImages.length > 1 && !isMobile && (
+                  <>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      aria-label="Previous image"
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/85 text-white backdrop-blur-md border border-white/20 hover:border-[#00C6FE] transition-all duration-200 shadow-xl cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        prevImage();
+                      }}
+                    >
+                      <svg className="w-5 h-5 -translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      aria-label="Next image"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/85 text-white backdrop-blur-md border border-white/20 hover:border-[#00C6FE] transition-all duration-200 shadow-xl cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        nextImage();
+                      }}
+                    >
+                      <svg className="w-5 h-5 translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </motion.button>
+                  </>
+                )}
+
                 {isMobile && projectImages.length > 1 ? (
-                  // Mobile infinite carousel with clones
+                  // Mobile infinite carousel with swipe
                   <div
-                    className="w-full max-h-[75vh] overflow-hidden rounded-xl flex items-center"
+                    className="w-full h-full max-h-[50vh] sm:max-h-[56vh] md:max-h-[62vh] overflow-hidden rounded-xl flex items-center"
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                   >
                     <div
-                      className="flex gap-3 ease-out items-center"
+                      className="flex gap-3 ease-out items-center w-full"
                       style={{
                         transform: `translateX(calc(-${slideIndex} * 100% - ${slideIndex} * 0.75rem + ${swipeDelta}px))`,
                         transition: transitionEnabled
@@ -360,67 +395,49 @@ const ProjectCard = ({
                           <img
                             src={image}
                             alt={`Project screenshot ${idx + 1} of ${projectImages.length}`}
-                            className="w-full h-auto max-h-[75vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
+                            className="w-full h-auto max-h-[50vh] sm:max-h-[56vh] md:max-h-[62vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
                           />
                         </motion.div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  // Desktop or single image with enhanced styling
+                  // Desktop or single image with responsive containment
                   <motion.img
                     key={previewIndex}
-                    initial={{ opacity: 0, scale: 0.95 }}
+                    initial={{ opacity: 0, scale: 0.96 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.25 }}
                     src={projectImages[previewIndex]}
                     alt={`Project screenshot ${previewIndex + 1} of ${projectImages.length}`}
-                    className="w-auto h-auto max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
+                    className="w-auto h-auto max-w-full max-h-[50vh] sm:max-h-[56vh] md:max-h-[62vh] xl:max-h-[68vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
                   />
                 )}
               </div>
 
-              {/* Modern Slideshow Controls */}
+              {/* Modern Compact Slideshow Controls */}
               {projectImages.length > 1 && (
-                <>
-                  {/* Navigation Buttons - Desktop only */}
-                  {!isMobile && (
-                    <div className="mt-6 flex items-center justify-center gap-4 w-full">
-                      <motion.button
-                        whileHover={{ scale: 1.05, x: -3 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label="Previous image"
-                        className="group relative px-6 py-3 bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 hover:from-[#00C6FE]/30 hover:to-purple-500/30 text-white rounded-xl focus:outline-none transition-all duration-300 border border-[#00C6FE]/30 hover:border-[#00C6FE]/60 shadow-lg hover:shadow-[#00C6FE]/20 flex items-center gap-2 font-medium"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          prevImage();
-                        }}
-                      >
-                        <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Previous
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05, x: 3 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label="Next image"
-                        className="group relative px-6 py-3 bg-gradient-to-r from-purple-500/20 to-[#00C6FE]/20 hover:from-purple-500/30 hover:to-[#00C6FE]/30 text-white rounded-xl focus:outline-none transition-all duration-300 border border-purple-500/30 hover:border-purple-500/60 shadow-lg hover:shadow-purple-500/20 flex items-center gap-2 font-medium"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          nextImage();
-                        }}
-                      >
-                        Next
-                        <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </motion.button>
-                    </div>
-                  )}
-                  
-                  {/* Enhanced Dot Indicators */}
-                  <div className="mt-6 flex justify-center items-center gap-2">
+                <div className="mt-2.5 sm:mt-3.5 flex items-center justify-center gap-3 sm:gap-4 flex-shrink-0 w-full">
+                  {/* Prev Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Previous image"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-[#00C6FE]/15 to-purple-500/15 hover:from-[#00C6FE]/30 hover:to-purple-500/30 text-white text-xs sm:text-sm font-medium rounded-xl border border-white/10 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isMobile) prevSlide();
+                      else prevImage();
+                    }}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span>Prev</span>
+                  </motion.button>
+
+                  {/* Dot Indicators */}
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     {projectImages.map((_, idx) => (
                       <motion.button
                         key={idx}
@@ -435,20 +452,38 @@ const ProjectCard = ({
                             setPreviewIndex(idx);
                           }
                         }}
-                        className={`rounded-full focus:outline-none transition-all duration-300 ${
+                        className={`rounded-full transition-all duration-300 cursor-pointer ${
                           computedPreviewIndex === idx
-                            ? "w-8 h-3 bg-gradient-to-r from-[#00C6FE] to-purple-500 shadow-lg shadow-[#00C6FE]/30"
-                            : "w-3 h-3 bg-white/30 hover:bg-white/50"
+                            ? "w-6 sm:w-7 h-2 sm:h-2.5 bg-gradient-to-r from-[#00C6FE] to-purple-500 shadow-md shadow-[#00C6FE]/40"
+                            : "w-2 sm:w-2.5 h-2 sm:h-2.5 bg-white/30 hover:bg-white/60"
                         }`}
                       />
                     ))}
                   </div>
-                  
-                  {/* Image counter */}
-                  <div className="mt-3 text-center text-white/60 text-sm font-medium">
+
+                  {/* Counter */}
+                  <span className="text-white/70 text-xs sm:text-sm font-semibold tracking-wider">
                     {computedPreviewIndex + 1} / {projectImages.length}
-                  </div>
-                </>
+                  </span>
+
+                  {/* Next Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Next image"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-purple-500/15 to-[#00C6FE]/15 hover:from-purple-500/30 hover:to-[#00C6FE]/30 text-white text-xs sm:text-sm font-medium rounded-xl border border-white/10 hover:border-purple-400/50 transition-all flex items-center gap-1.5 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (isMobile) nextSlide();
+                      else nextImage();
+                    }}
+                  >
+                    <span>Next</span>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </motion.button>
+                </div>
               )}
             </motion.div>
           </motion.div>,

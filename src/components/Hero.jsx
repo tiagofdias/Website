@@ -32,13 +32,29 @@ const SocialIcon = ({ icon, href, label }) => (
   </motion.div>
 );
 
-// Animated Role Titles with Modern Design
+// Animated Role Titles with Responsive Design for Mobile, Laptops, and Desktops
 const AnimatedRoles = () => {
   const roles = [
-    { text: "SOFTWARE ENGINEER", color: "from-cyan-400 via-blue-500 to-purple-500" },
-    { text: "AI ENTHUSIAST", color: "from-purple-400 via-pink-500 to-red-500" },
-    { text: "FULLSTACK DEVELOPER", color: "from-green-400 via-cyan-500 to-blue-500" },
-    { text: "OPEN SOURCE CONTRIBUTOR", color: "from-orange-400 via-red-500 to-pink-500" },
+    {
+      text: "SOFTWARE ENGINEER",
+      color: "from-cyan-400 via-blue-500 to-purple-500",
+      size: "text-base sm:text-2xl md:text-3xl lg:text-2xl xl:text-4xl 2xl:text-5xl",
+    },
+    {
+      text: "AI ENTHUSIAST",
+      color: "from-purple-400 via-pink-500 to-red-500",
+      size: "text-lg sm:text-3xl md:text-3xl lg:text-3xl xl:text-5xl 2xl:text-6xl",
+    },
+    {
+      text: "FULLSTACK DEVELOPER",
+      color: "from-green-400 via-cyan-500 to-blue-500",
+      size: "text-base sm:text-2xl md:text-3xl lg:text-2xl xl:text-4xl 2xl:text-5xl",
+    },
+    {
+      text: "OPEN SOURCE CONTRIBUTOR",
+      color: "from-orange-400 via-red-500 to-pink-500",
+      size: "text-xs xs:text-sm sm:text-xl md:text-2xl lg:text-xl xl:text-3xl 2xl:text-4xl",
+    },
   ];
   const [index, setIndex] = useState(0);
 
@@ -49,19 +65,23 @@ const AnimatedRoles = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const currentRole = roles[index];
+
   return (
-    <div className="relative h-16 sm:h-20 flex items-center justify-center w-full">
+    <div className="relative h-14 sm:h-16 lg:h-20 flex items-center justify-center w-full max-w-full overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          initial={{ opacity: 0, y: 30, scale: 0.8 }}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -30, scale: 0.8 }}
-          transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
-          className="absolute inset-0 flex items-center justify-center px-2 sm:px-4"
+          exit={{ opacity: 0, y: -20, scale: 0.9 }}
+          transition={{ duration: 0.4, type: "spring", stiffness: 120, damping: 14 }}
+          className="absolute inset-0 flex items-center justify-center px-2 sm:px-4 max-w-full"
         >
-          <span className={`text-xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black bg-gradient-to-r ${roles[index].color} bg-clip-text text-transparent drop-shadow-[0_0_50px_rgba(0,198,254,0.5)] whitespace-nowrap text-center leading-tight`}>
-            {roles[index].text}
+          <span
+            className={`${currentRole.size} font-black bg-gradient-to-r ${currentRole.color} bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(0,198,254,0.4)] whitespace-nowrap tracking-tight sm:tracking-normal text-center leading-tight select-none max-w-full`}
+          >
+            {currentRole.text}
           </span>
         </motion.div>
       </AnimatePresence>
@@ -71,7 +91,8 @@ const AnimatedRoles = () => {
         key={`line-${index}`}
         initial={{ scaleX: 0, opacity: 0 }}
         animate={{ scaleX: 1, opacity: 1 }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-3/4 max-w-2xl bg-gradient-to-r from-transparent via-[#00C6FE] to-transparent rounded-full"
+        transition={{ duration: 0.5 }}
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-3/4 max-w-md sm:max-w-lg lg:max-w-xl bg-gradient-to-r from-transparent via-[#00C6FE] to-transparent rounded-full"
       />
     </div>
   );
