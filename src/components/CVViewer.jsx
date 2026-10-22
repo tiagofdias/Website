@@ -13,8 +13,8 @@ if (typeof window !== "undefined") {
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 /**
- * PDFPage: High-DPI Canvas renderer optimized for 24-inch monitors and responsive displays.
- * Eliminates all browser grey frames and provides perfect Fit-Page / Fit-Width scaling.
+ * PDFPage: High-DPI Canvas renderer optimized for both smaller laptops and 24-inch monitors.
+ * Ensures the document is always comfortably readable and never shrunk into an unreadable miniature.
  */
 const PDFPage = ({ pdfDoc, pageNum, scale, fitMode, containerWidth, viewportHeight }) => {
   const canvasRef = useRef(null);
@@ -34,25 +34,26 @@ const PDFPage = ({ pdfDoc, pageNum, scale, fitMode, containerWidth, viewportHeig
         const unscaledViewport = page.getViewport({ scale: 1.0 });
 
         // Available dimensions
-        const availWidth = Math.max((containerWidth || window.innerWidth) - 48, 320);
-        // Available vertical height on 24" monitors (minus header 56px and padding)
-        const availHeight = Math.max((viewportHeight || window.innerHeight) - 120, 500);
+        const availWidth = Math.max((containerWidth || window.innerWidth) - 32, 300);
+        const availHeight = Math.max((viewportHeight || window.innerHeight) - 100, 480);
 
         let computedScale = scale;
 
         if (fitMode === "page") {
-          // Fit Page: Scale so the entire document fits comfortably in the screen height on 24" monitors
-          const scaleHeight = (availHeight * 0.98) / unscaledViewport.height;
+          // Fit Page: on large 24" screens, fits screen height (~800px+).
+          // On smaller laptop screens (height < 820px), maintains comfortable minimum readable width (~640px)
+          const scaleHeight = (availHeight * 0.96) / unscaledViewport.height;
           const scaleWidth = availWidth / unscaledViewport.width;
-          computedScale = Math.min(scaleHeight, scaleWidth) * (scale / 100);
+          const minReadableScale = Math.min(availWidth, 640) / unscaledViewport.width;
+          computedScale = Math.max(Math.min(scaleHeight, scaleWidth), minReadableScale) * (scale / 100);
         } else if (fitMode === "width") {
-          // Fit Width: Scale to comfortably fill container width (~850px-1050px) for zoomed-in reading
-          const targetWidth = Math.min(availWidth, 1020);
+          // Fit Width: fills container up to comfortable readable reading width (~820px-940px)
+          const targetWidth = Math.min(availWidth, 880);
           computedScale = (targetWidth / unscaledViewport.width) * (scale / 100);
         } else {
-          // Custom / default scale
-          const defaultTarget = Math.min(availWidth, 850);
-          const baseScale = Math.min(defaultTarget / unscaledViewport.width, 1.35);
+          // Custom zoom
+          const defaultTarget = Math.min(availWidth, 780);
+          const baseScale = Math.min(defaultTarget / unscaledViewport.width, 1.25);
           computedScale = baseScale * (scale / 100);
         }
 
@@ -111,11 +112,11 @@ const PDFPage = ({ pdfDoc, pageNum, scale, fitMode, containerWidth, viewportHeig
   }, [pdfDoc, pageNum, scale, fitMode, containerWidth, viewportHeight]);
 
   return (
-    <div className="relative group transition-all duration-300 flex justify-center">
-      {/* Pristine White Document Sheet with Zero Grey Letterboxing */}
+    <div className="relative group transition-all duration-300 flex justify-center w-full">
+      {/* Pristine White Document Sheet */}
       <canvas
         ref={canvasRef}
-        className="bg-white rounded-xl shadow-[0_25px_70px_-15px_rgba(0,0,0,0.8),0_0_40px_rgba(0,198,254,0.15)] border border-white/20 block transition-shadow duration-300 hover:shadow-[0_30px_90px_-10px_rgba(0,0,0,0.9),0_0_50px_rgba(0,198,254,0.25)]"
+        className="bg-white rounded-xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8),0_0_35px_rgba(0,198,254,0.15)] border border-white/20 block transition-shadow duration-300 hover:shadow-[0_25px_80px_-10px_rgba(0,0,0,0.9),0_0_45px_rgba(0,198,254,0.25)] mx-auto max-w-full"
       />
       {pdfDoc?.numPages > 1 && (
         <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-md bg-black/75 backdrop-blur-md text-[11px] font-mono text-gray-200 border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -133,8 +134,14 @@ const CVViewer = () => {
   const [isCustom, setIsCustom] = useState(false);
   const [viewMode, setViewMode] = useState("pdf"); // "pdf" or "web"
   
-  // Scaling modes: "page" (Fit entire page in screen height - perfect for 24" monitors), "width" (Fit width), "custom"
-  const [fitMode, setFitMode] = useState("page");
+  // Intelligent default scaling: on laptops (<850px height), default to "width" for immediate readable text; on 24" monitors (>=850px height), default to "page"
+  const [fitMode, setFitMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerHeight >= 850 ? "page" : "width";
+    }
+    return "width";
+  });
+
   const [zoom, setZoom] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -149,7 +156,7 @@ const CVViewer = () => {
     typeof window !== "undefined" ? window.innerWidth : 1200
   );
   const [viewportHeight, setViewportHeight] = useState(
-    typeof window !== "undefined" ? window.innerHeight : 900
+    typeof window !== "undefined" ? window.innerHeight : 800
   );
 
   // Email action state
@@ -172,7 +179,7 @@ const CVViewer = () => {
     setIsAdmin(!!token);
   }, []);
 
-  // Track container width and height for responsive 24-inch scaling
+  // Track container width and height for responsive laptop and desktop scaling
   useEffect(() => {
     const handleResize = () => {
       if (viewerContainerRef.current) {
@@ -424,13 +431,13 @@ const CVViewer = () => {
       ref={containerRef}
       className="min-h-screen bg-[#050816] text-white flex flex-col selection:bg-[#00C6FE]/30 selection:text-white"
     >
-      {/* Top Header & Controls Bar - Well proportioned for 24-inch screens */}
-      <header className="sticky top-0 z-30 backdrop-blur-2xl bg-[#050816]/90 border-b border-white/10 px-4 sm:px-8 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-3 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      {/* Top Header & Controls Bar - Streamlined single-row on all laptop & desktop screens */}
+      <header className="sticky top-0 z-30 backdrop-blur-2xl bg-[#050816]/95 border-b border-white/10 px-3 sm:px-6 xl:px-8 py-2.5 flex items-center justify-between gap-2 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         {/* Left: Branding & Back Navigation */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <Link
             to="/"
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-[#00C6FE]/20 border border-white/10 hover:border-[#00C6FE]/50 text-gray-300 hover:text-white transition-all duration-300 shadow-sm"
+            className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-[#00C6FE]/20 border border-white/10 hover:border-[#00C6FE]/50 text-gray-300 hover:text-white transition-all duration-300 shadow-sm"
           >
             <svg 
               className="w-4 h-4 transition-transform group-hover:-translate-x-1 text-[#00EAFF]" 
@@ -440,29 +447,26 @@ const CVViewer = () => {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span className="text-xs sm:text-sm font-semibold tracking-wide">Portfolio</span>
+            <span className="text-xs font-semibold tracking-wide hidden sm:inline">Portfolio</span>
           </Link>
 
-          <div className="h-5 w-px bg-white/15 hidden sm:block"></div>
+          <div className="h-4 w-px bg-white/15 hidden md:block"></div>
 
           <div>
-            <h1 className="text-sm sm:text-base font-bold bg-gradient-to-r from-white via-gray-100 to-[#00EAFF] bg-clip-text text-transparent flex items-center gap-2">
+            <h1 className="text-xs sm:text-sm font-bold bg-gradient-to-r from-white via-gray-100 to-[#00EAFF] bg-clip-text text-transparent flex items-center gap-1.5">
               Tiago Dias
-              <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-[#00C6FE]/15 border border-[#00C6FE]/30 text-[#00EAFF] uppercase tracking-wider">
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#00C6FE]/15 border border-[#00C6FE]/30 text-[#00EAFF] uppercase tracking-wider">
                 CV
               </span>
             </h1>
-            <p className="text-[11px] text-gray-400 hidden sm:block">
-              Gen AI Software Engineer • Banco BPI
-            </p>
           </div>
         </div>
 
         {/* Center: View Switcher Tabs */}
-        <div className="flex items-center bg-white/5 p-1 rounded-xl border border-white/10 shadow-inner">
+        <div className="flex items-center bg-white/5 p-0.5 sm:p-1 rounded-xl border border-white/10 shadow-inner flex-shrink-0">
           <button
             onClick={() => setViewMode("pdf")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+            className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 ${
               viewMode === "pdf"
                 ? "bg-gradient-to-r from-[#00C6FE] to-purple-600 text-white shadow-md shadow-[#00C6FE]/20"
                 : "text-gray-400 hover:text-white"
@@ -471,12 +475,13 @@ const CVViewer = () => {
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span>PDF Document</span>
+            <span>PDF</span>
+            <span className="hidden md:inline"> Document</span>
           </button>
           
           <button
             onClick={() => setViewMode("web")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+            className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 ${
               viewMode === "web"
                 ? "bg-gradient-to-r from-[#00C6FE] to-purple-600 text-white shadow-md shadow-[#00C6FE]/20"
                 : "text-gray-400 hover:text-white"
@@ -485,63 +490,63 @@ const CVViewer = () => {
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
             </svg>
-            <span>Interactive Web CV</span>
+            <span>Web CV</span>
           </button>
         </div>
 
-        {/* Right: Controls & Actions (Optimized for 24-inch screens) */}
-        <div className="flex items-center gap-2 sm:gap-2.5">
+        {/* Right: Controls & Actions (Streamlined to prevent 2-row wrapping on laptops) */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Smart Fit & Zoom Controls (PDF Mode) */}
           {viewMode === "pdf" && (
-            <div className="hidden md:flex items-center bg-white/5 rounded-xl border border-white/10 p-0.5">
+            <div className="hidden lg:flex items-center bg-white/5 rounded-xl border border-white/10 p-0.5">
               <button
                 onClick={handleSetFitPage}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
                   fitMode === "page"
                     ? "bg-[#00C6FE]/30 text-[#00EAFF] border border-[#00C6FE]/50 shadow-sm"
                     : "text-gray-300 hover:text-white hover:bg-white/10"
                 }`}
-                title="Fit Entire Page to Screen (Optimal for 24-inch displays)"
+                title="Fit full page on screen"
               >
-                Fit Page
+                Page
               </button>
 
               <button
                 onClick={handleSetFitWidth}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
                   fitMode === "width"
                     ? "bg-[#00C6FE]/30 text-[#00EAFF] border border-[#00C6FE]/50 shadow-sm"
                     : "text-gray-300 hover:text-white hover:bg-white/10"
                 }`}
-                title="Fit Document to Width (Zoomed in reading)"
+                title="Fit width for comfortable reading"
               >
-                Fit Width
+                Width
               </button>
 
-              <div className="h-4 w-px bg-white/15 mx-1"></div>
+              <div className="h-3.5 w-px bg-white/15 mx-0.5"></div>
 
               <button
                 onClick={handleZoomOut}
                 disabled={zoom <= 50}
-                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-300 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-300 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 title="Zoom Out (-)"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" />
                 </svg>
               </button>
 
-              <span className="px-1.5 text-xs font-mono font-semibold text-[#00EAFF]">
+              <span className="px-1 text-[11px] font-mono font-semibold text-[#00EAFF]">
                 {zoom}%
               </span>
 
               <button
                 onClick={handleZoomIn}
                 disabled={zoom >= 200}
-                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-300 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-300 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 title="Zoom In (+)"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                 </svg>
               </button>
@@ -551,64 +556,49 @@ const CVViewer = () => {
           {/* Quick Email Button */}
           <button
             onClick={handleEmailAction}
-            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 hover:bg-[#00C6FE]/20 border border-white/10 hover:border-[#00C6FE]/40 text-gray-300 hover:text-white transition-all duration-200 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-white/5 hover:bg-[#00C6FE]/20 border border-white/10 hover:border-[#00C6FE]/40 text-gray-300 hover:text-white transition-all text-xs font-semibold flex items-center gap-1 shadow-sm"
             title="Email Tiago Dias"
           >
             <span>✉️</span>
-            <span className="hidden sm:inline">Email</span>
+            <span className="hidden md:inline">Email</span>
           </button>
 
           {/* Print button */}
           <button
             onClick={handlePrint}
-            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all duration-200 text-xs font-medium flex items-center gap-1.5"
+            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all text-xs font-medium hidden sm:flex items-center gap-1"
             title="Print CV"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>
-            <span className="hidden sm:inline">Print</span>
-          </button>
-
-          {/* Fullscreen button */}
-          <button
-            onClick={toggleFullscreen}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all duration-200 hidden sm:flex items-center justify-center"
-            title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isFullscreen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-              )}
-            </svg>
+            <span className="hidden xl:inline">Print</span>
           </button>
 
           {/* Direct Download Button */}
           <a
             href={downloadUrl}
             download="Tiago_Dias_CV.pdf"
-            className="group relative inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] text-white text-xs sm:text-sm font-bold shadow-[0_0_20px_rgba(0,198,254,0.35)] hover:shadow-[0_0_30px_rgba(0,198,254,0.6)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden border border-[#00C6FE]/40"
+            className="group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] text-white text-xs font-bold shadow-[0_0_15px_rgba(0,198,254,0.35)] hover:shadow-[0_0_25px_rgba(0,198,254,0.6)] transition-all hover:scale-105 active:scale-95 overflow-hidden border border-[#00C6FE]/40"
             style={{ backgroundSize: "200% 200%" }}
           >
-            <svg className="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            <span>Download PDF</span>
+            <span>Download<span className="hidden xl:inline"> PDF</span></span>
           </a>
 
-          {/* Admin Modify CV Button (Visible when logged in) */}
+          {/* Admin Modify CV Button */}
           {isAdmin && (
             <button
               onClick={() => setIsEditModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-200 border border-emerald-500/40 hover:border-emerald-400 transition-all duration-200 text-xs font-semibold shadow-sm hover:scale-105"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-200 border border-emerald-500/40 hover:border-emerald-400 transition-all text-xs font-semibold shadow-sm"
               title="Admin: Modify CV"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
-              <span className="hidden sm:inline">Modify CV</span>
+              <span className="hidden xl:inline">Modify</span>
             </button>
           )}
         </div>
@@ -631,42 +621,42 @@ const CVViewer = () => {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 p-3 sm:p-5 lg:p-6 flex flex-col items-center justify-start overflow-auto">
+      <main className="flex-1 p-2 sm:p-4 lg:p-6 flex flex-col items-center justify-start overflow-auto">
         {viewMode === "pdf" ? (
-          /* PDF Viewer Mode - Perfectly scaled for 24-inch monitors */
+          /* PDF Viewer Mode - Responsive on all laptops & 24" screens */
           <div 
             ref={viewerContainerRef}
-            className="w-full flex flex-col items-center justify-start min-h-[calc(100vh-120px)] py-1 transition-all duration-300"
+            className="w-full flex flex-col items-center justify-start min-h-[calc(100vh-100px)] py-1 transition-all duration-300"
           >
             {pdfLoading ? (
-              <div className="flex flex-col items-center justify-center py-24 text-center">
-                <div className="relative w-16 h-16 mb-4">
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="relative w-14 h-14 mb-3">
                   <div className="absolute inset-0 rounded-2xl border-2 border-[#00C6FE]/30 animate-ping"></div>
-                  <div className="relative w-16 h-16 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/40 flex items-center justify-center text-2xl text-[#00EAFF] animate-pulse">
+                  <div className="relative w-14 h-14 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/40 flex items-center justify-center text-xl text-[#00EAFF] animate-pulse">
                     📄
                   </div>
                 </div>
-                <p className="text-white font-bold text-base mb-1">Rendering Curriculum Vitae...</p>
-                <p className="text-xs text-gray-400">Loading high-resolution document pages</p>
+                <p className="text-white font-bold text-sm mb-0.5">Rendering Curriculum Vitae...</p>
+                <p className="text-[11px] text-gray-400">Loading high-resolution document</p>
               </div>
             ) : pdfError ? (
-              <div className="max-w-md p-8 rounded-3xl bg-white/5 border border-white/10 text-center backdrop-blur-xl my-12">
-                <div className="text-3xl mb-3">⚠️</div>
-                <h3 className="text-lg font-bold text-white mb-2">Document Preview</h3>
-                <p className="text-xs text-gray-300 mb-6">{pdfError}</p>
-                <div className="flex flex-col gap-2.5">
+              <div className="max-w-md p-6 rounded-3xl bg-white/5 border border-white/10 text-center backdrop-blur-xl my-8">
+                <div className="text-2xl mb-2">⚠️</div>
+                <h3 className="text-base font-bold text-white mb-1.5">Document Preview</h3>
+                <p className="text-xs text-gray-300 mb-5">{pdfError}</p>
+                <div className="flex flex-col gap-2">
                   <a
                     href={downloadUrl}
                     download="Tiago_Dias_CV.pdf"
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00C6FE] to-purple-600 text-white font-bold text-xs shadow-lg shadow-[#00C6FE]/20 hover:scale-105 active:scale-95 transition-all"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00C6FE] to-purple-600 text-white font-bold text-xs shadow-lg shadow-[#00C6FE]/20 hover:scale-105 active:scale-95 transition-all"
                   >
                     📥 Download Official PDF
                   </a>
                   <button
                     onClick={() => setViewMode("web")}
-                    className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/15 transition-all"
+                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/15 transition-all"
                   >
-                    ✨ Switch to Interactive Web View
+                    ✨ Switch to Web CV View
                   </button>
                 </div>
               </div>
@@ -687,10 +677,10 @@ const CVViewer = () => {
             )}
 
             {/* Floating Mobile Controls */}
-            <div className="md:hidden fixed bottom-6 z-20 flex items-center justify-center gap-2 bg-[#050816]/90 backdrop-blur-2xl px-3 py-2 rounded-2xl border border-white/15 shadow-2xl">
+            <div className="lg:hidden fixed bottom-5 z-20 flex items-center justify-center gap-2 bg-[#050816]/90 backdrop-blur-2xl px-3 py-1.5 rounded-2xl border border-white/15 shadow-2xl">
               <button 
                 onClick={handleZoomOut} 
-                className="w-8 h-8 rounded-xl bg-white/10 text-white font-bold flex items-center justify-center active:scale-90"
+                className="w-7 h-7 rounded-xl bg-white/10 text-white font-bold flex items-center justify-center active:scale-90 text-sm"
               >
                 -
               </button>
@@ -699,37 +689,37 @@ const CVViewer = () => {
               </span>
               <button 
                 onClick={handleZoomIn} 
-                className="w-8 h-8 rounded-xl bg-white/10 text-white font-bold flex items-center justify-center active:scale-90"
+                className="w-7 h-7 rounded-xl bg-white/10 text-white font-bold flex items-center justify-center active:scale-90 text-sm"
               >
                 +
               </button>
               <button 
                 onClick={() => setFitMode((prev) => (prev === "page" ? "width" : "page"))} 
-                className="text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] border border-[#00C6FE]/40"
+                className="text-[11px] font-semibold px-2 py-1 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] border border-[#00C6FE]/40"
               >
                 {fitMode === "page" ? "Width" : "Page"}
               </button>
               <button 
                 onClick={handleEmailAction}
-                className="text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] border border-[#00C6FE]/30"
+                className="text-[11px] font-semibold px-2 py-1 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] border border-[#00C6FE]/30"
               >
                 ✉️ Email
               </button>
             </div>
           </div>
         ) : (
-          /* Interactive Web CV Mode - 2-Column Executive Layout on 24-inch Screens */
-          <div className="w-full max-w-4xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl bg-gradient-to-br from-[#1a3b50]/60 via-[#0d1f2d]/80 to-[#050816] rounded-3xl p-6 sm:p-8 xl:p-10 border-2 border-[#00C6FE]/30 shadow-[0_0_60px_rgba(0,198,254,0.15)] backdrop-blur-2xl">
+          /* Interactive Web CV Mode - Spacious & Responsive on Laptops and 24" Screens */
+          <div className="w-full max-w-4xl xl:max-w-6xl 2xl:max-w-7xl bg-gradient-to-br from-[#1a3b50]/60 via-[#0d1f2d]/80 to-[#050816] rounded-2xl sm:rounded-3xl p-5 sm:p-7 xl:p-10 border-2 border-[#00C6FE]/30 shadow-[0_0_60px_rgba(0,198,254,0.15)] backdrop-blur-2xl">
             {/* Header */}
-            <div className="border-b border-white/10 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="border-b border-white/10 pb-5 sm:pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
               <div>
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                <h2 className="text-2xl sm:text-3xl xl:text-4xl font-extrabold text-white tracking-tight">
                   Tiago <span className="text-[#00EAFF]">Dias</span>
                 </h2>
-                <p className="text-base sm:text-lg text-purple-300 font-semibold mt-1">
+                <p className="text-sm sm:text-base xl:text-lg text-purple-300 font-semibold mt-0.5">
                   Gen AI Software Engineer • Banco BPI
                 </p>
-                <div className="text-xs sm:text-sm text-gray-300 mt-2 flex flex-wrap items-center gap-3">
+                <div className="text-xs sm:text-sm text-gray-300 mt-1.5 flex flex-wrap items-center gap-2 sm:gap-3">
                   <span>📍 Lisbon, Portugal</span>
                   <span>•</span>
                   <span className="text-emerald-400 font-medium">Open to Remote / Hybrid / Relocation</span>
@@ -749,16 +739,16 @@ const CVViewer = () => {
               </div>
 
               {/* Contact Actions */}
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={handleEmailAction}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#00C6FE]/20 to-purple-600/20 hover:from-[#00C6FE]/30 hover:to-purple-600/30 text-xs font-semibold text-white border border-[#00C6FE]/40 hover:border-[#00C6FE] transition-all flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95"
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#00C6FE]/20 to-purple-600/20 hover:from-[#00C6FE]/30 hover:to-purple-600/30 text-xs font-semibold text-white border border-[#00C6FE]/40 hover:border-[#00C6FE] transition-all flex items-center gap-1.5 shadow-sm hover:scale-105 active:scale-95"
                 >
-                  <span className="text-sm">✉️</span>
+                  <span>✉️</span>
                   <span>Email</span>
                   {emailCopied && (
-                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/40">
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1 py-0.5 rounded border border-emerald-500/40">
                       Copied!
                     </span>
                   )}
@@ -768,7 +758,7 @@ const CVViewer = () => {
                   href={LINKEDIN_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95"
+                  className="px-3 py-2 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95"
                 >
                   <span>💼</span>
                   <span>LinkedIn</span>
@@ -777,7 +767,7 @@ const CVViewer = () => {
                   href={GITHUB_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95"
+                  className="px-3 py-2 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95"
                 >
                   <span>💻</span>
                   <span>GitHub</span>
@@ -785,13 +775,13 @@ const CVViewer = () => {
               </div>
             </div>
 
-            {/* 2-Column Responsive Executive Dashboard for 24-inch Screens */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 pt-6">
-              {/* Left Column (5 of 12 cols): Summary, Education, Credentials */}
-              <div className="lg:col-span-5 flex flex-col gap-6">
+            {/* Responsive Layout: Single column on small laptops (<1280px), 2 columns on >=1280px / 24" */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 sm:gap-6 xl:gap-8 pt-5 sm:pt-6">
+              {/* Left Column (5 of 12 cols on XL, full width on laptop < 1280px) */}
+              <div className="xl:col-span-5 flex flex-col gap-5 sm:gap-6">
                 {/* Executive Profile */}
-                <section className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-2.5 flex items-center gap-2">
+                <section className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-2 flex items-center gap-2">
                     <span>🎯</span> Executive Profile
                   </h3>
                   <p className="text-gray-200 text-xs sm:text-sm leading-relaxed">
@@ -800,32 +790,32 @@ const CVViewer = () => {
                 </section>
 
                 {/* Education */}
-                <section className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3.5 flex items-center gap-2">
+                <section className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3 flex items-center gap-2">
                     <span>🎓</span> Education & Qualifications
                   </h3>
-                  <div className="space-y-4">
+                  <div className="space-y-3.5">
                     <div className="border-l-2 border-[#00C6FE] pl-3">
-                      <div className="flex flex-wrap justify-between items-baseline gap-1">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-0.5 sm:gap-2">
                         <h4 className="font-bold text-white text-xs sm:text-sm">Master's Degree in Computer Science</h4>
-                        <span className="text-[11px] font-mono text-[#00EAFF]">Oct 2022 – Sep 2025</span>
+                        <span className="text-[11px] font-mono text-[#00EAFF] flex-shrink-0">Oct 2022 – Sep 2025</span>
                       </div>
                       <p className="text-xs text-purple-300 font-medium">ISTEC - Instituto Superior de Tecnologias Avançadas</p>
                       <p className="text-[11px] text-gray-400 mt-0.5">Specialization: Artificial Intelligence, Intelligent Systems, Distributed Systems.</p>
                     </div>
 
                     <div className="border-l-2 border-purple-500 pl-3">
-                      <div className="flex flex-wrap justify-between items-baseline gap-1">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-0.5 sm:gap-2">
                         <h4 className="font-bold text-white text-xs sm:text-sm">Bachelor's Degree in Computer Science</h4>
-                        <span className="text-[11px] font-mono text-[#00EAFF]">Sep 2019 – Oct 2021</span>
+                        <span className="text-[11px] font-mono text-[#00EAFF] flex-shrink-0">Sep 2019 – Oct 2021</span>
                       </div>
                       <p className="text-xs text-purple-300 font-medium">ISTEC - Instituto Superior de Tecnologias Avançadas</p>
                     </div>
 
                     <div className="border-l-2 border-white/30 pl-3">
-                      <div className="flex flex-wrap justify-between items-baseline gap-1">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-0.5 sm:gap-2">
                         <h4 className="font-bold text-white text-xs sm:text-sm">Superior Vocational Course in CS Management</h4>
-                        <span className="text-[11px] font-mono text-[#00EAFF]">Sep 2017 – Oct 2021</span>
+                        <span className="text-[11px] font-mono text-[#00EAFF] flex-shrink-0">Sep 2017 – Oct 2021</span>
                       </div>
                       <p className="text-xs text-purple-300 font-medium">ISTEC - Instituto Superior de Tecnologias Avançadas</p>
                     </div>
@@ -833,8 +823,8 @@ const CVViewer = () => {
                 </section>
 
                 {/* Certifications Highlights */}
-                <section className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3 flex items-center gap-2">
+                <section className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-2.5 flex items-center gap-2">
                     <span>🏆</span> Certifications (15 Credentials)
                   </h3>
                   <div className="flex flex-wrap gap-1.5 text-[11px]">
@@ -860,20 +850,20 @@ const CVViewer = () => {
                 </section>
               </div>
 
-              {/* Right Column (7 of 12 cols): Professional Experience & Technical Stack */}
-              <div className="lg:col-span-7 flex flex-col gap-6">
+              {/* Right Column (7 of 12 cols on XL, full width on laptop < 1280px) */}
+              <div className="xl:col-span-7 flex flex-col gap-5 sm:gap-6">
                 {/* Professional Experience */}
-                <section className="p-5 sm:p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-4 flex items-center gap-2">
+                <section className="p-4 sm:p-5 xl:p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3.5 flex items-center gap-2">
                     <span>💼</span> Professional Experience
                   </h3>
                   
-                  <div className="space-y-5">
+                  <div className="space-y-4 sm:space-y-5">
                     {/* Banco BPI */}
-                    <div className="relative pl-4 border-l-2 border-[#00C6FE]">
-                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div className="relative pl-3.5 sm:pl-4 border-l-2 border-[#00C6FE]">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                         <h4 className="text-sm sm:text-base font-bold text-white">Gen AI Software Engineer</h4>
-                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">July 2025 – Present</span>
+                        <span className="text-[11px] sm:text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex-shrink-0 w-fit">July 2025 – Present</span>
                       </div>
                       <p className="text-xs text-purple-300 font-medium">Banco BPI • Lisbon, Portugal</p>
                       <ul className="mt-2 text-xs text-gray-300 space-y-1.5 list-disc list-inside">
@@ -884,10 +874,10 @@ const CVViewer = () => {
                     </div>
 
                     {/* Capgemini */}
-                    <div className="relative pl-4 border-l-2 border-purple-500">
-                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div className="relative pl-3.5 sm:pl-4 border-l-2 border-purple-500">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                         <h4 className="text-sm sm:text-base font-bold text-white">Gen AI Software Engineer Intern</h4>
-                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300">Mar 2025 – Jun 2025</span>
+                        <span className="text-[11px] sm:text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300 flex-shrink-0 w-fit">Mar 2025 – Jun 2025</span>
                       </div>
                       <p className="text-xs text-purple-300 font-medium">Capgemini Portugal • Lisbon, Portugal</p>
                       <ul className="mt-2 text-xs text-gray-300 space-y-1.5 list-disc list-inside">
@@ -897,10 +887,10 @@ const CVViewer = () => {
                     </div>
 
                     {/* Consulteware */}
-                    <div className="relative pl-4 border-l-2 border-white/30">
-                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div className="relative pl-3.5 sm:pl-4 border-l-2 border-white/30">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                         <h4 className="text-sm sm:text-base font-bold text-white">.NET Developer Intern</h4>
-                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300">Mar 2019 – Aug 2019</span>
+                        <span className="text-[11px] sm:text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300 flex-shrink-0 w-fit">Mar 2019 – Aug 2019</span>
                       </div>
                       <p className="text-xs text-purple-300 font-medium">Consulteware</p>
                       <ul className="mt-2 text-xs text-gray-300 space-y-1.5 list-disc list-inside">
@@ -910,10 +900,10 @@ const CVViewer = () => {
                     </div>
 
                     {/* OGMA */}
-                    <div className="relative pl-4 border-l-2 border-white/20">
-                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div className="relative pl-3.5 sm:pl-4 border-l-2 border-white/20">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                         <h4 className="text-sm sm:text-base font-bold text-white">IT Help Desk Technician Intern</h4>
-                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300">Apr 2017 – Jul 2017</span>
+                        <span className="text-[11px] sm:text-xs font-mono px-2 py-0.5 rounded bg-white/10 text-gray-300 flex-shrink-0 w-fit">Apr 2017 – Jul 2017</span>
                       </div>
                       <p className="text-xs text-purple-300 font-medium">OGMA - Indústria Aeronáutica de Portugal</p>
                       <ul className="mt-2 text-xs text-gray-300 space-y-1.5 list-disc list-inside">
@@ -925,24 +915,24 @@ const CVViewer = () => {
                 </section>
 
                 {/* Core Tech Stack */}
-                <section className="p-5 sm:p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
+                <section className="p-4 sm:p-5 xl:p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3 flex items-center gap-2">
                     <span>⚙️</span> Core Technical Stack
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs">
+                    <div className="p-3 sm:p-3.5 rounded-xl bg-white/5 border border-white/10">
                       <span className="font-bold text-white">🤖 Gen AI & LLMs:</span>
                       <p className="text-gray-300 mt-1">Python, RAG, FAISS Vector Search, Multi-Agent Workflows, Prompt Engineering, Model Fine-Tuning</p>
                     </div>
-                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                    <div className="p-3 sm:p-3.5 rounded-xl bg-white/5 border border-white/10">
                       <span className="font-bold text-white">⚙️ Backend & Architecture:</span>
                       <p className="text-gray-300 mt-1">C# (.NET 8, ASP.NET Core), Node.js, Express, REST APIs, Microservices, WebAuthn Passkeys</p>
                     </div>
-                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                    <div className="p-3 sm:p-3.5 rounded-xl bg-white/5 border border-white/10">
                       <span className="font-bold text-white">🗄️ Databases & Storage:</span>
                       <p className="text-gray-300 mt-1">MongoDB, PostgreSQL, SQL Server, Redis, Vector Databases</p>
                     </div>
-                    <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
+                    <div className="p-3 sm:p-3.5 rounded-xl bg-white/5 border border-white/10">
                       <span className="font-bold text-white">💻 Frontend & DevOps:</span>
                       <p className="text-gray-300 mt-1">React 18, TypeScript, TailwindCSS, Three.js, Docker, Git, Vite, Postman</p>
                     </div>
@@ -970,21 +960,21 @@ const CVViewer = () => {
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative z-10 w-full max-w-md bg-gradient-to-br from-[#1a3b50] via-[#0d1f2d] to-[#050816] rounded-3xl p-6 sm:p-7 border-2 border-[#00C6FE]/50 shadow-[0_0_80px_rgba(0,198,254,0.35)] text-white"
+              className="relative z-10 w-full max-w-md bg-gradient-to-br from-[#1a3b50] via-[#0d1f2d] to-[#050816] rounded-3xl p-5 sm:p-7 border-2 border-[#00C6FE]/50 shadow-[0_0_80px_rgba(0,198,254,0.35)] text-white"
             >
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#00C6FE] to-purple-600 flex items-center justify-center text-xl shadow-lg shadow-[#00C6FE]/30">
+                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#00C6FE] to-purple-600 flex items-center justify-center text-lg shadow-lg shadow-[#00C6FE]/30">
                     ✉️
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-bold text-white">Contact Tiago Dias</h3>
+                    <h3 className="text-base font-bold text-white">Contact Tiago Dias</h3>
                     <p className="text-xs text-[#00EAFF] font-medium font-mono">{CORRECT_EMAIL}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsEmailModalOpen(false)}
-                  className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                  className="p-1.5 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -993,7 +983,7 @@ const CVViewer = () => {
               </div>
 
               {/* Instant feedback badge */}
-              <div className="my-4 p-3 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/30 flex items-center justify-between text-xs">
+              <div className="my-3.5 p-3 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/30 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="text-base">📋</span>
                   <span className="text-gray-200">
@@ -1017,31 +1007,31 @@ const CVViewer = () => {
               </div>
 
               {/* Direct Send Options */}
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
                 Choose how you'd like to reach out:
               </p>
 
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {/* Option 1: Gmail */}
                 <a
                   href={`https://mail.google.com/mail/?view=cm&fs=1&to=${CORRECT_EMAIL}&su=Contact%20from%20Portfolio%20-%20Opportunity`}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsEmailModalOpen(false)}
-                  className="group flex items-center justify-between p-3.5 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
+                  className="group flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-sm border border-red-500/30 group-hover:scale-110 transition-transform">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-xs border border-red-500/30 group-hover:scale-110 transition-transform">
                       M
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
+                      <p className="text-xs sm:text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
                         Open in Gmail (Web)
                       </p>
-                      <p className="text-[11px] text-gray-400">Opens compose tab directly in browser</p>
+                      <p className="text-[10px] text-gray-400">Opens compose tab directly in browser</p>
                     </div>
                   </div>
-                  <svg className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                 </a>
@@ -1052,20 +1042,20 @@ const CVViewer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setIsEmailModalOpen(false)}
-                  className="group flex items-center justify-between p-3.5 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
+                  className="group flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-sm border border-blue-500/30 group-hover:scale-110 transition-transform">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs border border-blue-500/30 group-hover:scale-110 transition-transform">
                       O
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
+                      <p className="text-xs sm:text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
                         Open in Outlook Web
                       </p>
-                      <p className="text-[11px] text-gray-400">Hotmail, Live & Office 365</p>
+                      <p className="text-[10px] text-gray-400">Hotmail, Live & Office 365</p>
                     </div>
                   </div>
-                  <svg className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                 </a>
@@ -1074,20 +1064,20 @@ const CVViewer = () => {
                 <a
                   href={`mailto:${CORRECT_EMAIL}?subject=Contact%20from%20Portfolio`}
                   onClick={() => setIsEmailModalOpen(false)}
-                  className="group flex items-center justify-between p-3.5 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
+                  className="group flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-sm border border-purple-500/30 group-hover:scale-110 transition-transform">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs border border-purple-500/30 group-hover:scale-110 transition-transform">
                       ✉️
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
+                      <p className="text-xs sm:text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
                         Default Email Client
                       </p>
-                      <p className="text-[11px] text-gray-400">Desktop Mail, Apple Mail, Thunderbird</p>
+                      <p className="text-[10px] text-gray-400">Desktop Mail, Apple Mail, Thunderbird</p>
                     </div>
                   </div>
-                  <svg className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
                 </a>
@@ -1113,19 +1103,19 @@ const CVViewer = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative z-10 w-full max-w-lg bg-gradient-to-br from-[#1a3b50] via-[#0d1f2d] to-[#050816] rounded-3xl p-6 sm:p-8 border-2 border-[#00C6FE]/50 shadow-[0_0_80px_rgba(0,198,254,0.3)] text-white"
+              className="relative z-10 w-full max-w-lg bg-gradient-to-br from-[#1a3b50] via-[#0d1f2d] to-[#050816] rounded-3xl p-5 sm:p-7 border-2 border-[#00C6FE]/50 shadow-[0_0_80px_rgba(0,198,254,0.3)] text-white"
             >
-              <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div className="flex items-center justify-between pb-3.5 border-b border-white/10">
                 <div className="flex items-center gap-2.5">
                   <span className="p-2 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF]">📄</span>
                   <div>
-                    <h3 className="text-lg font-bold">Modify Curriculum Vitae</h3>
+                    <h3 className="text-base sm:text-lg font-bold">Modify Curriculum Vitae</h3>
                     <p className="text-xs text-gray-300">Upload a new PDF to publish live immediately</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsEditModalOpen(false)}
-                  className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                  className="p-1.5 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -1134,7 +1124,7 @@ const CVViewer = () => {
               </div>
 
               {/* Status information */}
-              <div className="my-4 p-3 rounded-xl bg-white/5 border border-white/10 text-xs flex items-center justify-between">
+              <div className="my-3.5 p-3 rounded-xl bg-white/5 border border-white/10 text-xs flex items-center justify-between">
                 <span className="text-gray-300">Current Status:</span>
                 <span className={`font-semibold ${isCustom ? "text-emerald-400" : "text-[#00EAFF]"}`}>
                   {isCustom ? "Custom Uploaded CV Active" : "Default /CV.pdf Active"}
@@ -1142,14 +1132,14 @@ const CVViewer = () => {
               </div>
 
               {/* Upload Zone */}
-              <div className="space-y-4">
+              <div className="space-y-3.5">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-1.5">
                     Option 1: Upload PDF File Directly
                   </label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="cursor-pointer border-2 border-dashed border-[#00C6FE]/40 hover:border-[#00C6FE] rounded-2xl p-6 text-center bg-white/5 hover:bg-[#00C6FE]/10 transition-all duration-200 group"
+                    className="cursor-pointer border-2 border-dashed border-[#00C6FE]/40 hover:border-[#00C6FE] rounded-2xl p-5 text-center bg-white/5 hover:bg-[#00C6FE]/10 transition-all duration-200 group"
                   >
                     <input
                       ref={fileInputRef}
@@ -1158,20 +1148,20 @@ const CVViewer = () => {
                       onChange={handleFileChange}
                       className="hidden"
                     />
-                    <div className="w-12 h-12 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
                     </div>
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-xs sm:text-sm font-semibold text-white">
                       {selectedFile ? selectedFile.name : "Click to select a new PDF file"}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">Supports PDF files up to 25MB</p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">Supports PDF files up to 25MB</p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-1.5">
                     Option 2: Or Provide Direct PDF URL
                   </label>
                   <input
@@ -1179,13 +1169,13 @@ const CVViewer = () => {
                     value={customUrlInput}
                     onChange={(e) => setCustomUrlInput(e.target.value)}
                     placeholder="https://example.com/my-cv.pdf"
-                    className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 text-sm focus:outline-none focus:border-[#00C6FE]"
+                    className="w-full px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 text-xs sm:text-sm focus:outline-none focus:border-[#00C6FE]"
                   />
                 </div>
 
                 {/* Upload Status Message */}
                 {uploadMessage.text && (
-                  <div className={`p-3 rounded-xl text-xs font-medium ${
+                  <div className={`p-2.5 rounded-xl text-xs font-medium ${
                     uploadMessage.type === "error" 
                       ? "bg-red-500/20 border border-red-500/40 text-red-200" 
                       : uploadMessage.type === "success" 
@@ -1197,15 +1187,15 @@ const CVViewer = () => {
                 )}
 
                 {/* Modal Action Buttons */}
-                <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                <div className="pt-1.5 flex flex-col sm:flex-row gap-2">
                   <button
                     onClick={handleUploadCv}
                     disabled={isUploading || (!selectedFile && !customUrlInput.trim())}
-                    className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] text-white font-bold text-sm shadow-[0_0_20px_rgba(0,198,254,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] text-white font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(0,198,254,0.4)] disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1.5"
                   >
                     {isUploading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         <span>Uploading...</span>
                       </>
                     ) : (
@@ -1220,7 +1210,7 @@ const CVViewer = () => {
                     <button
                       onClick={handleResetCv}
                       disabled={isUploading}
-                      className="py-3 px-4 rounded-xl bg-white/10 hover:bg-red-500/20 text-gray-300 hover:text-red-200 border border-white/15 hover:border-red-500/40 text-xs font-semibold transition-all"
+                      className="py-2.5 px-3.5 rounded-xl bg-white/10 hover:bg-red-500/20 text-gray-300 hover:text-red-200 border border-white/15 hover:border-red-500/40 text-xs font-semibold transition-all"
                     >
                       Reset to Default
                     </button>
