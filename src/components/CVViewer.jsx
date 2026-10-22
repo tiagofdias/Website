@@ -2,8 +2,119 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { CORRECT_EMAIL, LINKEDIN_URL, GITHUB_URL } from "../utils/aiKnowledgeEngine";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.js?url";
+
+// Configure PDF.js worker
+if (typeof window !== "undefined") {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker || `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+}
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
+
+/**
+ * PDFPage: High-DPI Canvas renderer for a single PDF page.
+ * Eliminates all browser PDF plugin frames, grey letterboxing, and default toolbars.
+ */
+const PDFPage = ({ pdfDoc, pageNum, scale, fitWidth, containerWidth }) => {
+  const canvasRef = useRef(null);
+  const renderTaskRef = useRef(null);
+  const [pageSize, setPageSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const renderPage = async () => {
+      if (!pdfDoc) return;
+      try {
+        const page = await pdfDoc.getPage(pageNum);
+        if (isCancelled) return;
+
+        // Base unscaled viewport
+        const unscaledViewport = page.getViewport({ scale: 1.0 });
+
+        // Calculate dynamic scale
+        let computedScale = scale;
+        if (fitWidth && containerWidth) {
+          // Fit container with comfortable margins
+          const availableWidth = Math.max(Math.min(containerWidth - 32, 1080), 320);
+          computedScale = availableWidth / unscaledViewport.width;
+        } else {
+          // Base comfortable desktop scale ~ 1.35x of A4 (approx 800px width at 100%)
+          const maxContainer = containerWidth ? Math.min(containerWidth - 32, 850) : 850;
+          const baseScale = Math.min(maxContainer / unscaledViewport.width, 1.4);
+          computedScale = baseScale * scale;
+        }
+
+        const viewport = page.getViewport({ scale: computedScale });
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        // Retina high-DPI scaling (capped at 2.5 for performance)
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+        canvas.width = Math.floor(viewport.width * dpr);
+        canvas.height = Math.floor(viewport.height * dpr);
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
+
+        setPageSize({
+          width: Math.floor(viewport.width),
+          height: Math.floor(viewport.height),
+        });
+
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Cancel previous task if still rendering
+        if (renderTaskRef.current) {
+          try {
+            renderTaskRef.current.cancel();
+          } catch {}
+        }
+
+        const renderContext = {
+          canvasContext: ctx,
+          transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null,
+          viewport: viewport,
+        };
+
+        const renderTask = page.render(renderContext);
+        renderTaskRef.current = renderTask;
+        await renderTask.promise;
+      } catch (err) {
+        if (err?.name !== "RenderingCancelledException") {
+          console.error(`Error rendering PDF page ${pageNum}:`, err);
+        }
+      }
+    };
+
+    renderPage();
+
+    return () => {
+      isCancelled = true;
+      if (renderTaskRef.current) {
+        try {
+          renderTaskRef.current.cancel();
+        } catch {}
+      }
+    };
+  }, [pdfDoc, pageNum, scale, fitWidth, containerWidth]);
+
+  return (
+    <div className="relative group transition-all duration-300 flex justify-center">
+      {/* Pristine White Document Sheet with Zero Grey Letterboxing */}
+      <canvas
+        ref={canvasRef}
+        className="bg-white rounded-xl shadow-[0_25px_70px_-15px_rgba(0,0,0,0.8),0_0_40px_rgba(0,198,254,0.15)] border border-white/20 block transition-shadow duration-300 hover:shadow-[0_30px_90px_-10px_rgba(0,0,0,0.9),0_0_50px_rgba(0,198,254,0.25)]"
+      />
+      {pdfDoc?.numPages > 1 && (
+        <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-md bg-black/75 backdrop-blur-md text-[11px] font-mono text-gray-200 border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+          Page {pageNum} of {pdfDoc.numPages}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CVViewer = () => {
   const navigate = useNavigate();
@@ -12,10 +123,24 @@ const CVViewer = () => {
   const [isCustom, setIsCustom] = useState(false);
   const [viewMode, setViewMode] = useState("pdf"); // "pdf" or "web"
   const [zoom, setZoom] = useState(100);
+  const [fitWidth, setFitWidth] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  
+
+  // PDF.js State
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const [numPages, setNumPages] = useState(0);
+  const [pdfLoading, setPdfLoading] = useState(true);
+  const [pdfError, setPdfError] = useState(null);
+  const [containerWidth, setContainerWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1000
+  );
+
+  // Email action state
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
+
   // Upload states
   const [selectedFile, setSelectedFile] = useState(null);
   const [customUrlInput, setCustomUrlInput] = useState("");
@@ -23,6 +148,7 @@ const CVViewer = () => {
   const [uploadMessage, setUploadMessage] = useState({ type: "", text: "" });
 
   const containerRef = useRef(null);
+  const viewerContainerRef = useRef(null);
   const fileInputRef = useRef(null);
 
   // Check admin token on mount
@@ -30,6 +156,20 @@ const CVViewer = () => {
     const token = localStorage.getItem("token");
     setIsAdmin(!!token);
   }, []);
+
+  // Track container width for responsive scaling
+  useEffect(() => {
+    const handleResize = () => {
+      if (viewerContainerRef.current) {
+        setContainerWidth(viewerContainerRef.current.clientWidth);
+      } else {
+        setContainerWidth(window.innerWidth);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [viewMode]);
 
   // Fetch current CV status from backend
   const fetchCvInfo = async () => {
@@ -52,10 +192,61 @@ const CVViewer = () => {
     fetchCvInfo();
   }, []);
 
+  // Load PDF with PDF.js
+  useEffect(() => {
+    let isCancelled = false;
+    setPdfLoading(true);
+    setPdfError(null);
+
+    const loadPdfDocument = async () => {
+      try {
+        const loadingTask = pdfjsLib.getDocument({
+          url: cvUrl,
+          cMapUrl: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/",
+          cMapPacked: true,
+        });
+
+        const doc = await loadingTask.promise;
+        if (!isCancelled) {
+          setPdfDoc(doc);
+          setNumPages(doc.numPages);
+          setPdfLoading(false);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          console.error("Failed to parse PDF document:", err);
+          setPdfError("Could not load PDF document preview directly. You can download it below or view the interactive version.");
+          setPdfLoading(false);
+        }
+      }
+    };
+
+    loadPdfDocument();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [cvUrl]);
+
   // Zoom handlers
-  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 15, 200));
-  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 15, 50));
-  const handleResetZoom = () => setZoom(100);
+  const handleZoomIn = () => {
+    setFitWidth(false);
+    setZoom((prev) => Math.min(prev + 15, 200));
+  };
+
+  const handleZoomOut = () => {
+    setFitWidth(false);
+    setZoom((prev) => Math.max(prev - 15, 50));
+  };
+
+  const handleResetZoom = () => {
+    setFitWidth(false);
+    setZoom(100);
+  };
+
+  const handleToggleFitWidth = () => {
+    setFitWidth((prev) => !prev);
+  };
 
   // Fullscreen handler
   const toggleFullscreen = () => {
@@ -81,13 +272,27 @@ const CVViewer = () => {
     if (viewMode === "web") {
       window.print();
     } else {
-      // Open clean print window for PDF
       const printWindow = window.open(cvUrl, "_blank");
       printWindow?.focus?.();
     }
   };
 
-  // Handle file selection
+  // Robust Email handler (works on any OS, browser, or webmail)
+  const handleEmailAction = (e) => {
+    e?.preventDefault?.();
+    // Copy email to clipboard immediately
+    try {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(CORRECT_EMAIL);
+      }
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 3000);
+    } catch {}
+    // Open action modal with Gmail, Outlook Web, Mailto, and Copy
+    setIsEmailModalOpen(true);
+  };
+
+  // Handle file selection for admin
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -121,7 +326,6 @@ const CVViewer = () => {
       let payload = {};
 
       if (selectedFile) {
-        // Read file as Base64 Data URL
         const base64Data = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result);
@@ -156,7 +360,6 @@ const CVViewer = () => {
       setSelectedFile(null);
       setCustomUrlInput("");
       
-      // Refresh CV status
       await fetchCvInfo();
       setTimeout(() => {
         setIsEditModalOpen(false);
@@ -207,7 +410,7 @@ const CVViewer = () => {
       className="min-h-screen bg-[#050816] text-white flex flex-col selection:bg-[#00C6FE]/30 selection:text-white"
     >
       {/* Top Header & Controls Bar */}
-      <header className="sticky top-0 z-30 backdrop-blur-2xl bg-[#050816]/90 border-b border-white/10 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      <header className="sticky top-0 z-30 backdrop-blur-2xl bg-[#050816]/90 border-b border-white/10 px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         {/* Left: Branding & Back Navigation */}
         <div className="flex items-center gap-3 sm:gap-4">
           <Link
@@ -272,13 +475,13 @@ const CVViewer = () => {
         </div>
 
         {/* Right: Controls & Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Zoom Controls (Active in PDF mode) */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Zoom & Fit Controls (Active in PDF mode) */}
           {viewMode === "pdf" && (
-            <div className="hidden md:flex items-center bg-white/5 rounded-xl border border-white/10 px-1.5 py-1">
+            <div className="hidden md:flex items-center bg-white/5 rounded-xl border border-white/10 px-1 py-0.5">
               <button
                 onClick={handleZoomOut}
-                disabled={zoom <= 50}
+                disabled={zoom <= 50 || fitWidth}
                 className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-300 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 title="Zoom Out (-)"
               >
@@ -289,15 +492,17 @@ const CVViewer = () => {
 
               <button
                 onClick={handleResetZoom}
-                className="px-2 text-xs font-mono font-semibold text-[#00EAFF] hover:underline"
+                className={`px-2 text-xs font-mono font-semibold hover:underline ${
+                  fitWidth ? "text-gray-400" : "text-[#00EAFF]"
+                }`}
                 title="Reset Zoom (100%)"
               >
-                {zoom}%
+                {fitWidth ? "Auto" : `${zoom}%`}
               </button>
 
               <button
                 onClick={handleZoomIn}
-                disabled={zoom >= 200}
+                disabled={zoom >= 200 || fitWidth}
                 className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-300 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 title="Zoom In (+)"
               >
@@ -305,8 +510,32 @@ const CVViewer = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                 </svg>
               </button>
+
+              <div className="h-4 w-px bg-white/15 mx-1"></div>
+
+              <button
+                onClick={handleToggleFitWidth}
+                className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  fitWidth
+                    ? "bg-[#00C6FE]/30 text-[#00EAFF] border border-[#00C6FE]/50"
+                    : "text-gray-300 hover:text-white hover:bg-white/10"
+                }`}
+                title="Toggle Fit to Screen Width"
+              >
+                Fit Width
+              </button>
             </div>
           )}
+
+          {/* Quick Email Button */}
+          <button
+            onClick={handleEmailAction}
+            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white/5 hover:bg-[#00C6FE]/20 border border-white/10 hover:border-[#00C6FE]/40 text-gray-300 hover:text-white transition-all duration-200 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+            title="Email Tiago Dias"
+          >
+            <span>✉️</span>
+            <span className="hidden sm:inline">Email</span>
+          </button>
 
           {/* Print button */}
           <button
@@ -339,7 +568,7 @@ const CVViewer = () => {
           <a
             href={downloadUrl}
             download="Tiago_Dias_CV.pdf"
-            className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] text-white text-xs sm:text-sm font-bold shadow-[0_0_20px_rgba(0,198,254,0.35)] hover:shadow-[0_0_30px_rgba(0,198,254,0.6)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden border border-[#00C6FE]/40"
+            className="group relative inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] text-white text-xs sm:text-sm font-bold shadow-[0_0_20px_rgba(0,198,254,0.35)] hover:shadow-[0_0_30px_rgba(0,198,254,0.6)] transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden border border-[#00C6FE]/40"
             style={{ backgroundSize: "200% 200%" }}
           >
             <svg className="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -383,61 +612,89 @@ const CVViewer = () => {
       {/* Main Content Area */}
       <main className="flex-1 p-3 sm:p-6 flex flex-col items-center justify-start overflow-auto">
         {viewMode === "pdf" ? (
-          /* PDF Viewer Mode */
+          /* PDF Viewer Mode - Rendered directly via HTML5 Canvas (ZERO grey area, ZERO browser toolbar) */
           <div 
-            className="w-full max-w-5xl transition-all duration-200 flex flex-col items-center"
-            style={{ width: `${zoom}%` }}
+            ref={viewerContainerRef}
+            className="w-full flex flex-col items-center justify-start min-h-[calc(100vh-140px)] py-2 transition-all duration-300"
           >
-            {/* Embedded Native PDF Viewer */}
-            <div className="w-full rounded-2xl overflow-hidden shadow-[0_10px_50px_rgba(0,0,0,0.7)] border-2 border-[#00C6FE]/30 bg-[#1a3b50]/40 backdrop-blur-xl">
-              <object
-                data={cvUrl}
-                type="application/pdf"
-                className="w-full h-[82vh] min-h-[600px]"
-              >
-                {/* Fallback iframe */}
-                <iframe
-                  src={`${cvUrl}#toolbar=1&navpanes=0&scrollbar=1`}
-                  className="w-full h-[82vh] min-h-[600px] border-0"
-                  title="Tiago Dias Curriculum Vitae"
-                >
-                  {/* Clean fallback if PDF embedding is restricted on device */}
-                  <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-gradient-to-br from-[#1a3b50] to-[#050816]">
-                    <div className="w-16 h-16 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/40 flex items-center justify-center text-[#00EAFF] mb-4">
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Tiago Dias — Curriculum Vitae</h3>
-                    <p className="text-gray-300 text-sm max-w-md mb-6">
-                      Your current browser does not display embedded PDFs directly. You can view or download the full official document directly below:
-                    </p>
-                    <div className="flex flex-wrap gap-3 justify-center">
-                      <a
-                        href={downloadUrl}
-                        download="Tiago_Dias_CV.pdf"
-                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#00C6FE] to-purple-600 text-white font-bold shadow-lg shadow-[#00C6FE]/20 hover:scale-105 active:scale-95 transition-all"
-                      >
-                        📥 Download Official PDF
-                      </a>
-                      <button
-                        onClick={() => setViewMode("web")}
-                        className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold border border-white/20 transition-all"
-                      >
-                        ✨ Switch to Interactive Web View
-                      </button>
-                    </div>
+            {pdfLoading ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <div className="relative w-16 h-16 mb-4">
+                  <div className="absolute inset-0 rounded-2xl border-2 border-[#00C6FE]/30 animate-ping"></div>
+                  <div className="relative w-16 h-16 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/40 flex items-center justify-center text-2xl text-[#00EAFF] animate-pulse">
+                    📄
                   </div>
-                </iframe>
-              </object>
-            </div>
+                </div>
+                <p className="text-white font-bold text-base mb-1">Rendering Curriculum Vitae...</p>
+                <p className="text-xs text-gray-400">Loading high-resolution document pages</p>
+              </div>
+            ) : pdfError ? (
+              <div className="max-w-md p-8 rounded-3xl bg-white/5 border border-white/10 text-center backdrop-blur-xl my-12">
+                <div className="text-3xl mb-3">⚠️</div>
+                <h3 className="text-lg font-bold text-white mb-2">Document Preview</h3>
+                <p className="text-xs text-gray-300 mb-6">{pdfError}</p>
+                <div className="flex flex-col gap-2.5">
+                  <a
+                    href={downloadUrl}
+                    download="Tiago_Dias_CV.pdf"
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00C6FE] to-purple-600 text-white font-bold text-xs shadow-lg shadow-[#00C6FE]/20 hover:scale-105 active:scale-95 transition-all"
+                  >
+                    📥 Download Official PDF
+                  </a>
+                  <button
+                    onClick={() => setViewMode("web")}
+                    className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/15 transition-all"
+                  >
+                    ✨ Switch to Interactive Web View
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-8 w-full max-w-full overflow-x-auto pb-16">
+                {Array.from({ length: numPages }, (_, i) => (
+                  <PDFPage
+                    key={i + 1}
+                    pdfDoc={pdfDoc}
+                    pageNum={i + 1}
+                    scale={zoom / 100}
+                    fitWidth={fitWidth}
+                    containerWidth={containerWidth}
+                  />
+                ))}
+              </div>
+            )}
 
-            {/* Quick floating mobile controls */}
-            <div className="md:hidden flex items-center justify-center gap-3 mt-4 bg-white/10 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/15">
-              <button onClick={handleZoomOut} className="p-2 rounded-lg bg-white/10 text-white font-bold">-</button>
-              <span className="text-xs font-semibold text-[#00EAFF]">{zoom}%</span>
-              <button onClick={handleZoomIn} className="p-2 rounded-lg bg-white/10 text-white font-bold">+</button>
-              <button onClick={handleResetZoom} className="text-xs font-semibold px-2 py-1 bg-white/10 rounded-lg text-gray-200">Reset</button>
+            {/* Floating Mobile Controls */}
+            <div className="md:hidden fixed bottom-6 z-20 flex items-center justify-center gap-2 bg-[#050816]/90 backdrop-blur-2xl px-3 py-2 rounded-2xl border border-white/15 shadow-2xl">
+              <button 
+                onClick={handleZoomOut} 
+                className="w-8 h-8 rounded-xl bg-white/10 text-white font-bold flex items-center justify-center active:scale-90"
+              >
+                -
+              </button>
+              <span className="text-xs font-mono font-semibold text-[#00EAFF] px-1">
+                {fitWidth ? "Fit" : `${zoom}%`}
+              </span>
+              <button 
+                onClick={handleZoomIn} 
+                className="w-8 h-8 rounded-xl bg-white/10 text-white font-bold flex items-center justify-center active:scale-90"
+              >
+                +
+              </button>
+              <button 
+                onClick={handleToggleFitWidth} 
+                className={`text-[11px] font-semibold px-2.5 py-1.5 rounded-xl border transition-all ${
+                  fitWidth ? "bg-[#00C6FE]/20 text-[#00EAFF] border-[#00C6FE]/40" : "bg-white/10 text-gray-300 border-white/10"
+                }`}
+              >
+                Fit
+              </button>
+              <button 
+                onClick={handleEmailAction}
+                className="text-[11px] font-semibold px-2.5 py-1.5 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] border border-[#00C6FE]/30"
+              >
+                ✉️ Email
+              </button>
             </div>
           </div>
         ) : (
@@ -452,27 +709,47 @@ const CVViewer = () => {
                 <p className="text-lg text-purple-300 font-semibold mt-1">
                   Gen AI Software Engineer • Banco BPI
                 </p>
-                <p className="text-sm text-gray-300 mt-2 flex flex-wrap items-center gap-3">
+                <div className="text-sm text-gray-300 mt-2 flex flex-wrap items-center gap-3">
                   <span>📍 Lisbon, Portugal</span>
                   <span>•</span>
                   <span className="text-emerald-400 font-medium">Open to Remote / Hybrid / Relocation</span>
-                </p>
+                  <span>•</span>
+                  <button
+                    onClick={handleEmailAction}
+                    className="group inline-flex items-center gap-1.5 text-xs text-[#00EAFF] hover:underline"
+                    title="Click to copy email / get in touch"
+                  >
+                    <span>✉️</span>
+                    <span>{CORRECT_EMAIL}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#00C6FE]/15 border border-[#00C6FE]/30 group-hover:bg-[#00C6FE]/30 transition-colors">
+                      {emailCopied ? "Copied!" : "Copy"}
+                    </span>
+                  </button>
+                </div>
               </div>
 
               {/* Contact Actions */}
               <div className="flex flex-wrap gap-2.5">
-                <a
-                  href={`mailto:${CORRECT_EMAIL}`}
-                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5"
+                {/* Email Button (Guaranteed to work on all browsers & webmail) */}
+                <button
+                  type="button"
+                  onClick={handleEmailAction}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#00C6FE]/20 to-purple-600/20 hover:from-[#00C6FE]/30 hover:to-purple-600/30 text-xs font-semibold text-white border border-[#00C6FE]/40 hover:border-[#00C6FE] transition-all flex items-center gap-2 shadow-sm hover:scale-105 active:scale-95"
                 >
-                  <span>✉️</span>
+                  <span className="text-sm">✉️</span>
                   <span>Email</span>
-                </a>
+                  {emailCopied && (
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/40">
+                      Copied!
+                    </span>
+                  )}
+                </button>
+
                 <a
                   href={LINKEDIN_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5"
+                  className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95"
                 >
                   <span>💼</span>
                   <span>LinkedIn</span>
@@ -481,7 +758,7 @@ const CVViewer = () => {
                   href={GITHUB_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5"
+                  className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95"
                 >
                   <span>💻</span>
                   <span>GitHub</span>
@@ -649,11 +926,153 @@ const CVViewer = () => {
         )}
       </main>
 
-      {/* Admin CV Edit Modal / Drawer */}
+      {/* Robust Email Action Modal (Handles Gmail Web, Outlook Web, Mailto, and Instant Copy) */}
+      <AnimatePresence>
+        {isEmailModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsEmailModalOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative z-10 w-full max-w-md bg-gradient-to-br from-[#1a3b50] via-[#0d1f2d] to-[#050816] rounded-3xl p-6 sm:p-7 border-2 border-[#00C6FE]/50 shadow-[0_0_80px_rgba(0,198,254,0.35)] text-white"
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#00C6FE] to-purple-600 flex items-center justify-center text-xl shadow-lg shadow-[#00C6FE]/30">
+                    ✉️
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-bold text-white">Contact Tiago Dias</h3>
+                    <p className="text-xs text-[#00EAFF] font-medium font-mono">{CORRECT_EMAIL}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsEmailModalOpen(false)}
+                  className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Instant feedback badge */}
+              <div className="my-4 p-3 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/30 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">📋</span>
+                  <span className="text-gray-200">
+                    {emailCopied ? (
+                      <strong className="text-emerald-400">Email copied to clipboard!</strong>
+                    ) : (
+                      <>Email: <strong className="text-white">{CORRECT_EMAIL}</strong></>
+                    )}
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(CORRECT_EMAIL);
+                    setEmailCopied(true);
+                    setTimeout(() => setEmailCopied(false), 3000);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-[#00C6FE]/30 text-[#00EAFF] font-semibold text-[11px] transition-all"
+                >
+                  {emailCopied ? "✓ Copied" : "Copy"}
+                </button>
+              </div>
+
+              {/* Direct Send Options */}
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
+                Choose how you'd like to reach out:
+              </p>
+
+              <div className="space-y-2.5">
+                {/* Option 1: Gmail */}
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${CORRECT_EMAIL}&su=Contact%20from%20Portfolio%20-%20Opportunity`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsEmailModalOpen(false)}
+                  className="group flex items-center justify-between p-3.5 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center font-bold text-sm border border-red-500/30 group-hover:scale-110 transition-transform">
+                      M
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
+                        Open in Gmail (Web)
+                      </p>
+                      <p className="text-[11px] text-gray-400">Opens compose tab directly in browser</p>
+                    </div>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+
+                {/* Option 2: Outlook / Hotmail */}
+                <a
+                  href={`https://outlook.live.com/mail/0/deeplink/compose?to=${CORRECT_EMAIL}&subject=Contact%20from%20Portfolio`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsEmailModalOpen(false)}
+                  className="group flex items-center justify-between p-3.5 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-sm border border-blue-500/30 group-hover:scale-110 transition-transform">
+                      O
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
+                        Open in Outlook Web
+                      </p>
+                      <p className="text-[11px] text-gray-400">Hotmail, Live & Office 365</p>
+                    </div>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+
+                {/* Option 3: Default Email App */}
+                <a
+                  href={`mailto:${CORRECT_EMAIL}?subject=Contact%20from%20Portfolio`}
+                  onClick={() => setIsEmailModalOpen(false)}
+                  className="group flex items-center justify-between p-3.5 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-sm border border-purple-500/30 group-hover:scale-110 transition-transform">
+                      ✉️
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
+                        Default Email Client
+                      </p>
+                      <p className="text-[11px] text-gray-400">Desktop Mail, Apple Mail, Thunderbird</p>
+                    </div>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Admin CV Edit Modal */}
       <AnimatePresence>
         {isEditModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -662,7 +1081,6 @@ const CVViewer = () => {
               className="absolute inset-0 bg-black/80 backdrop-blur-md"
             />
 
-            {/* Modal Box */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
