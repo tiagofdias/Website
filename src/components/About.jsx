@@ -389,12 +389,13 @@ const TimelineItem = ({ item, index, isMobile }) => {
       transition={{ delay: index * 0.1, duration: 0.5 }}
       className="group relative"
     >
+      {/* Timeline Ball - Mathematically centered in the middle of the stick */}
+      <div className="absolute top-4 sm:top-5 -left-6 sm:-left-8 -translate-x-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-gradient-to-r from-[#00C6FE] to-purple-500 border-2 border-primary shadow-[0_0_10px_rgba(0,198,254,0.8)] ring-2 ring-[#00C6FE] group-hover:scale-125 transition-transform duration-300 z-10" />
+
       {/* Glow effect on hover */}
       <div className="absolute -inset-1 bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
       
       <div className="relative backdrop-blur-sm bg-tertiary/50 border border-white/10 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-[#00C6FE]/10 transition-all duration-500">
-        {/* Timeline Dot */}
-        <div className="absolute top-4 sm:top-5 left-[-21px] sm:left-[-33px] w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gradient-to-r from-[#00C6FE] to-purple-500 rounded-full border-2 border-[#00C6FE] shadow-lg shadow-[#00C6FE]/50 group-hover:scale-125 transition-transform duration-300"></div>
 
         {/* Clickable Header */}
         <div 
@@ -508,7 +509,9 @@ const TimelineSection = ({ items, sectionTitle, isMobile }) => {
       <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 sm:mb-4">
         {sectionTitle}
       </h2>
-      <div className="relative border-l-2 sm:border-l-4 border-cyan-400/80 pl-4 sm:pl-7 space-y-3 sm:space-y-4 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 sm:before:w-1 before:bg-gradient-to-b before:from-[#00C6FE] before:via-purple-500 before:to-[#00C6FE] before:blur-sm">
+      <div className="relative ml-2 sm:ml-3 pl-6 sm:pl-8 space-y-3 sm:space-y-4">
+        {/* Continuous Stick / Timeline Line centered at x=0 */}
+        <div className="absolute left-0 top-2 bottom-2 w-1 sm:w-1.5 -translate-x-1/2 bg-gradient-to-b from-[#00C6FE] via-purple-500 to-[#00C6FE] rounded-full shadow-[0_0_10px_rgba(0,198,254,0.6)] pointer-events-none" />
         {items.map((item, index) => (
           <TimelineItem key={index} item={item} index={index} isMobile={isMobile} />
         ))}
