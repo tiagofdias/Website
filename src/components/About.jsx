@@ -80,15 +80,31 @@ const About = () => {
   const isMobile = useIsMobile();
 
   const techItems = useMemo(() => {
-    if (!about?.devskills) return [];
+    const rawSkills = about?.devskills || fallbackAbout.devskills || about?.skills;
+    if (!rawSkills) return [];
 
     try {
-      const parsed = typeof about.devskills === "string" ? JSON.parse(about.devskills) : about.devskills;
-      const entries = Array.isArray(parsed)
-        ? parsed
-        : Array.isArray(parsed?.items)
-        ? parsed.items
-        : [];
+      let entries = [];
+      if (typeof rawSkills === "string") {
+        try {
+          const parsed = JSON.parse(rawSkills);
+          entries = Array.isArray(parsed)
+            ? parsed
+            : Array.isArray(parsed?.items)
+            ? parsed.items
+            : [];
+        } catch {
+          entries = rawSkills.split(",").map((s) => s.trim()).filter(Boolean);
+        }
+      } else if (Array.isArray(rawSkills)) {
+        entries = rawSkills;
+      } else if (Array.isArray(rawSkills?.items)) {
+        entries = rawSkills.items;
+      }
+
+      if (entries.length === 0) {
+        entries = fallbackAbout.devskills || [];
+      }
 
       const seen = new Set();
 
@@ -130,7 +146,7 @@ const About = () => {
       console.error("Failed to parse devskills field", error);
       return [];
     }
-  }, [about?.devskills]);
+  }, [about?.devskills, about?.skills]);
 
   useEffect(() => {
     fetch(`${API_URL}/about`)
@@ -138,7 +154,11 @@ const About = () => {
       .then((data) => {
         const aboutData = Array.isArray(data) ? data[0] : data;
         if (aboutData) {
-          setAbout(aboutData);
+          setAbout({
+            ...fallbackAbout,
+            ...aboutData,
+            devskills: aboutData.devskills || fallbackAbout.devskills,
+          });
         }
       })
       .catch(() => {
@@ -488,7 +508,7 @@ const TimelineSection = ({ items, sectionTitle, isMobile }) => {
       <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 sm:mb-4">
         {sectionTitle}
       </h2>
-      <div className="relative border-l-2 sm:border-l-4 border-cyan-400/80 pl-4 sm:pl-7 space-y-3 sm:space-y-4 max-h-[340px] sm:max-h-[380px] lg:max-h-[350px] xl:max-h-[440px] overflow-y-auto pr-2 custom-scrollbar before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 sm:before:w-1 before:bg-gradient-to-b before:from-[#00C6FE] before:via-purple-500 before:to-[#00C6FE] before:blur-sm">
+      <div className="relative border-l-2 sm:border-l-4 border-cyan-400/80 pl-4 sm:pl-7 space-y-3 sm:space-y-4 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 sm:before:w-1 before:bg-gradient-to-b before:from-[#00C6FE] before:via-purple-500 before:to-[#00C6FE] before:blur-sm">
         {items.map((item, index) => (
           <TimelineItem key={index} item={item} index={index} isMobile={isMobile} />
         ))}

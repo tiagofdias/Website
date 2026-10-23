@@ -148,10 +148,10 @@ const ProjectCard = ({
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       whileHover={isMobile ? {} : { y: -6 }}
-      className="group/card backdrop-blur-md bg-white/5 border border-white/10 hover:border-[#00C6FE]/50 p-3 sm:p-4 lg:p-3.5 xl:p-5 rounded-2xl w-full sm:w-[320px] md:w-[340px] lg:w-[315px] xl:w-[360px] max-w-full flex flex-col shadow-2xl hover:shadow-2xl hover:shadow-[#00C6FE]/20 transition-all duration-300 min-h-[370px] sm:min-h-[400px] lg:min-h-[380px] xl:min-h-[460px]"
+      className="group/card backdrop-blur-md bg-white/5 border border-white/10 hover:border-[#00C6FE]/50 p-2.5 xs:p-3 sm:p-4 lg:p-3.5 xl:p-5 rounded-2xl w-full max-w-[340px] xs:max-w-[360px] sm:max-w-none sm:w-[320px] md:w-[340px] lg:w-[315px] xl:w-[360px] flex flex-col shadow-2xl hover:shadow-2xl hover:shadow-[#00C6FE]/20 transition-all duration-300 min-h-[300px] xs:min-h-[325px] sm:min-h-[380px] lg:min-h-[380px] xl:min-h-[460px]"
     >
       <div
-        className="relative w-full h-[140px] xs:h-[155px] sm:h-[170px] lg:h-[145px] xl:h-[190px] overflow-hidden rounded-xl cursor-pointer"
+        className="relative w-full h-[120px] xs:h-[135px] sm:h-[160px] lg:h-[145px] xl:h-[190px] overflow-hidden rounded-xl cursor-pointer"
         onClick={() => openPreview(0)}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => {
@@ -185,8 +185,8 @@ const ProjectCard = ({
           />
         ))}
         {projectImages.length > 1 && (
-          <div className="absolute top-2.5 left-2.5 bg-gradient-to-r from-[#00C6FE] to-purple-500 text-white text-[10px] sm:text-[11px] font-bold py-0.5 sm:py-1 px-2 sm:px-2.5 rounded-full z-20 flex items-center gap-1">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 bg-gradient-to-r from-[#00C6FE] to-purple-500 text-white text-[9px] xs:text-[10px] sm:text-[11px] font-bold py-0.5 sm:py-1 px-1.5 sm:px-2.5 rounded-full z-20 flex items-center gap-1">
+            <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             +{projectImages.length - 1}
@@ -200,10 +200,10 @@ const ProjectCard = ({
         </div>
       </div>
 
-      <div className="mt-3 sm:mt-3.5 flex-1 flex flex-col">
+      <div className="mt-2.5 sm:mt-3.5 flex-1 flex flex-col">
         <div className="flex items-start justify-between">
           <h3 
-            className="text-white font-bold text-base sm:text-lg lg:text-[17px] xl:text-[20px] pr-2 break-words flex-1 group-hover/card:text-transparent group-hover/card:bg-gradient-to-r group-hover/card:from-[#00C6FE] group-hover/card:to-purple-500 group-hover/card:bg-clip-text transition-all duration-300 cursor-pointer leading-snug"
+            className="text-white font-bold text-sm xs:text-base sm:text-lg lg:text-[17px] xl:text-[20px] pr-2 break-words flex-1 group-hover/card:text-transparent group-hover/card:bg-gradient-to-r group-hover/card:from-[#00C6FE] group-hover/card:to-purple-500 group-hover/card:bg-clip-text transition-all duration-300 cursor-pointer leading-snug"
             onClick={() => openPreview(0)}
           >
             {(name || "").replace(/-/g, " ")}
@@ -213,7 +213,7 @@ const ProjectCard = ({
               <motion.div
                 whileHover={isMobile ? {} : { scale: 1.15, rotate: 5 }}
                 whileTap={isMobile ? {} : { scale: 0.95 }}
-                className="group/icon w-8 h-8 sm:w-8 sm:h-8 rounded-full flex justify-center items-center cursor-pointer transition-all duration-300 bg-gradient-to-br from-[#00C6FE]/20 to-purple-500/20 backdrop-blur-sm border border-[#00C6FE]/30 hover:border-[#00C6FE] hover:shadow-lg hover:shadow-[#00C6FE]/30"
+                className="group/icon w-7 h-7 sm:w-8 sm:h-8 rounded-full flex justify-center items-center cursor-pointer transition-all duration-300 bg-gradient-to-br from-[#00C6FE]/20 to-purple-500/20 backdrop-blur-sm border border-[#00C6FE]/30 hover:border-[#00C6FE] hover:shadow-lg hover:shadow-[#00C6FE]/30"
                 onClick={() => window.open(source_code_link2, "_blank")}
               >
                 <img
@@ -227,7 +227,7 @@ const ProjectCard = ({
               <motion.div
                 whileHover={isMobile ? {} : { scale: 1.15, rotate: -5 }}
                 whileTap={isMobile ? {} : { scale: 0.95 }}
-                className="group/icon w-8 h-8 sm:w-8 sm:h-8 rounded-full flex justify-center items-center cursor-pointer transition-all duration-300 bg-gradient-to-br from-purple-500/20 to-[#00C6FE]/20 backdrop-blur-sm border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/30"
+                className="group/icon w-7 h-7 sm:w-8 sm:h-8 rounded-full flex justify-center items-center cursor-pointer transition-all duration-300 bg-gradient-to-br from-purple-500/20 to-[#00C6FE]/20 backdrop-blur-sm border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/30"
                 onClick={() => window.open(source_code_link, "_blank")}
               >
                 <img
@@ -239,11 +239,11 @@ const ProjectCard = ({
             )}
           </div>
         </div>
-        <p className="mt-1.5 sm:mt-2 text-secondary text-xs sm:text-[13px] flex-1 leading-relaxed line-clamp-2 lg:line-clamp-2 xl:line-clamp-3">{description}</p>
+        <p className="mt-1 sm:mt-2 text-secondary text-[11px] xs:text-xs sm:text-[13px] flex-1 leading-relaxed line-clamp-2 lg:line-clamp-2 xl:line-clamp-3">{description}</p>
       </div>
 
       {/* Tags always at the bottom, not absolute */}
-      <div className="mt-2.5 sm:mt-3 flex flex-wrap gap-1 sm:gap-1.5">
+      <div className="mt-2 sm:mt-3 flex flex-wrap gap-1 sm:gap-1.5">
         {tags.map((tag, idx) => {
           const isActiveTag =
             activeTag && tag.name.toLowerCase() === activeTag.toLowerCase();
@@ -252,7 +252,7 @@ const ProjectCard = ({
               key={`${name}-${idx}`}
               whileHover={isMobile ? {} : { scale: 1.08, y: -2 }}
               whileTap={isMobile ? {} : { scale: 0.95 }}
-              className={`text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full transition-all duration-300 cursor-pointer backdrop-blur-sm font-medium ${
+              className={`text-[9px] xs:text-[10px] sm:text-[11px] px-1.5 xs:px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full transition-all duration-300 cursor-pointer backdrop-blur-sm font-medium ${
                 isActiveTag 
                   ? "bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 border-[#00C6FE] border shadow-lg shadow-[#00C6FE]/20" 
                   : "bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 border border-[#00C6FE]/30 hover:border-[#00C6FE] hover:shadow-lg hover:shadow-[#00C6FE]/20"
@@ -641,7 +641,7 @@ const Projects = () => {
         </motion.div>
       )}
 
-      <div className="mt-4 sm:mt-6 lg:mt-5 xl:mt-8 flex flex-wrap gap-4 sm:gap-5 lg:gap-4 xl:gap-7 justify-center w-full">
+      <div className="mt-3 sm:mt-6 lg:mt-5 xl:mt-8 flex flex-wrap gap-3 sm:gap-5 lg:gap-4 xl:gap-7 justify-center w-full">
         {projectsToDisplay.map((project, index) => (
           <ProjectCard
             key={`project-${index}`}
