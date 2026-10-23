@@ -148,11 +148,11 @@ const ProjectCard = ({
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
       whileHover={isMobile ? {} : { y: -6 }}
-      className="group/card backdrop-blur-md bg-white/5 border border-white/10 hover:border-[#00C6FE]/50 p-2 xs:p-2 sm:p-2.5 lg:p-2.5 xl:p-3 rounded-xl sm:rounded-2xl w-full max-w-[245px] xs:max-w-[260px] sm:max-w-none sm:w-[250px] md:w-[265px] lg:w-[255px] xl:w-[290px] flex flex-col shadow-xl hover:shadow-2xl hover:shadow-[#00C6FE]/20 transition-all duration-300 min-h-[195px] xs:min-h-[210px] sm:min-h-[250px] md:min-h-[260px] lg:min-h-[260px] xl:min-h-[295px]"
+      className="group/card backdrop-blur-md bg-white/5 border border-white/10 hover:border-[#00C6FE]/50 p-3.5 sm:p-4 lg:p-3.5 xl:p-5 rounded-2xl w-full sm:w-[320px] md:w-[340px] lg:w-[315px] xl:w-[360px] max-w-full flex flex-col shadow-2xl hover:shadow-2xl hover:shadow-[#00C6FE]/20 transition-all duration-300 min-h-[350px] sm:min-h-[390px] lg:min-h-[370px] xl:min-h-[440px]"
     >
       {/* Image Preview Container */}
       <div
-        className="relative w-full h-[75px] xs:h-[85px] sm:h-[105px] md:h-[110px] lg:h-[105px] xl:h-[120px] overflow-hidden rounded-lg sm:rounded-xl cursor-pointer"
+        className="relative w-full h-[135px] xs:h-[150px] sm:h-[165px] lg:h-[140px] xl:h-[185px] overflow-hidden rounded-xl cursor-pointer"
         onClick={() => openPreview(0)}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => {
@@ -165,8 +165,8 @@ const ProjectCard = ({
         
         {/* Zoom in text overlay */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 z-20">
-          <div className="bg-white/20 backdrop-blur-sm text-white font-bold px-2 py-0.5 rounded-full flex items-center gap-1 text-[10px]">
-            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white/20 backdrop-blur-sm text-white font-bold px-3 py-1 rounded-full flex items-center gap-1.5 text-xs">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
             </svg>
             View
@@ -180,14 +180,14 @@ const ProjectCard = ({
             alt={`project-${idx}`}
             loading="lazy"
             decoding="async"
-            className={`w-full h-full object-cover rounded-lg sm:rounded-xl absolute top-0 left-0 transition-all duration-500 group-hover/card:scale-110 ${
+            className={`w-full h-full object-cover rounded-xl absolute top-0 left-0 transition-all duration-500 group-hover/card:scale-110 ${
               previewIndex === idx ? "opacity-100" : "opacity-0"
             }`}
           />
         ))}
         {projectImages.length > 1 && (
-          <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-gradient-to-r from-[#00C6FE] to-purple-500 text-white text-[8px] xs:text-[9px] sm:text-[10px] font-bold py-0.5 px-1.5 sm:px-2 rounded-full z-20 flex items-center gap-0.5 sm:gap-1">
-            <svg className="w-2 h-2 sm:w-2.5 sm:h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="absolute top-2 left-2 bg-gradient-to-r from-[#00C6FE] to-purple-500 text-white text-[9px] sm:text-[10px] font-bold py-0.5 px-2 rounded-full z-20 flex items-center gap-1">
+            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             +{projectImages.length - 1}
@@ -201,20 +201,20 @@ const ProjectCard = ({
         </div>
       </div>
 
-      <div className="mt-1.5 sm:mt-2 flex-1 flex flex-col">
+      <div className="mt-2.5 sm:mt-3 flex-1 flex flex-col">
         <div className="flex items-start justify-between">
           <h3 
-            className="text-white font-bold text-[11px] xs:text-xs sm:text-sm lg:text-[13.5px] xl:text-[15px] pr-1.5 break-words flex-1 group-hover/card:text-transparent group-hover/card:bg-gradient-to-r group-hover/card:from-[#00C6FE] group-hover/card:to-purple-500 group-hover/card:bg-clip-text transition-all duration-300 cursor-pointer leading-snug"
+            className="text-white font-bold text-sm xs:text-base sm:text-lg lg:text-[17px] xl:text-[20px] pr-2 break-words flex-1 group-hover/card:text-transparent group-hover/card:bg-gradient-to-r group-hover/card:from-[#00C6FE] group-hover/card:to-purple-500 group-hover/card:bg-clip-text transition-all duration-300 cursor-pointer leading-snug"
             onClick={() => openPreview(0)}
           >
             {(name || "").replace(/-/g, " ")}
           </h3>
-          <div className="flex gap-1 ml-1 mt-[-1px] flex-shrink-0">
+          <div className="flex gap-1.5 ml-2 mt-[-1px] flex-shrink-0">
             {source_code_link2 && (
               <motion.div
                 whileHover={isMobile ? {} : { scale: 1.15, rotate: 5 }}
                 whileTap={isMobile ? {} : { scale: 0.95 }}
-                className="group/icon w-5 h-5 sm:w-5.5 sm:h-5.5 xl:w-6 xl:h-6 rounded-full flex justify-center items-center cursor-pointer transition-all duration-300 bg-gradient-to-br from-[#00C6FE]/20 to-purple-500/20 backdrop-blur-sm border border-[#00C6FE]/30 hover:border-[#00C6FE] hover:shadow-lg hover:shadow-[#00C6FE]/30"
+                className="group/icon w-7 h-7 sm:w-8 sm:h-8 rounded-full flex justify-center items-center cursor-pointer transition-all duration-300 bg-gradient-to-br from-[#00C6FE]/20 to-purple-500/20 backdrop-blur-sm border border-[#00C6FE]/30 hover:border-[#00C6FE] hover:shadow-lg hover:shadow-[#00C6FE]/30"
                 onClick={() => window.open(source_code_link2, "_blank")}
               >
                 <img
@@ -228,7 +228,7 @@ const ProjectCard = ({
               <motion.div
                 whileHover={isMobile ? {} : { scale: 1.15, rotate: -5 }}
                 whileTap={isMobile ? {} : { scale: 0.95 }}
-                className="group/icon w-5 h-5 sm:w-5.5 sm:h-5.5 xl:w-6 xl:h-6 rounded-full flex justify-center items-center cursor-pointer transition-all duration-300 bg-gradient-to-br from-purple-500/20 to-[#00C6FE]/20 backdrop-blur-sm border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/30"
+                className="group/icon w-7 h-7 sm:w-8 sm:h-8 rounded-full flex justify-center items-center cursor-pointer transition-all duration-300 bg-gradient-to-br from-purple-500/20 to-[#00C6FE]/20 backdrop-blur-sm border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/30"
                 onClick={() => window.open(source_code_link, "_blank")}
               >
                 <img
@@ -240,11 +240,11 @@ const ProjectCard = ({
             )}
           </div>
         </div>
-        <p className="mt-0.5 sm:mt-1 text-secondary text-[9.5px] xs:text-[10px] sm:text-[11px] flex-1 leading-snug line-clamp-2">{description}</p>
+        <p className="mt-1.5 text-secondary text-xs sm:text-[13px] flex-1 leading-relaxed line-clamp-2">{description}</p>
       </div>
 
       {/* Tags always at the bottom, not absolute */}
-      <div className="mt-1.5 sm:mt-2 flex flex-wrap gap-1 sm:gap-1.5">
+      <div className="mt-2.5 sm:mt-3 flex flex-wrap gap-1.5 sm:gap-2">
         {tags.map((tag, idx) => {
           const isActiveTag =
             activeTag && tag.name.toLowerCase() === activeTag.toLowerCase();
@@ -253,7 +253,7 @@ const ProjectCard = ({
               key={`${name}-${idx}`}
               whileHover={isMobile ? {} : { scale: 1.08, y: -2 }}
               whileTap={isMobile ? {} : { scale: 0.95 }}
-              className={`text-[7.5px] xs:text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full transition-all duration-300 cursor-pointer backdrop-blur-sm font-medium ${
+              className={`text-[9px] xs:text-[10px] sm:text-[11px] px-2.5 py-0.5 sm:py-1 rounded-full transition-all duration-300 cursor-pointer backdrop-blur-sm font-medium ${
                 isActiveTag 
                   ? "bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 border-[#00C6FE] border shadow-md shadow-[#00C6FE]/20" 
                   : "bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 border border-[#00C6FE]/30 hover:border-[#00C6FE] hover:shadow-md hover:shadow-[#00C6FE]/20"
@@ -591,9 +591,10 @@ const Projects = () => {
         whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-2 sm:mb-2.5 lg:mb-2 xl:mb-3.5"
+        className="text-center mb-3.5 sm:mb-5 lg:mb-4 xl:mb-6"
       >
-        <h2 className="text-white font-black text-lg xs:text-xl sm:text-2xl lg:text-2xl xl:text-3xl">
+        <p className={`${styles.sectionSubText} text-[#00C6FE]`}>My work</p>
+        <h2 className="text-white font-black text-2xl xs:text-3xl sm:text-4xl lg:text-4xl xl:text-5xl mt-1">
           My{" "}
           <span className="bg-gradient-to-r from-[#00C6FE] to-purple-500 bg-clip-text text-transparent">
             Projects
@@ -604,14 +605,14 @@ const Projects = () => {
           whileInView={isMobile ? {} : { scaleX: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="h-1 w-10 sm:w-14 bg-gradient-to-r from-[#00C6FE] to-purple-500 mx-auto mt-1 sm:mt-1.5 rounded-full"
+          className="h-1 w-16 sm:w-20 bg-gradient-to-r from-[#00C6FE] to-purple-500 mx-auto mt-2 sm:mt-2.5 rounded-full"
         />
         <motion.p
           initial={isMobile ? {} : { opacity: 0 }}
           whileInView={isMobile ? {} : { opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-1 text-secondary text-[10px] xs:text-[11px] sm:text-xs max-w-xl mx-auto leading-relaxed px-2"
+          className="mt-2 text-secondary text-xs sm:text-sm lg:text-base max-w-2xl mx-auto leading-relaxed px-2"
         >
           Explore my portfolio of innovative projects showcasing modern web technologies.
         </motion.p>
@@ -622,19 +623,19 @@ const Projects = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-center mb-1.5 sm:mb-2"
+          className="flex justify-center mb-2.5 sm:mb-3.5"
         >
-          <div className="backdrop-blur-md bg-white/10 border border-[#00C6FE]/50 rounded-full px-2.5 py-0.5 flex items-center gap-1.5 text-[10px]">
+          <div className="backdrop-blur-md bg-white/10 border border-[#00C6FE]/50 rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs">
             <span className="text-white font-semibold">Filtering by:</span>
             <span className="bg-gradient-to-r from-[#00C6FE] to-purple-500 bg-clip-text text-transparent font-bold">
               {activeTag}
             </span>
             <button
               onClick={() => setActiveTag(null)}
-              className="ml-1 w-3.5 h-3.5 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all duration-300"
+              className="ml-1 w-4 h-4 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all duration-300"
               aria-label="Clear filter"
             >
-              <svg className="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -642,7 +643,7 @@ const Projects = () => {
         </motion.div>
       )}
 
-      <div className="mt-2 sm:mt-2.5 lg:mt-2 xl:mt-3.5 flex flex-wrap gap-2 sm:gap-2.5 lg:gap-3 xl:gap-4 justify-center w-full">
+      <div className="mt-3 sm:mt-5 lg:mt-4 xl:mt-6 flex flex-wrap gap-3.5 sm:gap-5 lg:gap-4 xl:gap-7 justify-center w-full">
         {projectsToDisplay.map((project, index) => (
           <ProjectCard
             key={`project-${index}`}
@@ -664,7 +665,7 @@ const Projects = () => {
 
       {!activeTag && !showAll && (
         <motion.div 
-          className="flex justify-center mt-2 sm:mt-2.5 lg:mt-2 xl:mt-3.5"
+          className="flex justify-center mt-3 sm:mt-5 lg:mt-4 xl:mt-6"
           initial={isMobile ? {} : { opacity: 0, y: 20 }}
           whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -674,14 +675,14 @@ const Projects = () => {
             onClick={() => setShowAll(true)}
             whileHover={isMobile ? {} : { scale: 1.05, x: 5 }}
             whileTap={isMobile ? {} : { scale: 0.95 }}
-            className="group relative bg-gradient-to-r from-[#00C6FE] to-purple-500 hover:from-[#00C6FE]/90 hover:to-purple-500/90 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-[#00C6FE]/30 outline-none text-white font-bold py-1.5 sm:py-2 px-4 sm:px-6 text-[11px] sm:text-xs rounded-full overflow-hidden"
+            className="group relative bg-gradient-to-r from-[#00C6FE] to-purple-500 hover:from-[#00C6FE]/90 hover:to-purple-500/90 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-[#00C6FE]/30 outline-none text-white font-bold py-2.5 sm:py-3 lg:py-2.5 xl:py-3.5 px-6 sm:px-8 xl:px-10 text-xs sm:text-sm rounded-full overflow-hidden"
           >
             {/* Shine effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
             
             <span className="relative flex items-center gap-2">
               View All Projects
-              <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </span>
