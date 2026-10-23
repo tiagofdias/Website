@@ -1,49 +1,12 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import emailjs from "@emailjs/browser";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Canvas } from "@react-three/fiber";
-import { useGLTF, useAnimations } from "@react-three/drei";
 
 import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
 import useIsMobile from "../utils/useIsMobile";
-
-// 3D Model Component
-const StormtrooperModel = () => {
-  const { scene, animations } = useGLTF("./models/dancing_stormtrooper.glb");
-  const modelRef = useRef(); // Reference to the model
-
-  const { actions } = useAnimations(animations, scene);
-
-  useEffect(() => {
-    if (actions) {
-      // Play the animation
-      actions[Object.keys(actions)[0]]?.play();
-    }
-  }, [actions]);
-
-  // Apply rotation
-  useEffect(() => {
-    if (modelRef.current) {
-      modelRef.current.rotation.y = 7;
-    }
-  }, []);
-
-  return (
-    <>
-      <ambientLight intensity={3} />
-      <pointLight position={[10, 10, 10]} />
-      <primitive
-        ref={modelRef}
-        object={scene}
-        scale={1}
-        rotation={[0, Math.PI / 12, 0]} // This applies rotation directly
-      />
-    </>
-  );
-};
 
 // Contact Component
 const Contact = () => {

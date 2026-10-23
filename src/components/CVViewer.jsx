@@ -378,7 +378,7 @@ const CVViewer = () => {
         throw new Error(errorData.error || `Upload failed with status ${res.status}`);
       }
 
-      setUploadMessage({ type: "success", text: "✅ CV updated and published successfully!" });
+      setUploadMessage({ type: "success", text: "CV updated and published successfully!" });
       setSelectedFile(null);
       setCustomUrlInput("");
       
@@ -556,10 +556,12 @@ const CVViewer = () => {
           {/* Quick Email Button */}
           <button
             onClick={handleEmailAction}
-            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-white/5 hover:bg-[#00C6FE]/20 border border-white/10 hover:border-[#00C6FE]/40 text-gray-300 hover:text-white transition-all text-xs font-semibold flex items-center gap-1 shadow-sm"
+            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-white/5 hover:bg-[#00C6FE]/20 border border-white/10 hover:border-[#00C6FE]/40 text-gray-300 hover:text-white transition-all text-xs font-semibold flex items-center gap-1.5 shadow-sm"
             title="Email Tiago Dias"
           >
-            <span>✉️</span>
+            <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
             <span className="hidden md:inline">Email</span>
           </button>
 
@@ -632,8 +634,10 @@ const CVViewer = () => {
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="relative w-14 h-14 mb-3">
                   <div className="absolute inset-0 rounded-2xl border-2 border-[#00C6FE]/30 animate-ping"></div>
-                  <div className="relative w-14 h-14 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/40 flex items-center justify-center text-xl text-[#00EAFF] animate-pulse">
-                    📄
+                  <div className="relative w-14 h-14 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/40 flex items-center justify-center text-[#00EAFF] animate-pulse">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                   </div>
                 </div>
                 <p className="text-white font-bold text-sm mb-0.5">Rendering Curriculum Vitae...</p>
@@ -641,22 +645,29 @@ const CVViewer = () => {
               </div>
             ) : pdfError ? (
               <div className="max-w-md p-6 rounded-3xl bg-white/5 border border-white/10 text-center backdrop-blur-xl my-8">
-                <div className="text-2xl mb-2">⚠️</div>
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
                 <h3 className="text-base font-bold text-white mb-1.5">Document Preview</h3>
                 <p className="text-xs text-gray-300 mb-5">{pdfError}</p>
                 <div className="flex flex-col gap-2">
                   <a
                     href={downloadUrl}
                     download="Tiago_Dias_CV.pdf"
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00C6FE] to-purple-600 text-white font-bold text-xs shadow-lg shadow-[#00C6FE]/20 hover:scale-105 active:scale-95 transition-all"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00C6FE] to-purple-600 text-white font-bold text-xs shadow-lg shadow-[#00C6FE]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-1.5"
                   >
-                    📥 Download Official PDF
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>Download Official PDF</span>
                   </a>
                   <button
                     onClick={() => setViewMode("web")}
                     className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/15 transition-all"
                   >
-                    ✨ Switch to Web CV View
+                    Switch to Web CV View
                   </button>
                 </div>
               </div>
@@ -701,9 +712,12 @@ const CVViewer = () => {
               </button>
               <button 
                 onClick={handleEmailAction}
-                className="text-[11px] font-semibold px-2 py-1 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] border border-[#00C6FE]/30"
+                className="text-[11px] font-semibold px-2 py-1 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] border border-[#00C6FE]/30 flex items-center gap-1"
               >
-                ✉️ Email
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Email</span>
               </button>
             </div>
           </div>
@@ -720,7 +734,13 @@ const CVViewer = () => {
                   Gen AI Software Engineer • Banco BPI
                 </p>
                 <div className="text-xs sm:text-sm text-gray-300 mt-1.5 flex flex-wrap items-center gap-2 sm:gap-3">
-                  <span>📍 Lisbon, Portugal</span>
+                  <span className="flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Lisbon, Portugal
+                  </span>
                   <span>•</span>
                   <span className="text-emerald-400 font-medium">Open to Remote / Hybrid / Relocation</span>
                   <span>•</span>
@@ -729,10 +749,12 @@ const CVViewer = () => {
                     className="group inline-flex items-center gap-1.5 text-xs text-[#00EAFF] hover:underline"
                     title="Click to copy email / get in touch"
                   >
-                    <span>✉️</span>
+                    <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
                     <span className="font-mono">{CORRECT_EMAIL}</span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#00C6FE]/15 border border-[#00C6FE]/30 group-hover:bg-[#00C6FE]/30 transition-colors">
-                      {emailCopied ? "Copied!" : "Copy"}
+                      {emailCopied ? "Copied" : "Copy"}
                     </span>
                   </button>
                 </div>
@@ -745,11 +767,13 @@ const CVViewer = () => {
                   onClick={handleEmailAction}
                   className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#00C6FE]/20 to-purple-600/20 hover:from-[#00C6FE]/30 hover:to-purple-600/30 text-xs font-semibold text-white border border-[#00C6FE]/40 hover:border-[#00C6FE] transition-all flex items-center gap-1.5 shadow-sm hover:scale-105 active:scale-95"
                 >
-                  <span>✉️</span>
+                  <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
                   <span>Email</span>
                   {emailCopied && (
                     <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1 py-0.5 rounded border border-emerald-500/40">
-                      Copied!
+                      Copied
                     </span>
                   )}
                 </button>
@@ -760,7 +784,9 @@ const CVViewer = () => {
                   rel="noopener noreferrer"
                   className="px-3 py-2 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95"
                 >
-                  <span>💼</span>
+                  <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  </svg>
                   <span>LinkedIn</span>
                 </a>
                 <a
@@ -769,7 +795,9 @@ const CVViewer = () => {
                   rel="noopener noreferrer"
                   className="px-3 py-2 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-xs font-semibold text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all flex items-center gap-1.5 hover:scale-105 active:scale-95"
                 >
-                  <span>💻</span>
+                  <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                  </svg>
                   <span>GitHub</span>
                 </a>
               </div>
@@ -782,7 +810,12 @@ const CVViewer = () => {
                 {/* Executive Profile */}
                 <section className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-2 flex items-center gap-2">
-                    <span>🎯</span> Executive Profile
+                    <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                      <circle cx="12" cy="12" r="6" strokeWidth="2" />
+                      <circle cx="12" cy="12" r="2" strokeWidth="2" />
+                    </svg>
+                    <span>Executive Profile</span>
                   </h3>
                   <p className="text-gray-200 text-xs sm:text-sm leading-relaxed">
                     Gen AI Software Engineer holding a Master's degree in Computer Science from ISTEC. Specialized in architecting and deploying enterprise Generative AI modernization initiatives, autonomous multi-agent systems, RAG pipelines, and high-throughput .NET 8 / Python backends. Experienced in modernizing large-scale legacy banking systems, building production full-stack software, and leading AI transformation.
@@ -792,7 +825,11 @@ const CVViewer = () => {
                 {/* Education */}
                 <section className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3 flex items-center gap-2">
-                    <span>🎓</span> Education & Qualifications
+                    <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                    </svg>
+                    <span>Education & Qualifications</span>
                   </h3>
                   <div className="space-y-3.5">
                     <div className="border-l-2 border-[#00C6FE] pl-3">
@@ -825,7 +862,10 @@ const CVViewer = () => {
                 {/* Certifications Highlights */}
                 <section className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-2.5 flex items-center gap-2">
-                    <span>🏆</span> Certifications (15 Credentials)
+                    <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
+                    <span>Certifications (15 Credentials)</span>
                   </h3>
                   <div className="flex flex-wrap gap-1.5 text-[11px]">
                     {[
@@ -841,9 +881,10 @@ const CVViewer = () => {
                     ].map((cert, cIdx) => (
                       <span
                         key={cIdx}
-                        className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:border-[#00C6FE]/40 transition-colors"
+                        className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:border-[#00C6FE]/40 transition-colors flex items-center gap-1.5"
                       >
-                        🏅 {cert}
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#00C6FE]"></span>
+                        <span>{cert}</span>
                       </span>
                     ))}
                   </div>
@@ -855,7 +896,10 @@ const CVViewer = () => {
                 {/* Professional Experience */}
                 <section className="p-4 sm:p-5 xl:p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3.5 flex items-center gap-2">
-                    <span>💼</span> Professional Experience
+                    <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>Professional Experience</span>
                   </h3>
                   
                   <div className="space-y-4 sm:space-y-5">
@@ -917,23 +961,27 @@ const CVViewer = () => {
                 {/* Core Tech Stack */}
                 <section className="p-4 sm:p-5 xl:p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm shadow-sm">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-[#00EAFF] mb-3 flex items-center gap-2">
-                    <span>⚙️</span> Core Technical Stack
+                    <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Core Technical Stack</span>
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs">
                     <div className="p-3 sm:p-3.5 rounded-xl bg-white/5 border border-white/10">
-                      <span className="font-bold text-white">🤖 Gen AI & LLMs:</span>
+                      <span className="font-bold text-white">Gen AI & LLMs:</span>
                       <p className="text-gray-300 mt-1">Python, RAG, FAISS Vector Search, Multi-Agent Workflows, Prompt Engineering, Model Fine-Tuning</p>
                     </div>
                     <div className="p-3 sm:p-3.5 rounded-xl bg-white/5 border border-white/10">
-                      <span className="font-bold text-white">⚙️ Backend & Architecture:</span>
+                      <span className="font-bold text-white">Backend & Architecture:</span>
                       <p className="text-gray-300 mt-1">C# (.NET 8, ASP.NET Core), Node.js, Express, REST APIs, Microservices, WebAuthn Passkeys</p>
                     </div>
                     <div className="p-3 sm:p-3.5 rounded-xl bg-white/5 border border-white/10">
-                      <span className="font-bold text-white">🗄️ Databases & Storage:</span>
+                      <span className="font-bold text-white">Databases & Storage:</span>
                       <p className="text-gray-300 mt-1">MongoDB, PostgreSQL, SQL Server, Redis, Vector Databases</p>
                     </div>
                     <div className="p-3 sm:p-3.5 rounded-xl bg-white/5 border border-white/10">
-                      <span className="font-bold text-white">💻 Frontend & DevOps:</span>
+                      <span className="font-bold text-white">Frontend & DevOps:</span>
                       <p className="text-gray-300 mt-1">React 18, TypeScript, TailwindCSS, Three.js, Docker, Git, Vite, Postman</p>
                     </div>
                   </div>
@@ -964,8 +1012,10 @@ const CVViewer = () => {
             >
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#00C6FE] to-purple-600 flex items-center justify-center text-lg shadow-lg shadow-[#00C6FE]/30">
-                    ✉️
+                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#00C6FE] to-purple-600 flex items-center justify-center text-white shadow-lg shadow-[#00C6FE]/30">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-white">Contact Tiago Dias</h3>
@@ -985,7 +1035,9 @@ const CVViewer = () => {
               {/* Instant feedback badge */}
               <div className="my-3.5 p-3 rounded-2xl bg-[#00C6FE]/15 border border-[#00C6FE]/30 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-base">📋</span>
+                  <svg className="w-4 h-4 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                  </svg>
                   <span className="text-gray-200">
                     {emailCopied ? (
                       <strong className="text-emerald-400">Email copied to clipboard!</strong>
@@ -1002,7 +1054,7 @@ const CVViewer = () => {
                   }}
                   className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-[#00C6FE]/30 text-[#00EAFF] font-semibold text-[11px] transition-all"
                 >
-                  {emailCopied ? "✓ Copied" : "Copy"}
+                  {emailCopied ? "Copied" : "Copy"}
                 </button>
               </div>
 
@@ -1067,8 +1119,10 @@ const CVViewer = () => {
                   className="group flex items-center justify-between p-3 rounded-2xl bg-white/5 hover:bg-[#00C6FE]/15 border border-white/10 hover:border-[#00C6FE]/50 transition-all duration-200"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs border border-purple-500/30 group-hover:scale-110 transition-transform">
-                      ✉️
+                    <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-500/30 group-hover:scale-110 transition-transform">
+                      <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
                     </div>
                     <div className="text-left">
                       <p className="text-xs sm:text-sm font-bold text-white group-hover:text-[#00EAFF] transition-colors">
@@ -1107,7 +1161,11 @@ const CVViewer = () => {
             >
               <div className="flex items-center justify-between pb-3.5 border-b border-white/10">
                 <div className="flex items-center gap-2.5">
-                  <span className="p-2 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF]">📄</span>
+                  <span className="p-2 rounded-xl bg-[#00C6FE]/20 text-[#00EAFF] flex items-center justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </span>
                   <div>
                     <h3 className="text-base sm:text-lg font-bold">Modify Curriculum Vitae</h3>
                     <p className="text-xs text-gray-300">Upload a new PDF to publish live immediately</p>
@@ -1200,7 +1258,9 @@ const CVViewer = () => {
                       </>
                     ) : (
                       <>
-                        <span>💾</span>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                        </svg>
                         <span>Save & Publish Live</span>
                       </>
                     )}

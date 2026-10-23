@@ -722,21 +722,26 @@ const ChatWidget = () => {
                   transition={{ delay: 0.15 }}
                   className="pt-2 pb-1 space-y-2"
                 >
-                  <p className="text-[11px] font-semibold tracking-wider uppercase text-[#00EAFF]/70 px-1">
-                    💡 Suggested Questions:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center gap-1.5 px-1">
+                    <svg className="w-3.5 h-3.5 text-[#00EAFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-[11px] font-semibold tracking-wider uppercase text-[#00EAFF]/80">
+                      Suggested Questions
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
                     {[
-                      "What is his current role at Banco BPI?",
-                      "Is he open to remote work or relocation?",
-                      "Tell me about his enterprise Gen AI projects",
-                      "What is his core technical stack?",
-                      "How can I get in touch or hire him?"
+                      "Current role at Banco BPI",
+                      "Core technical stack",
+                      "Enterprise Gen AI projects",
+                      "Remote work & availability",
+                      "How to get in touch"
                     ].map((suggestion, sIdx) => (
                       <button
                         key={sIdx}
                         onClick={() => sendMessage(suggestion)}
-                        className="text-left text-xs px-3 py-1.5 rounded-xl bg-white/10 hover:bg-[#00C6FE]/20 text-gray-200 hover:text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all duration-200 shadow-sm hover:scale-[1.02] active:scale-95"
+                        className="text-left text-xs px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-[#00C6FE]/20 text-gray-200 hover:text-white border border-white/15 hover:border-[#00C6FE]/50 transition-all duration-200 shadow-sm hover:scale-[1.02] active:scale-95"
                       >
                         {suggestion}
                       </button>

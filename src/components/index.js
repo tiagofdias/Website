@@ -9,7 +9,6 @@ import Footer from "./Footer";
 import ChatWidget from "./ChatWidget";
 import Portal from './Portal';
 import Modal from './Modal';
-import CVViewer from './CVViewer';
 
 export {
   Hero,
@@ -23,5 +22,4 @@ export {
   ChatWidget,
   Portal,
   Modal,
-  CVViewer,
 }

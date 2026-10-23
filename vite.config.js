@@ -18,6 +18,26 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    chunkSizeWarningLimit: 1600,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('three') || id.includes('@react-three')) {
+              return 'vendor-three';
+            }
+            if (id.includes('pdfjs-dist')) {
+              return 'vendor-pdf';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('@fortawesome')) {
+              return 'vendor-icons';
+            }
+          }
+        },
+      },
+    },
   },
 }));
