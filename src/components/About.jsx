@@ -156,7 +156,7 @@ const About = () => {
         whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="text-center"
+        className="text-center mb-3 sm:mb-4 lg:mb-4 xl:mb-6"
       >
         <div className="relative inline-block">
           {/* Animated gradient background */}
@@ -171,14 +171,14 @@ const About = () => {
           
           <div className="relative">
             <p className={`${styles.sectionSubText} text-[#00C6FE]`}>Introduction</p>
-            <h2 className="text-white font-black md:text-[60px] sm:text-[50px] xs:text-[40px] text-[30px]">
+            <h2 className="text-white font-black text-2xl xs:text-3xl sm:text-4xl lg:text-4xl xl:text-5xl">
               About{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C6FE] via-cyan-300 to-purple-500">
                 Me.
               </span>
             </h2>
             <motion.div
-              className="h-1 w-24 bg-gradient-to-r from-[#00C6FE] to-purple-500 mx-auto mt-4 rounded-full"
+              className="h-1 w-16 sm:w-20 bg-gradient-to-r from-[#00C6FE] to-purple-500 mx-auto mt-2 sm:mt-2.5 rounded-full"
               initial={isMobile ? { opacity: 1 } : { scaleX: 0, opacity: 0 }}
               whileInView={isMobile ? {} : { scaleX: 1, opacity: 1 }}
               viewport={{ once: true }}
@@ -195,11 +195,11 @@ const About = () => {
         whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="mt-12 relative group"
+        className="mt-3 sm:mt-5 lg:mt-4 xl:mt-6 relative group"
       >
         {/* Outer glow effect */}
         <motion.div
-          className="absolute -inset-1 bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] rounded-3xl blur-xl opacity-0 group-hover:opacity-30"
+          className="absolute -inset-1 bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] rounded-2xl sm:rounded-3xl blur-xl opacity-0 group-hover:opacity-30"
           animate={{
             backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
           }}
@@ -208,192 +208,146 @@ const About = () => {
         />
 
         {/* Main card */}
-        <div className="relative backdrop-blur-xl bg-gradient-to-br from-tertiary/80 to-tertiary/60 border-2 border-white/20 rounded-3xl overflow-hidden shadow-2xl">
+        <div className="relative backdrop-blur-xl bg-gradient-to-br from-tertiary/80 to-tertiary/60 border-2 border-white/20 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#00C6FE]/20 to-transparent rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-purple-500/20 to-transparent rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#00C6FE]/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-purple-500/20 to-transparent rounded-full blur-3xl pointer-events-none" />
           
-          {/* Content */}
-          <div className="relative z-10 p-8 sm:p-10 lg:p-12">
-            {/* Text content with enhanced styling */}
-            <motion.div
-              initial={isMobile ? {} : { opacity: 0, x: -20 }}
-              whileInView={isMobile ? {} : { opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-secondary text-[17px] sm:text-[18px] lg:text-[19px] max-w-4xl leading-[32px]"
-            >
-              {about.content &&
-                about.content.map((part, i) =>
-                  part.link ? (
-                    <a
-                      key={i}
-                      href={part.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="relative font-bold group/link"
-                      style={{
-                        fontWeight: part.bold ? "bold" : "normal",
-                        color: part.color || "#00C6FE",
-                      }}
-                    >
-                      <span className="relative z-10 group-hover/link:text-white transition-colors duration-300">
-                        {part.text}
-                      </span>
-                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#00C6FE] to-purple-500 group-hover/link:w-full transition-all duration-300" />
-                    </a>
-                  ) : (
-                    <span
-                      key={i}
-                      style={{
-                        fontWeight: part.bold ? "bold" : "normal",
-                        color: part.color || undefined,
-                        marginRight: 2,
-                      }}
-                    >
-                      {part.text}
-                    </span>
-                  )
-                )}
-              {" "}
-              <TypeAnimation
-                sequence={about.languages.flatMap((lang) => [lang, 3000])}
-                wrapper="span"
-                className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C6FE] via-cyan-300 to-purple-500 text-[17px] sm:text-[18px] lg:text-[19px] leading-[32px] font-black drop-shadow-[0_0_15px_rgba(0,198,254,0.5)]"
-                speed={50}
-                repeat={Infinity}
-              />
-            </motion.div>
-
-            {/* Divider with animation */}
-            <motion.div
-              initial={isMobile ? {} : { scaleX: 0 }}
-              whileInView={isMobile ? {} : { scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="my-10 h-px bg-gradient-to-r from-transparent via-[#00C6FE] to-transparent"
-            />
-
-            {/* Skills Section - Enhanced */}
-            <motion.div 
-              initial={isMobile ? {} : { opacity: 0, y: 20 }}
-              whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.8, duration: 0.6 }}
-            >
-              <div className="mb-6 sm:mb-6">
-                <h3 className="text-white font-bold text-3xl sm:text-3xl mb-2 flex items-center gap-3">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C6FE] to-purple-500">
-                    Tech Stack
-                  </span>
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="w-2 h-2 bg-[#00C6FE] rounded-full shadow-[0_0_10px_rgba(0,198,254,0.8)]"
-                  />
-                </h3>
-                <p className="text-gray-400 text-base sm:text-sm">Technologies I work with</p>
-              </div>
-
-              <div className="relative group/skills">
-                <motion.div
-                  className="absolute -inset-2 bg-gradient-to-r from-[#00C6FE] via-purple-500 to-[#00C6FE] rounded-3xl opacity-0 group-hover/skills:opacity-50 blur-xl"
-                  animate={{
-                    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  style={{ backgroundSize: "200% 100%" }}
-                />
-
-                <div className="relative overflow-hidden rounded-3xl border-2 border-white/10 bg-[#0b1226]/80 p-6 sm:p-8 transition-all duration-500 backdrop-blur-xl group-hover/skills:border-[#00C6FE]/40">
-                  {techItems.length > 0 ? (
-                    <>
-                      <motion.div
-                        className="pointer-events-none absolute -top-24 -right-16 h-48 w-48 rounded-full bg-[#00C6FE]/25 blur-3xl"
-                        animate={{ opacity: [0.3, 0.5, 0.3], scale: [0.9, 1.1, 0.9] }}
-                        transition={{ duration: 6, repeat: Infinity }}
-                      />
-                      <motion.div
-                        className="pointer-events-none absolute -bottom-28 -left-20 h-56 w-56 rounded-full bg-purple-500/25 blur-[110px]"
-                        animate={{ opacity: [0.2, 0.45, 0.2], scale: [0.8, 1.05, 0.8] }}
-                        transition={{ duration: 7, repeat: Infinity }}
-                      />
-
-                      <div className="relative grid grid-cols-2 gap-6 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
-                        {techItems.map((tech, index) => (
-                          <motion.div
-                            key={`${tech.name}-${index}`}
-                            className="relative group/tech"
-                            whileHover={
-                              isMobile
-                                ? {}
-                                : {
-                                    y: -6,
-                                    rotate: -1,
-                                  }
-                            }
-                            transition={{ type: "spring", stiffness: 260, damping: 18 }}
+          {/* Content: 2-Column Executive Layout on Desktop */}
+          <div className="relative z-10 p-3.5 xs:p-5 sm:p-6 lg:p-6 xl:p-8">
+            <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 xl:gap-8 items-stretch">
+              {/* Left Column: Bio & Executive Highlights */}
+              <motion.div
+                initial={isMobile ? {} : { opacity: 0, x: -20 }}
+                whileInView={isMobile ? {} : { opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="lg:w-[44%] xl:w-[42%] flex flex-col justify-between"
+              >
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#00C6FE]/10 border border-[#00C6FE]/30 mb-2.5 sm:mb-3">
+                    <span className="w-2 h-2 rounded-full bg-[#00C6FE] animate-pulse" />
+                    <span className="text-[11px] font-semibold text-[#00C6FE] uppercase tracking-wider">Software Engineer</span>
+                  </div>
+                  <div className="text-secondary text-xs sm:text-sm lg:text-[13px] xl:text-[15px] leading-relaxed max-w-full">
+                    {about.content &&
+                      about.content.map((part, i) =>
+                        part.link ? (
+                          <a
+                            key={i}
+                            href={part.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="relative font-bold group/link"
+                            style={{
+                              fontWeight: part.bold ? "bold" : "normal",
+                              color: part.color || "#00C6FE",
+                            }}
                           >
-                            <div
-                              className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${TECH_CARD_GRADIENTS[index % TECH_CARD_GRADIENTS.length]} opacity-70 blur-md transition-opacity duration-500 group-hover/tech:opacity-100`}
-                            />
-
-                            <div className="relative flex h-full flex-col items-center justify-center gap-4 md:gap-3 rounded-2xl border border-white/10 bg-[rgba(12,19,40,0.85)] px-4 py-8 md:px-5 md:py-6 text-center shadow-[0_8px_24px_rgba(5,8,38,0.45)]">
-                              {tech.icon ? (
-                                <motion.img
-                                  src={tech.icon}
-                                  alt={`${tech.name} icon`}
-                                  className="h-16 w-16 md:h-12 md:w-12 object-contain drop-shadow-[0_6px_18px_rgba(0,198,254,0.35)]"
-                                  initial={{ scale: 0.85, opacity: 0.8 }}
-                                  animate={{ scale: 1, opacity: 1 }}
-                                  transition={{ duration: 0.4 }}
-                                />
-                              ) : (
-                                <span className="flex h-16 w-16 md:h-12 md:w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#00C6FE] to-purple-500 text-lg md:text-sm font-black text-white shadow-[0_8px_16px_rgba(0,198,254,0.35)]">
-                                  {tech.initials}
-                                </span>
-                              )}
-
-                              <span className="text-lg md:text-base font-semibold text-white leading-tight">
-                                {tech.name}
-                              </span>
-                              <span className="text-[10px] uppercase tracking-[0.4em] md:tracking-[0.5em] text-white/40 font-medium">
-                                Stack
-                              </span>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div
-                        className="absolute inset-0 opacity-5"
-                        style={{
-                          backgroundImage:
-                            "linear-gradient(rgba(0,198,254,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,198,254,0.5) 1px, transparent 1px)",
-                          backgroundSize: "20px 20px",
-                        }}
-                      />
-
-                      <motion.img
-                        src={about.skills}
-                        alt="skills"
-                        className="relative z-10 w-full transform transition-transform duration-500"
-                        style={{ filter: "saturate(1.4) brightness(1.1) hue-rotate(8deg)" }}
-                        whileHover={{ scale: 1.02 }}
-                      />
-
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
-                        animate={{ x: ["-100%", "100%"] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                      />
-                    </>
-                  )}
+                            <span className="relative z-10 group-hover/link:text-white transition-colors duration-300">
+                              {part.text}
+                            </span>
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#00C6FE] to-purple-500 group-hover/link:w-full transition-all duration-300" />
+                          </a>
+                        ) : (
+                          <span
+                            key={i}
+                            style={{
+                              fontWeight: part.bold ? "bold" : "normal",
+                              color: part.color || undefined,
+                              marginRight: 2,
+                            }}
+                          >
+                            {part.text}
+                          </span>
+                        )
+                      )}
+                    {" "}
+                    <TypeAnimation
+                      sequence={about.languages.flatMap((lang) => [lang, 3000])}
+                      wrapper="span"
+                      className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C6FE] via-cyan-300 to-purple-500 text-xs sm:text-sm lg:text-[13px] xl:text-[15px] leading-relaxed font-black drop-shadow-[0_0_15px_rgba(0,198,254,0.5)]"
+                      speed={50}
+                      repeat={Infinity}
+                    />
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+
+                {/* Spoken Languages & Core Highlights Badge */}
+                <div className="mt-3.5 sm:mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400">Focus:</span>
+                  <span className="text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full bg-white/5 border border-white/15 text-white">Full Stack</span>
+                  <span className="text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full bg-white/5 border border-white/15 text-white">Cloud Systems</span>
+                  <span className="text-[10px] sm:text-[11px] px-2.5 py-0.5 rounded-full bg-white/5 border border-white/15 text-white">AI Engineering</span>
+                </div>
+              </motion.div>
+
+              {/* Vertical divider on desktop */}
+              <div className="hidden lg:block w-px bg-gradient-to-b from-transparent via-white/15 to-transparent flex-shrink-0" />
+
+              {/* Right Column: Tech Stack */}
+              <motion.div
+                initial={isMobile ? {} : { opacity: 0, x: 20 }}
+                whileInView={isMobile ? {} : { opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="lg:w-[54%] xl:w-[56%] flex flex-col justify-between"
+              >
+                <div className="flex items-center justify-between mb-2 sm:mb-2.5">
+                  <h3 className="text-white font-bold text-base sm:text-lg lg:text-base xl:text-xl flex items-center gap-2">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C6FE] to-purple-500">
+                      Tech Stack
+                    </span>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                      className="w-1.5 h-1.5 bg-[#00C6FE] rounded-full shadow-[0_0_8px_rgba(0,198,254,0.8)]"
+                    />
+                  </h3>
+                  <span className="text-gray-400 text-[10px] sm:text-[11px]">Primary Tools & Frameworks</span>
+                </div>
+
+                <div className="relative group/skills">
+                  <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-white/10 bg-[#0b1226]/80 p-2.5 sm:p-3 xl:p-3.5 backdrop-blur-xl group-hover/skills:border-[#00C6FE]/40 transition-all duration-300">
+                    <div className="relative grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-2 max-h-[220px] sm:max-h-[250px] lg:max-h-[235px] xl:max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
+                      {techItems.map((tech, index) => (
+                        <motion.div
+                          key={`${tech.name}-${index}`}
+                          className="relative group/tech"
+                          whileHover={isMobile ? {} : { y: -3 }}
+                          transition={{ type: "spring", stiffness: 260, damping: 18 }}
+                        >
+                          <div
+                            className={`absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-br ${TECH_CARD_GRADIENTS[index % TECH_CARD_GRADIENTS.length]} opacity-60 blur-xs transition-opacity duration-300 group-hover/tech:opacity-100`}
+                          />
+
+                          <div className="relative flex h-full flex-col items-center justify-center gap-1.5 rounded-lg sm:rounded-xl border border-white/10 bg-[rgba(12,19,40,0.85)] px-2 py-2 text-center shadow-md">
+                            {tech.icon ? (
+                              <motion.img
+                                src={tech.icon}
+                                alt={`${tech.name} icon`}
+                                className="h-6 w-6 sm:h-7 sm:w-7 object-contain drop-shadow-[0_4px_12px_rgba(0,198,254,0.35)]"
+                                initial={{ scale: 0.9, opacity: 0.9 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ duration: 0.3 }}
+                              />
+                            ) : (
+                              <span className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#00C6FE] to-purple-500 text-[11px] font-black text-white shadow-md">
+                                {tech.initials}
+                              </span>
+                            )}
+
+                            <span className="text-[10px] sm:text-[11px] font-semibold text-white leading-tight truncate max-w-full">
+                              {tech.name}
+                            </span>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -418,24 +372,24 @@ const TimelineItem = ({ item, index, isMobile }) => {
       {/* Glow effect on hover */}
       <div className="absolute -inset-1 bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
       
-      <div className="relative backdrop-blur-sm bg-tertiary/50 border border-white/10 p-6 rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-[#00C6FE]/10 transition-all duration-500">
+      <div className="relative backdrop-blur-sm bg-tertiary/50 border border-white/10 p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl hover:shadow-[#00C6FE]/10 transition-all duration-500">
         {/* Timeline Dot */}
-        <div className="absolute top-6 left-[-34px] w-4 h-4 bg-gradient-to-r from-[#00C6FE] to-purple-500 rounded-full border-2 border-[#00C6FE] shadow-lg shadow-[#00C6FE]/50 group-hover:scale-125 transition-transform duration-300"></div>
+        <div className="absolute top-4 sm:top-5 left-[-21px] sm:left-[-33px] w-3 h-3 sm:w-3.5 sm:h-3.5 bg-gradient-to-r from-[#00C6FE] to-purple-500 rounded-full border-2 border-[#00C6FE] shadow-lg shadow-[#00C6FE]/50 group-hover:scale-125 transition-transform duration-300"></div>
 
         {/* Clickable Header */}
         <div 
           onClick={() => setIsExpanded(!isExpanded)}
           className="cursor-pointer"
         >
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-2.5 sm:gap-4">
             <div className="flex-1">
               {/* Date Badge */}
-              <div className="inline-block bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 backdrop-blur-sm border border-[#00C6FE]/30 rounded-full px-4 py-1 mb-3">
-                <p className="text-sm font-semibold text-[#00C6FE]">{item.date}</p>
+              <div className="inline-block bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 backdrop-blur-sm border border-[#00C6FE]/30 rounded-full px-2.5 sm:px-3 py-0.5 mb-1 sm:mb-1.5">
+                <p className="text-[11px] sm:text-xs font-semibold text-[#00C6FE]">{item.date}</p>
               </div>
 
               {/* Title with Link */}
-              <h3 className="text-white font-bold text-[20px] mb-1">
+              <h3 className="text-white font-bold text-sm sm:text-base lg:text-[17px] mb-0.5 leading-snug">
                 {item.titleLink ? (
                   <a
                     href={item.titleLink}
@@ -453,7 +407,7 @@ const TimelineItem = ({ item, index, isMobile }) => {
 
               {/* Company Name with Link */}
               {item.company_name && (
-                <p className="text-[16px] text-gray-300">
+                <p className="text-xs sm:text-sm text-gray-300">
                   {item.companyLink ? (
                     <a
                       href={item.companyLink}
@@ -476,10 +430,10 @@ const TimelineItem = ({ item, index, isMobile }) => {
               <motion.div
                 animate={{ rotate: isExpanded ? 180 : 0 }}
                 transition={{ duration: 0.3 }}
-                className="flex-shrink-0 mt-2"
+                className="flex-shrink-0 mt-1 sm:mt-1.5"
               >
                 <svg 
-                  className="w-6 h-6 text-[#00C6FE]" 
+                  className="w-4 h-4 sm:w-5 sm:h-5 text-[#00C6FE]" 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -501,7 +455,7 @@ const TimelineItem = ({ item, index, isMobile }) => {
               transition={{ duration: 0.3 }}
               className="overflow-hidden"
             >
-              <ul className="text-[15px] text-secondary mt-4 pt-4 border-t border-white/10 space-y-3">
+              <ul className="text-xs sm:text-sm text-secondary mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-white/10 space-y-1.5 sm:space-y-2">
                 {item.points.map((point, idx) => (
                   <motion.li 
                     key={idx}
@@ -510,7 +464,7 @@ const TimelineItem = ({ item, index, isMobile }) => {
                     transition={{ delay: idx * 0.05 }}
                     className="flex items-start group/item"
                   >
-                    <span className="mr-3 text-[#00C6FE] font-bold group-hover/item:scale-125 transition-transform duration-300">•</span>
+                    <span className="mr-2 text-[#00C6FE] font-bold group-hover/item:scale-125 transition-transform duration-300">•</span>
                     <span className="flex-1">{point.text}</span>
                   </motion.li>
                 ))}
@@ -529,12 +483,12 @@ const TimelineSection = ({ items, sectionTitle, isMobile }) => {
       initial={isMobile ? {} : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mb-8"
+      className="mb-4 sm:mb-6"
     >
-      <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-8">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-3 sm:mb-4">
         {sectionTitle}
       </h2>
-      <div className="relative border-l-4 border-gradient-to-b from-[#00C6FE] via-purple-500 to-[#00C6FE] pl-6 space-y-6 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-gradient-to-b before:from-[#00C6FE] before:via-purple-500 before:to-[#00C6FE] before:blur-sm">
+      <div className="relative border-l-2 sm:border-l-4 border-cyan-400/80 pl-4 sm:pl-7 space-y-3 sm:space-y-4 max-h-[340px] sm:max-h-[380px] lg:max-h-[350px] xl:max-h-[440px] overflow-y-auto pr-2 custom-scrollbar before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 sm:before:w-1 before:bg-gradient-to-b before:from-[#00C6FE] before:via-purple-500 before:to-[#00C6FE] before:blur-sm">
         {items.map((item, index) => (
           <TimelineItem key={index} item={item} index={index} isMobile={isMobile} />
         ))}
@@ -642,7 +596,7 @@ const Timeline = () => {
         whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="relative mb-8 text-center"
+        className="relative mb-3 sm:mb-4 lg:mb-4 text-center"
       >
         {/* Animated gradient background */}
         <motion.div
@@ -656,7 +610,7 @@ const Timeline = () => {
         
         <div className="relative inline-block">
           <p className={`${styles.sectionSubText} text-purple-400`}>Career Path</p>
-          <h2 className="text-white font-black md:text-[60px] sm:text-[50px] xs:text-[40px] text-[30px] flex items-center justify-center gap-4">
+          <h2 className="text-white font-black text-2xl xs:text-3xl sm:text-4xl lg:text-4xl xl:text-5xl flex items-center justify-center gap-2 sm:gap-3">
             My{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-[#00C6FE] to-purple-500">
               Journey
@@ -669,13 +623,13 @@ const Timeline = () => {
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className="hidden sm:block"
             >
-              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-[#00C6FE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-[#00C6FE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </motion.div>
           </h2>
           <motion.div
-            className="h-1 w-24 bg-gradient-to-r from-[#00C6FE] to-purple-500 mx-auto mt-4 rounded-full"
+            className="h-1 w-16 sm:w-20 bg-gradient-to-r from-[#00C6FE] to-purple-500 mx-auto mt-2 sm:mt-2.5 rounded-full"
             initial={isMobile ? { opacity: 1 } : { scaleX: 0, opacity: 0 }}
             whileInView={isMobile ? {} : { scaleX: 1, opacity: 1 }}
             viewport={{ once: true }}
@@ -690,20 +644,20 @@ const Timeline = () => {
         initial={isMobile ? {} : { opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="relative mb-12"
+        className="relative mb-3.5 sm:mb-5 lg:mb-4"
       >
         {/* Background glow */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#00C6FE]/5 to-transparent blur-xl" />
         
-        <div className="relative flex justify-center gap-3 sm:gap-4 flex-wrap">
+        <div className="relative flex justify-center gap-2 sm:gap-3 flex-wrap">
           <motion.button
             onClick={() => setActiveTab("experience")}
             whileHover={isMobile ? {} : { scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            className={`relative px-8 sm:px-10 py-3 sm:py-4 rounded-full font-bold text-sm sm:text-[16px] transition-all duration-300 overflow-hidden shadow-lg ${
+            className={`relative px-4 sm:px-6 md:px-8 py-1.5 sm:py-2 md:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 overflow-hidden shadow-md ${
               activeTab === "experience"
-                ? "text-white shadow-[0_0_30px_rgba(0,198,254,0.4)]"
-                : "backdrop-blur-sm bg-tertiary/50 border border-white/10 text-gray-400 hover:text-white hover:border-[#00C6FE]/30 hover:shadow-[0_0_20px_rgba(0,198,254,0.2)]"
+                ? "text-white shadow-[0_0_25px_rgba(0,198,254,0.4)]"
+                : "backdrop-blur-sm bg-tertiary/50 border border-white/10 text-gray-400 hover:text-white hover:border-[#00C6FE]/30 hover:shadow-[0_0_15px_rgba(0,198,254,0.2)]"
             }`}
           >
             {activeTab === "experience" && (
@@ -713,8 +667,8 @@ const Timeline = () => {
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />
             )}
-            <span className="relative z-10 flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="relative z-10 flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               Experience
@@ -725,10 +679,10 @@ const Timeline = () => {
             onClick={() => setActiveTab("education")}
             whileHover={isMobile ? {} : { scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            className={`relative px-8 sm:px-10 py-3 sm:py-4 rounded-full font-bold text-sm sm:text-[16px] transition-all duration-300 overflow-hidden shadow-lg ${
+            className={`relative px-4 sm:px-6 md:px-8 py-1.5 sm:py-2 md:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 overflow-hidden shadow-md ${
               activeTab === "education"
-                ? "text-white shadow-[0_0_30px_rgba(0,198,254,0.4)]"
-                : "backdrop-blur-sm bg-tertiary/50 border border-white/10 text-gray-400 hover:text-white hover:border-[#00C6FE]/30 hover:shadow-[0_0_20px_rgba(0,198,254,0.2)]"
+                ? "text-white shadow-[0_0_25px_rgba(0,198,254,0.4)]"
+                : "backdrop-blur-sm bg-tertiary/50 border border-white/10 text-gray-400 hover:text-white hover:border-[#00C6FE]/30 hover:shadow-[0_0_15px_rgba(0,198,254,0.2)]"
             }`}
           >
             {activeTab === "education" && (
@@ -738,8 +692,8 @@ const Timeline = () => {
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />
             )}
-            <span className="relative z-10 flex items-center gap-2">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="relative z-10 flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
               Education

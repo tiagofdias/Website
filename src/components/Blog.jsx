@@ -15,8 +15,8 @@ const ArticleCard = React.memo(function ArticleCard({ article, onClick, index, i
       whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
-      whileHover={isMobile ? {} : { y: -8, scale: 1.02 }}
-      className="group flex flex-col gap-2 cursor-pointer backdrop-blur-md bg-white/5 border border-white/10 hover:border-purple-400/50 rounded-2xl overflow-hidden shadow-2xl hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300"
+      whileHover={isMobile ? {} : { y: -6, scale: 1.02 }}
+      className="group flex flex-col gap-1.5 cursor-pointer backdrop-blur-md bg-white/5 border border-white/10 hover:border-purple-400/50 rounded-2xl overflow-hidden shadow-2xl hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300"
       onClick={onClick}
     >
       {article.image_url ? ( 
@@ -29,23 +29,23 @@ const ArticleCard = React.memo(function ArticleCard({ article, onClick, index, i
             loading="lazy"
           />
           {/* Read more badge */}
-          <div className="absolute top-3 right-3 z-20 bg-gradient-to-r from-purple-500 to-[#00C6FE] text-white text-xs font-bold px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+          <div className="absolute top-2.5 right-2.5 z-20 bg-gradient-to-r from-purple-500 to-[#00C6FE] text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300">
             Read More →
           </div>
         </div>
       ) : (
         <div className="bg-gradient-to-br from-purple-500/20 to-[#00C6FE]/20 rounded-t-2xl aspect-video flex items-center justify-center">
-          <svg className="w-16 h-16 text-[#00C6FE]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-12 h-12 text-[#00C6FE]/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
       )}
-      <div className="p-5">
-        <h3 className="text-lg font-bold tracking-tight text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-[#00C6FE] group-hover:bg-clip-text transition-all duration-300">
+      <div className="p-3 sm:p-3.5">
+        <h3 className="text-xs sm:text-sm lg:text-[14px] font-bold tracking-tight text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-[#00C6FE] group-hover:bg-clip-text transition-all duration-300 leading-snug line-clamp-2">
           {article.title}
         </h3>
         {/* Animated underline */}
-        <div className="h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-purple-500 to-[#00C6FE] transition-all duration-300 mt-2" />
+        <div className="h-0.5 w-0 group-hover:w-full bg-gradient-to-r from-purple-500 to-[#00C6FE] transition-all duration-300 mt-1.5" />
       </div>
     </motion.div>
   );
@@ -122,9 +122,9 @@ const Blog = () => {
         whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-12"
+        className="text-center mb-4 sm:mb-6 lg:mb-4 xl:mb-6"
       >
-        <h2 className="text-white font-black text-4xl sm:text-5xl md:text-6xl">
+        <h2 className="text-white font-black text-2xl xs:text-3xl sm:text-4xl lg:text-4xl xl:text-5xl">
           <span className="bg-gradient-to-r from-purple-500 to-[#00C6FE] bg-clip-text text-transparent">
             Blog
           </span>
@@ -134,22 +134,22 @@ const Blog = () => {
           whileInView={isMobile ? {} : { scaleX: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="h-1 w-24 bg-gradient-to-r from-purple-500 to-[#00C6FE] mx-auto mt-4 rounded-full"
+          className="h-1 w-16 sm:w-20 bg-gradient-to-r from-purple-500 to-[#00C6FE] mx-auto mt-2 sm:mt-2.5 rounded-full"
         />
         <motion.p
           initial={isMobile ? {} : { opacity: 0 }}
           whileInView={isMobile ? {} : { opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-6 text-secondary text-[17px] max-w-3xl mx-auto leading-[30px]"
+          className="mt-2 text-secondary text-xs sm:text-sm lg:text-base max-w-2xl mx-auto leading-relaxed px-2"
         >
           {showAll ? "All articles - Explore my thoughts and tutorials" : "Latest articles - Stay updated with my recent posts"}
         </motion.p>
       </motion.div>
 
       {/* Articles Grid */}
-      <div className="container mx-auto flex flex-col gap-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="container mx-auto flex flex-col gap-4 sm:gap-6 lg:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-4 xl:gap-6">
           {visibleArticles.map((article, index) => (
             <ArticleCard
               key={index}
@@ -164,7 +164,7 @@ const Blog = () => {
         {/* "View All" Button */}
         {!showAll && articles.length > 4 && (
           <motion.div 
-            className="flex justify-center mt-10"
+            className="flex justify-center mt-3 sm:mt-5 lg:mt-4 xl:mt-6"
             initial={isMobile ? {} : { opacity: 0, y: 20 }}
             whileInView={isMobile ? {} : { opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -174,14 +174,14 @@ const Blog = () => {
               onClick={() => setShowAll(true)}
               whileHover={isMobile ? {} : { scale: 1.05, x: 5 }}
               whileTap={isMobile ? {} : { scale: 0.95 }}
-              className="group relative bg-gradient-to-r from-purple-500 to-[#00C6FE] hover:from-purple-500/90 hover:to-[#00C6FE]/90 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/30 outline-none text-white font-bold py-4 px-12 rounded-full overflow-hidden"
+              className="group relative bg-gradient-to-r from-purple-500 to-[#00C6FE] hover:from-purple-500/90 hover:to-[#00C6FE]/90 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/30 outline-none text-white font-bold py-2.5 sm:py-3 px-6 sm:px-8 text-xs sm:text-sm rounded-full overflow-hidden"
             >
               {/* Shine effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
               
               <span className="relative flex items-center gap-2">
                 View All Articles
-                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </span>

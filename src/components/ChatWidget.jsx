@@ -368,9 +368,9 @@ const ChatWidget = () => {
             transition={{ type: "spring", duration: 0.6, bounce: 0.25 }}
             className={`fixed z-40 ${
               isMobile
-                ? "inset-3 bottom-20"
-                : "bottom-28 right-6 w-[460px] sm:w-[480px] max-w-[calc(100vw-32px)] h-[700px] max-h-[calc(100vh-130px)]"
-            } backdrop-blur-3xl bg-gradient-to-br from-[#1a3b50]/98 via-[#345164]/95 to-[#1a3b50]/98 border-2 border-[#00C6FE]/30 rounded-[28px] shadow-[0_0_60px_rgba(0,198,254,0.25),0_20px_80px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden`}
+                ? "inset-2 sm:inset-4 bottom-20 rounded-2xl sm:rounded-[28px]"
+                : "bottom-28 right-6 w-[460px] sm:w-[480px] max-w-[calc(100vw-32px)] h-[700px] max-h-[calc(100vh-130px)] rounded-[28px]"
+            } backdrop-blur-3xl bg-gradient-to-br from-[#1a3b50]/98 via-[#345164]/95 to-[#1a3b50]/98 border-2 border-[#00C6FE]/30 shadow-[0_0_60px_rgba(0,198,254,0.25),0_20px_80px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden`}
           >
             {/* Animated gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#00C6FE]/15 via-transparent to-purple-500/15 pointer-events-none"></div>
@@ -848,7 +848,7 @@ const ChatWidget = () => {
               </div>
               
               {/* Quick action hints */}
-              <div className="mt-2 flex items-center gap-2 text-[11px] relative z-10">
+              <div className="mt-2 hidden sm:flex items-center gap-2 text-[11px] relative z-10">
                 <div className="flex items-center gap-1.5 bg-white/10 px-2 py-0.5 rounded-md border border-white/10 backdrop-blur-sm text-gray-400">
                   <kbd className="px-1 py-0.2 bg-gradient-to-br from-[#00C6FE]/20 to-purple-500/20 rounded border border-[#00C6FE]/30 text-white font-semibold text-[9px]">Enter</kbd>
                   <span>Send</span>

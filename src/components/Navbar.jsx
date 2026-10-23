@@ -35,7 +35,7 @@ const Navbar = () => {
         scrolled ? "bg-primary" : "bg-transparent"
       }`}
     >
-      <div className="w-full sm:max-w-7xl sm:mx-auto px-4 sm:px-16 py-5 flex justify-between items-center">
+      <div className="w-full sm:max-w-7xl sm:mx-auto px-4 sm:px-8 lg:px-16 py-4 sm:py-5 flex justify-between items-center">
         {/* Logo */}
         <ScrollLink
           to="hero"
@@ -53,13 +53,13 @@ const Navbar = () => {
         </ScrollLink>
 
         {/* Desktop Navigation */}
-        <ul className="list-none hidden sm:flex flex-row gap-10">
+        <ul className="list-none hidden md:flex flex-row gap-6 lg:gap-10">
           {navLinks.map((nav) => (
             <li
               key={nav.id}
               className={`${
-                active === nav.title ? "text-secondary" : "text-secondary"
-              } hover:text-white text-[18px] font-medium cursor-pointer`}
+                active === nav.title ? "text-[#00C6FE]" : "text-secondary"
+              } hover:text-white text-[16px] lg:text-[18px] font-medium cursor-pointer transition-colors`}
               onClick={() => handleNavClick(nav)}
             >
               <ScrollLink
@@ -77,10 +77,11 @@ const Navbar = () => {
         </ul>
 
         {/* Mobile Menu Button */}
-        <div className="sm:hidden">
+        <div className="md:hidden">
           <button
-            className="relative w-10 h-10 rounded-full backdrop-blur-md bg-white/10 border border-white/20 hover:border-[#00C6FE]/50 flex items-center justify-center transition-all duration-300"
+            className="relative w-10 h-10 rounded-full backdrop-blur-md bg-white/10 border border-white/20 hover:border-[#00C6FE]/50 flex items-center justify-center transition-all duration-300 active:scale-95"
             onClick={() => setToggle(!toggle)}
+            aria-label={toggle ? "Close menu" : "Open menu"}
           >
             <img
               src={toggle ? close : menu}
@@ -95,12 +96,12 @@ const Navbar = () => {
           <>
             {/* Backdrop */}
             <div 
-              className="sm:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-10 top-[72px]"
+              className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-10 top-[68px]"
               onClick={() => setToggle(false)}
             />
             
             {/* Menu Panel */}
-            <div className="sm:hidden fixed top-20 right-4 left-4 z-20 backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="md:hidden fixed top-20 right-4 left-4 z-20 backdrop-blur-2xl bg-[#0f1f2e]/95 border border-white/15 rounded-2xl shadow-2xl overflow-hidden animate-slideUp">
               {/* Header */}
               <div className="bg-gradient-to-r from-[#00C6FE]/20 to-purple-500/20 border-b border-white/10 px-6 py-4">
                 <h3 className="text-white font-bold text-lg flex items-center gap-2">
