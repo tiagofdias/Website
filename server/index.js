@@ -492,61 +492,29 @@ app.post('/api/certifications', auth, async (req, res) => {
 
 app.put('/api/certifications/:id', auth, async (req, res) => {
   try {
-    const certData = req.body;
-    
-    // If pdf_links are provided, extract images from PDFs
-    if (certData.pdf_links && certData.pdf_links.length > 0) {
-      // Get existing certification to compare pdf_links
-      const existingCert = await Certification.findById(req.params.id);
-      const existingPdfLinks = existingCert?.pdf_links || [];
-      
-      // Check if pdf_links array has changed (added, removed, or modified)
-      const linksChanged = JSON.stringify(certData.pdf_links.sort()) !== JSON.stringify(existingPdfLinks.sort());
-      
-      if (linksChanged) {
-        console.log(`\n🔄 PDF links changed for certification: ${certData.name}`);
-        console.log(`   Old links (${existingPdfLinks.length}):`, existingPdfLinks);
-        console.log(`   New links (${certData.pdf_links.length}):`, certData.pdf_links);
-        console.log(`   Re-extracting all images...`);
-        
+    const certData = { ...req.body };
+    const existing = await Certification.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Certification not found' });
+    // Metadata-only updates must never clear existing credential previews.
+    if (Object.prototype.hasOwnProperty.call(certData, 'pdf_links')) {
+      if (!Array.isArray(certData.pdf_links)) return res.status(400).json({ error: 'PDF links must be a list' });
+      const previous = existing.pdf_links || [];
+      const changed = JSON.stringify([...certData.pdf_links].sort()) !== JSON.stringify([...previous].sort());
+      if (certData.pdf_links.length && changed) {
         try {
-          const extractedImages = await extractImagesFromPdfLinks(certData.pdf_links);
-          console.log(`   Extraction result: ${extractedImages.length} images extracted`);
-          
-          if (extractedImages.length > 0) {
-            certData.images = extractedImages;
-            console.log(`• Successfully extracted ${extractedImages.length} image(s)`);
-          } else {
-            console.log(`•  No images were extracted!`);
-            certData.images = [];
-          }
-        } catch (extractError) {
-          console.error('• Error extracting images from PDFs:', extractError);
-          console.error('   Error message:', extractError.message);
-          console.error('   Stack trace:', extractError.stack);
-          // Clear images if extraction fails
-          certData.images = [];
+          const images = await extractImagesFromPdfLinks(certData.pdf_links);
+          if (!images.length) return res.status(422).json({ error: 'No credential pages could be read from these PDF links. Check the public links and try again. Existing previews have been kept.' });
+          certData.images = images;
+        } catch {
+          return res.status(422).json({ error: 'The credential PDFs could not be processed. Check the public links and try again. Existing previews have been kept.' });
         }
-      } else {
-        console.log(`\n✓ PDF links unchanged for certification: ${certData.name}`);
-        console.log(`   Keeping existing images`);
-        // Keep existing images
-        certData.images = existingCert?.images || [];
+      } else if (!certData.pdf_links.length && previous.length && !Object.prototype.hasOwnProperty.call(certData, 'images')) {
+        certData.images = [];
       }
-    } else {
-      // No pdf_links provided, clear images
-      console.log(`\n•  No PDF links for certification: ${certData.name}`);
-      certData.images = [];
     }
-    
-    const cert = await Certification.findByIdAndUpdate(
-      req.params.id,
-      certData,
-      { new: true }
-    );
+    const cert = await Certification.findByIdAndUpdate(req.params.id, certData, { new: true });
     res.json(cert);
   } catch (error) {
-    console.error('Error updating certification:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -841,7 +809,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 3.0', version: '3.0' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 3.1', version: '3.1' });
 });
 
 // Database Knowledge Synthesizer:
