@@ -56,3 +56,9 @@ Pluxee original tested at 1920?1080, H.264, 25 fps. Real browser playback throug
 At up to 960px, Career uses stacked accordion cards with separate date, role and company rows. The decorative callout follows the roles as a compact career-brief action. Works and Certifications share a selected-item control and searchable modal chooser; selections reset the preview to the first screenshot/page or demo. Desktop archives retain their existing search and index. Resizing to desktop closes the mobile chooser.
 
 Verified mobile flows at 320/390/600/820/960px with scripts/verify-mobile-archives-career.mjs. Before/after geometry, font size and display comparisons for Career, Works and Certifications were identical at 1024/1440/1920px.
+
+## Consistent desktop frame
+
+At desktop sizes (1024px wide and 700px high or larger), Home, Career, About, Contact and CV now share the same bounded header/main/dock frame as the archives. Home scales its headline, art and introduction to the available height. Career scrolls its timeline; the complete About section scrolls in the main content area. Contact keeps its form and action visible, and the CV viewer occupies the remaining height. Navigating sections resets the main content scroll. Smaller screens retain their natural mobile layout.
+
+Verified with scripts/verify-desktop-sections.mjs at seven desktop sizes from 1024?700 to 1920?1080, plus existing mobile, responsive and archive checks. Long content is preserved; the navigation does not cover the main panel.

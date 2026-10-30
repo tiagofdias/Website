@@ -89,6 +89,7 @@ export default function Portfolio({ resume = false }) {
   };
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
+    main.current?.scrollTo({ top: 0, behavior: "instant" });
     setMenu(false);
     document.title = resume
       ? "CV / Tiago Dias"
