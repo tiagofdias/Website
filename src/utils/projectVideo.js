@@ -10,8 +10,9 @@ export function projectVideo(value) {
         url.searchParams.get("id");
       if (id && /^[\w-]{10,}$/.test(id))
         return {
-          type: "embed",
-          src: `https://drive.google.com/file/d/${id}/preview`,
+          type: "drive",
+          src: `${import.meta.env?.VITE_API_URL || "/api"}/media/drive-video/${id}`,
+          preview: `https://drive.google.com/file/d/${id}/preview`,
           original: source,
         };
     }

@@ -640,7 +640,7 @@ export default function ContentFields({
               value={form.demo_video_url || ""}
               placeholder="https://example.com/demo.mp4 or /videos/demo.webm"
               pattern="(?:https?://|/(?!/)).*"
-              hint="Use a direct MP4/WebM URL or a public Google Drive video link. Direct files autoplay muted; Drive uses its embedded player. Share Drive files with Anyone with the link."
+              hint="Use a direct MP4/WebM URL or a public Google Drive video link. Share Drive files with Anyone with the link."
               onChange={(event) => set("demo_video_url", event.target.value)}
             />
             {safeMedia(form.demo_video_url) && !galleryOpen && (

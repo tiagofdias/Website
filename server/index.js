@@ -12,6 +12,7 @@ const path = require('path');
 const fetch = require('node-fetch');
 const { generateCompletion } = require('./aiCompletion.cjs');
 const { createPublicAnswerService } = require('./publicAnswerService.cjs');
+const { originalProjectVideo } = require('./projectVideo.cjs');
 const profileQuestions = import('./profileQuestions.mjs');
 const { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } = require('@simplewebauthn/server');
 const { PasskeyCredential } = require('./models');
@@ -316,6 +317,11 @@ const getPublicAnswers = createPublicAnswerService({
   readCache: async () => (await Settings.findOne({ key: 'PORTFOLIO_PUBLIC_ANSWERS' }).lean())?.value,
   writeCache: value => Settings.findOneAndUpdate({ key: 'PORTFOLIO_PUBLIC_ANSWERS' }, { value, description: 'Public saved answers derived from portfolio records' }, { upsert: true }),
 });
+app.get('/api/media/drive-video/:fileId', originalProjectVideo({
+  loadProjects: () => Project.find({ enabled: true }).select('demo_video_url').lean(),
+  fetchImpl: fetch,
+}));
+
 app.get('/api/chat/answers', async (_req, res) => {
   try {
     res.set('Cache-Control', 'public, max-age=30');

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {adminMocks} from './admin-fixture.mjs';
 import {projectVideo} from '../src/utils/projectVideo.js';
 const drive='https://drive.google.com/file/d/public-video-12345/view?usp=sharing';
-assert.equal(projectVideo(drive).src,'https://drive.google.com/file/d/public-video-12345/preview');
+assert.equal(projectVideo(drive).src,'/api/media/drive-video/public-video-12345');
+assert.equal(projectVideo(drive).preview,'https://drive.google.com/file/d/public-video-12345/preview');
 assert.equal(projectVideo('/demo.webm').type,'file');
 const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
 try{
@@ -19,10 +20,11 @@ try{
   await page.getByRole('button',{name:'Open project media gallery',exact:true}).click();
   const viewer=page.locator('.media-viewer[open]');await viewer.waitFor();assert.equal(await viewer.locator('.media-viewer-thumbnails button').count(),4);
   await viewer.getByRole('button',{name:'View screenshot 2',exact:true}).click();assert.equal(await viewer.locator('.media-viewer-canvas img').getAttribute('src'),images[1]);
+  assert.equal(await viewer.locator('.media-viewer-canvas').evaluate(e=>e.style.width),'100%','Screenshot defaults to Fit');
   await viewer.getByRole('button',{name:'Zoom in',exact:true}).click();await viewer.getByRole('button',{name:'Zoom in',exact:true}).click();
   const zoom=await viewer.locator('.media-viewer-viewport').evaluate(e=>({width:e.clientWidth,scroll:e.scrollWidth}));assert.ok(zoom.scroll>=zoom.width*1.9,'Zoomed image can be panned');
   await viewer.getByRole('button',{name:'Fit',exact:true}).click();await viewer.getByRole('button',{name:'Next media',exact:true}).click();assert.equal(await viewer.locator('.media-viewer-canvas img').getAttribute('src'),images[2]);
-  await page.keyboard.press('ArrowLeft');assert.equal(await viewer.locator('.media-viewer-canvas img').getAttribute('src'),images[1]);
+  await page.keyboard.press('ArrowLeft');assert.equal(await viewer.locator('.media-viewer-canvas').evaluate(e=>e.style.width),'100%','Switching images resets Fit');assert.equal(await viewer.locator('.media-viewer-canvas img').getAttribute('src'),images[1]);
   await viewer.getByRole('button',{name:'View demo video',exact:true}).click();await viewer.locator('iframe').waitFor();await viewer.getByRole('button',{name:'View screenshot 1',exact:true}).click();
   await viewer.getByRole('button',{name:'Actual size',exact:true}).click();
   await page.screenshot({path:`docs/design/media-gallery-${width}.png`});

@@ -22,12 +22,12 @@ export default function MediaViewer({
     })),
   ];
   const [selection, setSelection] = useState(initialMedia),
-    [zoom, setZoom] = useState(() => (window.innerWidth < 600 ? 3 : 2)),
+    [zoom, setZoom] = useState(1),
     [failed, setFailed] = useState(false);
   const active = media[selection] || media[0];
   const select = (index) => {
     setSelection((index + media.length) % media.length);
-    setZoom(window.innerWidth < 600 ? 3 : 2);
+    setZoom(1);
     setFailed(false);
   };
   useEffect(() => {

@@ -4,7 +4,7 @@
 
 Projects and certifications share the same archive layout: searchable selectable index, one large preview, details, and supporting actions. On mobile, the index is a horizontal strip. The first project and its first image are selected initially, including when API content replaces bundled content. Selecting another project resets its gallery to its first image or video. A project with a live URL gives that link the primary button style.
 
-Project demos use `demo_video_url`. Admin → Projects accepts a direct public MP4/WebM URL or a frontend path such as `/videos/demo.webm`. The selected project mounts a muted, inline, looping video with native controls and autoplay. Screenshots remain available. Switching projects unmounts the old player. Media errors fall back to screenshots with a manual retry. Public Google Drive video viewing links use the embedded Drive player and start with its Play control. Direct MP4/WebM files retain muted autoplay. YouTube viewing links are not direct video files.
+Project demos use `demo_video_url`. Admin → Projects accepts a direct public MP4/WebM URL or a frontend path such as `/videos/demo.webm`. The selected project mounts a muted, inline, looping video with native controls and autoplay. Screenshots remain available. Switching projects unmounts the old player. Media errors fall back to screenshots with a manual retry. Public Google Drive video links stream the original uploaded file through the site, retaining muted autoplay. The embedded Drive player is a fallback if the original is unavailable. YouTube viewing links are not direct video files.
 
 ## Saved shortcut answers
 
@@ -41,6 +41,12 @@ Live validation after deployment: backend version 3.0 served 31 saved topics in 
 
 Public projects and the admin editor open a shared media gallery containing all screenshots and the demo video. Visitors can switch via thumbnails, previous/next buttons or arrow keys, zoom screenshots, reset Fit, and inspect actual pixel size. Zoomed screenshots support mouse dragging and touch scrolling. The active underlying video unmounts while the gallery is open. Escape closes only the gallery and restores focus.
 
-The archive gives media a taller column beside project details on large desktops and crops the inline screenshot around its center; the gallery preserves the complete image with Fit. Direct videos autoplay muted; Drive viewing URLs become /preview embeds. The saved Pluxee Drive demo was tested in a real browser: playback advanced past five seconds after Play, with readyState 4 and no video error. Provider content and sharing settings remain external dependencies.
+The archive gives media a taller column beside project details on large desktops and crops the inline screenshot around its center; the gallery preserves the complete image with Fit. Direct videos and original Drive uploads autoplay muted; /preview embeds are used only as a fallback. The saved Pluxee Drive demo was tested in a real browser: playback advanced past five seconds after Play, with readyState 4 and no video error. Provider content and sharing settings remain external dependencies.
 
 Regression checks: verify-media-gallery.mjs, verify-image-previews.mjs, verify-media-and-ai.mjs, verify-work-viewport.mjs and verify-admin-workspace.mjs.
+
+## Original-quality Drive playback and Fit default
+
+Gallery entry and every media selection reset screenshots to Fit (100% of the available viewport). Zoom and Actual size remain explicit controls. Drive demos use /api/media/drive-video/:fileId to stream the original upload without transcoding or resizing. This route permits only Drive file IDs referenced by published projects, forwards single byte ranges for seeking, preserves video MIME/length/range headers, and serves inline. Google HTML/error pages are rejected. If the original is unavailable, the player can fall back to the Drive preview.
+
+Pluxee original tested at 1920?1080, H.264, 25 fps. Real browser playback through the route reported 1920?1080, advancing currentTime and no media error. server/projectVideo.test.cjs verifies byte-for-byte preservation, range handling, unpublished-file rejection and rejection of HTML responses.
