@@ -100,7 +100,7 @@ export function WorkPanel({ projects, onAsk }) {
             <input
               type="search"
               value={query}
-              placeholder="Search projects or technologies"
+              placeholder="Search projects"
               onChange={(event) => {
                 setQuery(event.target.value);
                 setSelected(null);

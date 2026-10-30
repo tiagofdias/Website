@@ -170,7 +170,7 @@ export default function CertificationsPanel({ certifications }) {
             <input
               type="search"
               value={query}
-              placeholder="Search credentials or skills"
+              placeholder="Search credentials"
               onChange={(event) => {
                 setQuery(event.target.value);
                 setSelection(null);

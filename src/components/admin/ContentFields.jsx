@@ -638,7 +638,7 @@ export default function ContentFields({
               name="demo_video_url"
               label="Project demo video (optional)"
               value={form.demo_video_url || ""}
-              placeholder="https://example.com/demo.mp4 or /videos/demo.webm"
+              placeholder="Video URL"
               pattern="(?:https?://|/(?!/)).*"
               hint="Use a direct MP4/WebM URL or a public Google Drive video link. Share Drive files with Anyone with the link."
               onChange={(event) => set("demo_video_url", event.target.value)}

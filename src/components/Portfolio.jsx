@@ -332,7 +332,7 @@ export default function Portfolio({ resume = false }) {
               id="command-question"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Ask about my work, projects, or skills..."
+              placeholder="Ask a question"
               maxLength={3000}
             />
             <kbd>/</kbd>

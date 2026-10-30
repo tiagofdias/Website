@@ -719,7 +719,7 @@ export default function AIConsole({
                       send(input);
                     }
                   }}
-                  placeholder="Ask about my experience, projects, or skills…"
+                  placeholder="Ask a question"
                   rows={1}
                   maxLength={6000}
                 />

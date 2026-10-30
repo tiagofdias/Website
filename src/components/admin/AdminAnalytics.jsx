@@ -301,7 +301,7 @@ export default function AdminAnalytics({ request }) {
             <Field
               label="Search conversation logs"
               type="search"
-              placeholder="Search question, answer, or visitor IP"
+              placeholder="Search chat logs"
               value={search}
               onChange={(event) => {
                 setSearch(event.target.value);
