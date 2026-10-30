@@ -817,7 +817,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.3', version: '2.3' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.4', version: '2.4' });
 });
 
 // Database Knowledge Synthesizer:

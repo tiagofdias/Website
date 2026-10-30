@@ -131,3 +131,48 @@ test("still tries the free route when a paid model has no credits", async () => 
   assert.equal(result.source, "llm");
   assert.deepEqual(attempted, ["paid-model", "openrouter/free"]);
 });
+
+test("lets the final provider finish within the remaining overall budget", async () => {
+  const result = await generateCompletion({
+    ...settings,
+    models: ["paid-model", "openrouter/free"],
+    totalTimeoutMs: 180,
+    attemptTimeoutMs: 20,
+    fetchImpl: async (_, options) => {
+      if (JSON.parse(options.body).model === "paid-model")
+        return {
+          ok: false,
+          status: 402,
+          json: async () => ({ error: { message: "No credits" } }),
+        };
+      return {
+        ok: true,
+        json: () =>
+          new Promise((resolve, reject) => {
+            const timer = setTimeout(
+              () =>
+                resolve({
+                  choices: [
+                    {
+                      message: {
+                        content:
+                          "A complete answer after the short attempt limit.",
+                      },
+                      finish_reason: "stop",
+                    },
+                  ],
+                }),
+              65,
+            );
+            options.signal.addEventListener("abort", () => {
+              clearTimeout(timer);
+              reject(
+                Object.assign(new Error("aborted"), { name: "AbortError" }),
+              );
+            });
+          }),
+      };
+    },
+  });
+  assert.equal(result.source, "llm");
+});

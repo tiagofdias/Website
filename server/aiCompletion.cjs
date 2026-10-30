@@ -50,13 +50,16 @@ async function generateCompletion({
     conversation.at(-1)?.content === message.trim()
   )
     conversation.pop();
-  for (const model of [...new Set(models)].slice(0, 3)) {
+  const candidates = [...new Set(models)].slice(0, 3);
+  for (const [index, model] of candidates.entries()) {
     const remaining = totalTimeoutMs - (Date.now() - started);
     if (remaining <= 0) break;
     const controller = new AbortController();
     const timer = setTimeout(
       () => controller.abort(),
-      Math.min(attemptTimeoutMs, remaining),
+      index === candidates.length - 1
+        ? remaining
+        : Math.min(attemptTimeoutMs, remaining),
     );
     try {
       const response = await fetchImpl(
