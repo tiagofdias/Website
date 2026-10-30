@@ -22,10 +22,10 @@ try {
   assert.equal(await page.getByLabel('Screenshot 1 URL',{exact:true}).inputValue(),drive);
   await page.locator('.cms-image-preview').nth(2).getByText('Preview unavailable',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Preview screenshot 1',exact:true}).click();
-  await page.locator('.cms-image-dialog[open]').waitFor();
-  await page.waitForFunction(()=>document.querySelector('.cms-image-dialog img')?.naturalWidth>0);
-  const rect=await page.locator('.cms-image-dialog').boundingBox();assert.ok(rect.x>=0&&rect.x+rect.width<=width+1);
-  await page.keyboard.press('Escape');assert.equal(await page.locator('.cms-image-dialog').count(),0);
+  await page.locator('.media-viewer[open]').waitFor();
+  await page.waitForFunction(()=>document.querySelector('.media-viewer-canvas img')?.naturalWidth>0);
+  const rect=await page.locator('.media-viewer').boundingBox();assert.ok(rect.x>=0&&rect.x+rect.width<=width+1);
+  await page.keyboard.press('Escape');assert.equal(await page.locator('.media-viewer').count(),0);
   await page.getByLabel('Screenshot 1 URL',{exact:true}).fill('/favicon.svg');
   await page.waitForFunction(()=>document.querySelector('.cms-image-preview img')?.getAttribute('src')==='/favicon.svg'&&document.querySelector('.cms-image-preview img')?.naturalWidth>0);
   await page.waitForFunction(()=>getComputedStyle(document.querySelector(".cms-image-preview img")).opacity==="1");

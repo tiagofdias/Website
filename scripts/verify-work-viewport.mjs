@@ -134,7 +134,7 @@ try {
   );
   await page.keyboard.press("Escape");
   assert.equal(await page.locator(".project-details-dialog[open]").count(), 0);
-  assert.equal(await page.evaluate(() => document.body.style.overflow), "");
+  await page.waitForFunction(() => document.body.style.overflow === "");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.reload();
   await page.locator(".project-description>p").waitFor();

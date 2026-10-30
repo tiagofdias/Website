@@ -1,5 +1,8 @@
+import MediaViewer from "../intelligence/MediaViewer";
+import ProjectVideo from "../intelligence/ProjectVideo";
+import { projectVideo } from "../../utils/projectVideo";
 import { useEffect, useRef, useState } from "react";
-import { Button, Field, Icon, Modal } from "./AdminUI";
+import { Button, Field, Icon } from "./AdminUI";
 import { safeMedia } from "./adminConfig";
 import ArchiveImage from "../intelligence/ArchiveImage";
 export const FormSection = ({ title, description, children }) => (
@@ -11,8 +14,20 @@ export const FormSection = ({ title, description, children }) => (
     {children}
   </section>
 );
-function SourceList({ label, values = [], onChange, kind = "source", hint }) {
+function SourceList({
+  label,
+  values = [],
+  onChange,
+  kind = "source",
+  hint,
+  video,
+  onGalleryChange,
+}) {
   const [preview, setPreview] = useState(null);
+  useEffect(() => {
+    onGalleryChange?.(!!preview);
+    return () => onGalleryChange?.(false);
+  }, [preview, onGalleryChange]);
   return (
     <div className="cms-source-list">
       <div className="cms-label-row">
@@ -22,6 +37,15 @@ function SourceList({ label, values = [], onChange, kind = "source", hint }) {
         </span>
       </div>
       {hint && <p className="cms-help">{hint}</p>}
+      {projectVideo(video) && (
+        <Button
+          icon="external"
+          variant="subtle"
+          onClick={() => setPreview({ index: -1 })}
+        >
+          Browse video & screenshots
+        </Button>
+      )}
       {values.map((value, index) => (
         <div className="cms-source-row" key={index}>
           {kind === "screenshot" && safeMedia(value) && (
@@ -72,33 +96,18 @@ function SourceList({ label, values = [], onChange, kind = "source", hint }) {
         Add {kind}
       </Button>
       {preview && (
-        <Modal
-          titleId="cms-image-preview-title"
-          className="cms-image-dialog"
+        <MediaViewer
+          images={values.filter(Boolean)}
+          video={video}
+          title={label}
+          initialMedia={
+            preview.index < 0
+              ? 0
+              : values.slice(0, preview.index).filter(Boolean).length +
+                (projectVideo(video) ? 1 : 0)
+          }
           onClose={() => setPreview(null)}
-        >
-          <header className="cms-modal-header">
-            <h2 id="cms-image-preview-title">Screenshot {preview.index + 1}</h2>
-            <button
-              type="button"
-              className="cms-icon-button"
-              aria-label="Close image preview"
-              onClick={() => setPreview(null)}
-            >
-              <Icon name="close" />
-            </button>
-          </header>
-          <div className="cms-image-dialog-media">
-            <ArchiveImage
-              key={preview.source}
-              src={preview.source}
-              alt={`Screenshot ${preview.index + 1}, full preview`}
-            />
-          </div>
-          <p className="cms-help">
-            Google Drive images must be shared with “Anyone with the link”.
-          </p>
-        </Modal>
+        />
       )}
     </div>
   );
@@ -229,6 +238,7 @@ export default function ContentFields({
       {...options}
     />
   );
+  const [galleryOpen, setGalleryOpen] = useState(false);
   const [mediaError, setMediaError] = useState(""),
     [fileName, setFileName] = useState("");
   const upload = async (event, key, maxMb, isPdf = false) => {
@@ -630,19 +640,16 @@ export default function ContentFields({
               value={form.demo_video_url || ""}
               placeholder="https://example.com/demo.mp4 or /videos/demo.webm"
               pattern="(?:https?://|/(?!/)).*"
-              hint="Use a direct MP4 or WebM file. It plays automatically, muted, when the project is selected. YouTube and Drive viewing pages are not video files."
+              hint="Use a direct MP4/WebM URL or a public Google Drive video link. Direct files autoplay muted; Drive uses its embedded player. Share Drive files with Anyone with the link."
               onChange={(event) => set("demo_video_url", event.target.value)}
             />
-            {safeMedia(form.demo_video_url) && (
-              <video
+            {safeMedia(form.demo_video_url) && !galleryOpen && (
+              <ProjectVideo
                 key={form.demo_video_url}
+                source={form.demo_video_url}
+                title="Project"
+                label="Project demo video preview"
                 className="cms-video-preview"
-                src={form.demo_video_url}
-                controls
-                muted
-                playsInline
-                preload="metadata"
-                aria-label="Project demo video preview"
               />
             )}
           </>
@@ -659,6 +666,8 @@ export default function ContentFields({
         <SourceList
           label={section === "projects" ? "Screenshots" : "Credential images"}
           kind="screenshot"
+          video={section === "projects" ? form.demo_video_url : undefined}
+          onGalleryChange={setGalleryOpen}
           values={form.images || []}
           onChange={(values) => set("images", values)}
           hint="The first image appears first in the archive. Stored uploads stay in place unless you replace or remove them."

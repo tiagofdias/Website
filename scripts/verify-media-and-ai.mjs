@@ -206,7 +206,7 @@ try {
     return r.fulfill({ json: [] });
   });
   await page.goto("http://127.0.0.1:5173/admin");
-  await page.getByRole("button", { name: "New project", exact: true }).click();
+  await page.getByRole("button", { name: "New project", exact: true }).first().click();
   await page.getByPlaceholder("Project Name").fill("Test video project");
   await page
     .getByPlaceholder("Description", { exact: true })

@@ -1,3 +1,5 @@
+import MediaViewer from "./MediaViewer";
+import ProjectVideo from "./ProjectVideo";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import emailjs from "@emailjs/browser";
@@ -33,7 +35,7 @@ export function WorkPanel({ projects, onAsk }) {
     [query, setQuery] = useState(""),
     [showVideo, setShowVideo] = useState(true),
     [videoFailed, setVideoFailed] = useState(false);
-  const lightbox = useRef(null);
+  const [viewer, setViewer] = useState(false);
   const indexList = useRef(null);
   useEffect(() => {
     indexList.current?.scrollTo({ left: 0, top: 0, behavior: "instant" });
@@ -145,32 +147,29 @@ export function WorkPanel({ projects, onAsk }) {
                   {project.name.split(" - ")[0]} / INTERFACE
                 </span>
                 <button
-                  onClick={() => lightbox.current.showModal()}
-                  aria-label="Enlarge project screenshot"
-                  hidden={!!playingVideo || !source}
+                  onClick={() => setViewer(true)}
+                  aria-label="Open project media gallery"
+                  hidden={!video && !source}
                 >
                   ⤢
                 </button>
               </div>
               {playingVideo ? (
-                <video
-                  key={`${project._id || project.name}:${video}`}
-                  className="project-demo-video"
-                  src={video}
-                  poster={images[0]}
-                  autoPlay
-                  muted
-                  playsInline
-                  loop
-                  controls
-                  preload="metadata"
-                  aria-label={`${project.name} demo video`}
-                  onError={() => setVideoFailed(true)}
-                />
+                viewer ? (
+                  <div className="project-media-paused">Media gallery open</div>
+                ) : (
+                  <ProjectVideo
+                    key={`${project._id || project.name}:${video}`}
+                    source={video}
+                    title={project.name}
+                    poster={images[0]}
+                    onError={() => setVideoFailed(true)}
+                  />
+                )
               ) : source ? (
                 <button
                   className="project-screenshot"
-                  onClick={() => lightbox.current.showModal()}
+                  onClick={() => setViewer(true)}
                   aria-label={`Enlarge ${project.name}`}
                 >
                   <ArchiveImage
@@ -304,28 +303,16 @@ export function WorkPanel({ projects, onAsk }) {
         )}
       </div>
       {detailsDialog}
-      <dialog
-        className="image-lightbox"
-        ref={lightbox}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) lightbox.current.close();
-        }}
-      >
-        <button
-          className="close-control"
-          onClick={() => lightbox.current.close()}
-          aria-label="Close enlarged screenshot"
-        >
-          ×
-        </button>
-        <div className="archive-lightbox-media">
-          <ArchiveImage
-            key={source}
-            src={source}
-            alt={project?.name || "Project screenshot"}
-          />
-        </div>
-      </dialog>
+      {viewer && project && (
+        <MediaViewer
+          key={project._id || project.name}
+          images={images}
+          video={video}
+          title={project.name}
+          initialMedia={playingVideo ? 0 : image + (video ? 1 : 0)}
+          onClose={() => setViewer(false)}
+        />
+      )}
     </section>
   );
 }

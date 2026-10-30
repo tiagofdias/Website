@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { imageSources } from "../../utils/imageSources";
-export default function ArchiveImage({ src, alt }) {
+export default function ArchiveImage({ src, alt, fullResolution = false }) {
   const [state, setState] = useState("loading");
   const [attempt, setAttempt] = useState(0);
-  const sources = imageSources(src);
+  const sources = imageSources(src, fullResolution);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
