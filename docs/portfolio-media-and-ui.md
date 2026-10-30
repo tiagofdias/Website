@@ -2,7 +2,7 @@
 
 ## Archives
 
-Projects and certifications share the same archive layout: searchable selectable index, one large preview, details, and supporting actions. On mobile, the index is a horizontal strip. The first project and its first image are selected initially, including when API content replaces bundled content. Selecting another project resets its gallery to its first image or video. A project with a live URL gives that link the primary button style.
+Projects and certifications share the same archive layout: searchable selectable index, one large preview, details, and supporting actions. On mobile (up to 960px), a selected-item button opens a searchable chooser, with Previous/Next controls available outside it. The desktop index is unchanged. The first project and its first image are selected initially, including when API content replaces bundled content. Selecting another project resets its gallery to its first image or video. A project with a live URL gives that link the primary button style.
 
 Project demos use `demo_video_url`. Admin → Projects accepts a direct public MP4/WebM URL or a frontend path such as `/videos/demo.webm`. The selected project mounts a muted, inline, looping video with native controls and autoplay. Screenshots remain available. Switching projects unmounts the old player. Media errors fall back to screenshots with a manual retry. Public Google Drive video links stream the original uploaded file through the site, retaining muted autoplay. The embedded Drive player is a fallback if the original is unavailable. YouTube viewing links are not direct video files.
 
@@ -50,3 +50,9 @@ Regression checks: verify-media-gallery.mjs, verify-image-previews.mjs, verify-m
 Gallery entry and every media selection reset screenshots to Fit (100% of the available viewport). Zoom and Actual size remain explicit controls. Drive demos use /api/media/drive-video/:fileId to stream the original upload without transcoding or resizing. This route permits only Drive file IDs referenced by published projects, forwards single byte ranges for seeking, preserves video MIME/length/range headers, and serves inline. Google HTML/error pages are rejected. If the original is unavailable, the player can fall back to the Drive preview.
 
 Pluxee original tested at 1920?1080, H.264, 25 fps. Real browser playback through the route reported 1920?1080, advancing currentTime and no media error. server/projectVideo.test.cjs verifies byte-for-byte preservation, range handling, unpublished-file rejection and rejection of HTML responses.
+
+## Mobile Career and archive navigation
+
+At up to 960px, Career uses stacked accordion cards with separate date, role and company rows. The decorative callout follows the roles as a compact career-brief action. Works and Certifications share a selected-item control and searchable modal chooser; selections reset the preview to the first screenshot/page or demo. Desktop archives retain their existing search and index. Resizing to desktop closes the mobile chooser.
+
+Verified mobile flows at 320/390/600/820/960px with scripts/verify-mobile-archives-career.mjs. Before/after geometry, font size and display comparisons for Career, Works and Certifications were identical at 1024/1440/1920px.

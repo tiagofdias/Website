@@ -1,4 +1,5 @@
 import MediaViewer from "./MediaViewer";
+import MobileArchivePicker from "./MobileArchivePicker";
 import ProjectVideo from "./ProjectVideo";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -81,6 +82,18 @@ export function WorkPanel({ projects, onAsk }) {
         Ask the AI about the engineering behind it.
       </SectionTitle>
       <div className="archive-layout">
+        <MobileArchivePicker
+          items={projects}
+          selected={project}
+          label="project"
+          onSelect={(item) => {
+            setQuery("");
+            setSelected(item._id || item.projectid || item.name);
+            setImageSelection({ project: null, index: 0 });
+            setShowVideo(true);
+            setVideoFailed(false);
+          }}
+        />
         <div className="archive-index">
           <label className="project-search">
             <span>Find a project</span>
@@ -320,7 +333,7 @@ export function WorkPanel({ projects, onAsk }) {
 export function ExperiencePanel({ experience, onAsk }) {
   const [expanded, setExpanded] = useState(0);
   return (
-    <section className="explorer-panel">
+    <section className="explorer-panel career-panel">
       <SectionTitle
         number="03"
         eyebrow="CAREER SIGNAL"

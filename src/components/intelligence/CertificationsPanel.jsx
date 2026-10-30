@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { External, SectionTitle } from "./ExplorerPanels";
 import ArchiveImage from "./ArchiveImage";
+import MobileArchivePicker from "./MobileArchivePicker";
 import useArchiveDescription from "./useArchiveDescription";
 
 const categoryOf = (cert) =>
@@ -152,6 +153,17 @@ export default function CertificationsPanel({ certifications }) {
         behind it.
       </SectionTitle>
       <div className="archive-layout">
+        <MobileArchivePicker
+          items={certifications}
+          selected={certificate}
+          label="certification"
+          onSelect={(cert) => {
+            setQuery("");
+            setSelection(cert._id || cert.name);
+            setPageSelection({ key: cert._id || cert.name, index: 0 });
+            setViewer(false);
+          }}
+        />
         <div className="archive-index">
           <label className="project-search">
             <span>Find a certification</span>
