@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const path = require('path');
 const fetch = require('node-fetch');
+const { generateCompletion } = require('./aiCompletion.cjs');
 const { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } = require('@simplewebauthn/server');
 const { PasskeyCredential } = require('./models');
 const { extractImagesFromPdfLinks } = require('./pdfExtractor');
@@ -816,7 +817,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.1' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.2', version: '2.2' });
 });
 
 // Database Knowledge Synthesizer:
@@ -1734,136 +1735,17 @@ ${projectsContext || 'Multiple enterprise and open-source applications built wit
 4. **Action Buttons Awareness**: Interactive action buttons (LinkedIn, GitHub, CV download, Project links) appear automatically below your message when relevant. ${willShowActionButtons ? 'ABSOLUTELY DO NOT write out raw URLs or links in your text response—the interactive buttons will handle it seamlessly!' : 'Guide visitors naturally to download his CV or connect on LinkedIn.'}
 5. **Language Match**: Always respond in the language the visitor used (English, Portuguese, Spanish, French, etc.).`;
 
-    // Use OpenRouter API with prioritized model tier
-    const fetch = require('node-fetch');
-    const AbortController = require('abort-controller');
-
-    let lastError = null;
-    
-    // Get OpenRouter API key from database settings (fallback to env variable)
+    // Keep provider retries within the browser request budget and reject truncated replies.
     let OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-    try {
-      const apiKeySetting = await Settings.findOne({ key: 'OPENROUTER_API_KEY' });
-      if (apiKeySetting && apiKeySetting.value) {
-        OPENROUTER_API_KEY = apiKeySetting.value;
-        console.log('• Using OpenRouter API key from database');
-      } else {
-        console.log('• Using OpenRouter API key from environment variables');
-      }
-    } catch (settingsError) {
-      console.warn('• Could not fetch settings from database, using env variable:', settingsError.message);
-    }
-    
-    if (!OPENROUTER_API_KEY) {
-      lastError = new Error('OPENROUTER_API_KEY not found in settings or environment variables');
-      console.error('', lastError.message);
-    } else {
-      // Prioritized models: top-tier ultra-fast models with free fallbacks
-      const openRouterModels = [
-        'deepseek/deepseek-chat',                 // Tier 1: Incredible reasoning, ultra-cheap (~$0.14/M tokens)
-        'google/gemini-2.0-flash-001',           // Tier 1: Lightning fast, highly accurate (~$0.10/M tokens)
-        'meta-llama/llama-3.3-70b-instruct',     // Tier 1: State-of-the-art open-weights
-        'openrouter/free',                       // Tier 2: OpenRouter automatic free tier routing
-        'nvidia/nemotron-3.5-lightning:free',    // Tier 2: Free model
-        'google/gemma-4-31b-it:free',            // Tier 2: Free model
-        'google/gemma-4-26b-a4b-it:free',        // Tier 2: Free model
-        'minimax/minimax-m3.1-flash:free',        // Tier 2: Free model
-        'liquid/lfm-2.5-2.6b:free'               // Tier 2: Free model
-      ];
+    const apiKeySetting = await Settings.findOne({ key: 'OPENROUTER_API_KEY' }).catch(() => null);
+    if (apiKeySetting?.value?.trim()) OPENROUTER_API_KEY = apiKeySetting.value.trim();
+    const configuredModels = process.env.OPENROUTER_MODELS?.split(',').map(model => model.trim()).filter(Boolean);
+    const completion = await generateCompletion({
+      apiKey: OPENROUTER_API_KEY, system: contextPrompt, message, history,
+      fetchImpl: fetch, ...(configuredModels?.length ? { models: configuredModels } : {}),
+    });
+    aiResponse = completion.response || '';
 
-      // Format conversation history for multi-turn context
-      const validHistory = Array.isArray(history)
-        ? history
-            .filter(item => item && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string')
-            .slice(-6)
-            .map(item => ({ role: item.role, content: item.content.trim() }))
-        : [];
-      
-      for (const modelName of openRouterModels) {
-        try {
-          console.log(`Trying OpenRouter model: ${modelName}...`);
-          
-          // 20-second timeout for reliable completions
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 20000);
-          
-          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-              'HTTP-Referer': 'https://tiago-dias.onrender.com',
-              'X-Title': 'Tiago Dias Portfolio'
-            },
-            body: JSON.stringify({
-              model: modelName,
-              messages: [
-                {
-                  role: 'system',
-                  content: contextPrompt
-                },
-                ...validHistory,
-                {
-                  role: 'user',
-                  content: message
-                }
-              ],
-              temperature: 0.7,
-              max_tokens: 800
-            }),
-            signal: controller.signal
-          });
-          
-          clearTimeout(timeout);
-
-          const data = await response.json();
-          
-          // Check for API errors
-          if (data.error) {
-            console.error(`• OpenRouter API Error (${modelName}):`, data.error.message || data.error);
-            lastError = new Error(data.error.message || JSON.stringify(data.error));
-            continue; // Try next model
-          }
-          
-          if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-            aiResponse = data.choices[0].message.content;
-            
-            // Remove <think> tags and their content from the response
-            aiResponse = aiResponse.replace(/<think>[\s\S]*?<\/think>\s*/g, '').trim();
-            
-            // If action buttons will be shown, strip any URLs from the response
-            if (willShowActionButtons) {
-              console.log('Stripping URLs from response');
-              aiResponse = aiResponse.replace(/https?:\/\/[^\s,;.!?]+\.?/gi, '');
-              aiResponse = aiResponse.replace(/www\.[^\s,;.!?]+\.?/gi, '');
-              aiResponse = aiResponse.replace(/\s*(at|on|in|via|through|using|clicking|click)\s+(the\s+)?(link|button|url)\s+(at\s+)?(the\s+)?(top|bottom|above|below)(\s+of\s+(this|the)\s+page)?/gi, '');
-              aiResponse = aiResponse.replace(/\s*using the button at the (top|bottom)/gi, '');
-              aiResponse = aiResponse.replace(/\s*at the (top|bottom) of (this|the) page/gi, '');
-              aiResponse = aiResponse.replace(/(connect|conectar|contatar)\s+(via|through|at|em|no)\s+(LinkedIn|GitHub|his\s+LinkedIn|o\s+LinkedIn)/gi, '');
-              aiResponse = aiResponse.replace(/\s*[,;]\s*\./g, '.');
-              aiResponse = aiResponse.replace(/\.\s*\./g, '.');
-              aiResponse = aiResponse.replace(/\s+/g, ' ').trim();
-            }
-            
-            console.log(`• Successfully got response from OpenRouter (${modelName})`);
-            break; // Success! Exit the loop
-          } else {
-            lastError = new Error(`Invalid response format from ${modelName}`);
-            continue; // Try next model
-          }
-        } catch (aiError) {
-          if (aiError.name === 'AbortError') {
-            console.error(`• OpenRouter API timeout (${modelName}): Request took longer than 20 seconds`);
-            lastError = new Error(`Timeout: ${modelName} took too long to respond`);
-          } else {
-            console.error(`OpenRouter API error (${modelName}):`, aiError.message);
-            lastError = aiError;
-          }
-          // Try next model
-        }
-      }
-    }
-    
     // Intelligent Database Knowledge Synthesizer fallback
     // If OpenRouter is unavailable, rate-limited, or times out, synthesize a smart answer from real database records!
     if (!aiResponse) {
@@ -2260,14 +2142,14 @@ ${projectsContext || 'Multiple enterprise and open-source applications built wit
         clientIp = '127.0.0.1';
       }
       
-      await AIChatLog.create({
+      AIChatLog.create({
         ip: clientIp,
         userQuestion: message,
         aiResponse: aiResponse,
         userAgent: req.get('user-agent'),
         responseTime: responseTime,
         tokenCount: estimatedTokens
-      });
+      }).catch(() => console.warn('Could not save AI interaction log'));
     } catch (logError) {
       console.error('Failed to log chat interaction:', logError);
       // Don't fail the response if logging fails
@@ -2275,6 +2157,9 @@ ${projectsContext || 'Multiple enterprise and open-source applications built wit
     
     res.json({ 
       response: aiResponse,
+      source: completion.source,
+      model: completion.model || null,
+      unavailableReason: completion.reason || null,
       scrollTarget: scrollTarget,
       shouldExpandTimeline: shouldExpandTimeline,
       aboutTab: aboutTab,
@@ -2726,7 +2611,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // MongoDB connection and server start
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
