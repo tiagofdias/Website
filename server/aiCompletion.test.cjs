@@ -13,13 +13,13 @@ const settings = {
   history: [],
 };
 
-test("rejects explicit truncation without treating Markdown style as provider failure", () => {
+test("accepts non-empty provider text using the original portfolio policy", () => {
   assert.equal(
     cleanCompletion({
       message: { content: "A full-looking sentence." },
       finish_reason: "length",
     }),
-    null,
+    "A full-looking sentence.",
   );
   assert.equal(
     cleanCompletion({
@@ -36,7 +36,7 @@ test("rejects explicit truncation without treating Markdown style as provider fa
     "A complete answer.",
   );
 });
-test("retries a truncated answer and sends the question only once", async () => {
+test("keeps provider text and sends the question only once", async () => {
   const bodies = [];
   const result = await generateCompletion({
     ...settings,
@@ -49,7 +49,8 @@ test("retries a truncated answer and sends the question only once", async () => 
     },
   });
   assert.equal(result.source, "llm");
-  assert.equal(bodies.length, 2);
+  assert.equal(bodies.length, 1);
+  assert.equal(result.finishReason, "length");
   assert.equal(bodies[0].stream, false);
   assert.equal(
     bodies[0].messages.filter((item) => item.role === "user").length,
@@ -216,4 +217,38 @@ test("accepts a valid text response without optional finish metadata", async () 
     }),
   });
   assert.equal(result.source, "llm");
+});
+
+test("restores the original connection-only timeout while the model generates", async () => {
+  const result = await generateCompletion({
+    ...settings,
+    models: ["original-provider"],
+    attemptTimeoutMs: 15,
+    fetchImpl: async (_, options) => ({
+      ok: true,
+      json: () =>
+        new Promise((resolve, reject) => {
+          const timer = setTimeout(
+            () =>
+              resolve({
+                choices: [
+                  {
+                    message: {
+                      content: "The completed answer after generation.",
+                    },
+                    finish_reason: "stop",
+                  },
+                ],
+              }),
+            70,
+          );
+          options.signal.addEventListener("abort", () => {
+            clearTimeout(timer);
+            reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+          });
+        }),
+    }),
+  });
+  assert.equal(result.source, "llm");
+  assert.equal(result.response, "The completed answer after generation.");
 });

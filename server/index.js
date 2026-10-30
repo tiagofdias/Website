@@ -817,7 +817,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.6', version: '2.6' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.7', version: '2.7' });
 });
 
 // Database Knowledge Synthesizer:
@@ -2144,6 +2144,7 @@ Preserve qualification completion status stated in the biography and records. Do
       response: aiResponse,
       source: completion.source,
       model: completion.model || null,
+      finishReason: completion.finishReason || null,
       unavailableReason: completion.reason || null,
       scrollTarget: scrollTarget,
       shouldExpandTimeline: shouldExpandTimeline,

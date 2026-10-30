@@ -12,11 +12,7 @@ const DEFAULT_MODELS = [
 ];
 
 function cleanCompletion(choice) {
-  if (
-    !choice ||
-    ["length", "content_filter", "error"].includes(choice.finish_reason)
-  )
-    return null;
+  if (!choice) return null;
   const content = choice.message?.content;
   if (typeof content !== "string") return null;
   const text = content.replace(/<think>[\s\S]*?<\/think>\s*/g, "").trim();
@@ -32,7 +28,7 @@ async function generateCompletion({
   fetchImpl,
   models = DEFAULT_MODELS,
   attemptTimeoutMs = 20000,
-  totalTimeoutMs = models.length * attemptTimeoutMs,
+  totalTimeoutMs = Infinity,
 }) {
   if (!apiKey)
     return { response: null, source: "profile", reason: "not_configured" };
@@ -64,6 +60,7 @@ async function generateCompletion({
       () => controller.abort(),
       Math.min(attemptTimeoutMs, remaining),
     );
+    let bodyTimer;
     try {
       const response = await fetchImpl(
         "https://openrouter.ai/api/v1/chat/completions",
@@ -89,6 +86,15 @@ async function generateCompletion({
           }),
         },
       );
+      // Match the original portfolio: the connection timer ends at response
+      // headers. A provider that is still generating must not be cut off here.
+      clearTimeout(timer);
+      if (Number.isFinite(totalTimeoutMs)) {
+        bodyTimer = setTimeout(
+          () => controller.abort(),
+          Math.max(1, totalTimeoutMs - (Date.now() - started)),
+        );
+      }
       const data = await response.json();
       if (!response.ok || data.error) {
         if (response.status === 401) {
@@ -101,7 +107,12 @@ async function generateCompletion({
       }
       const text = cleanCompletion(data.choices?.[0]);
       if (text)
-        return { response: text, source: "llm", model: data.model || model };
+        return {
+          response: text,
+          source: "llm",
+          model: data.model || model,
+          finishReason: data.choices[0].finish_reason || null,
+        };
       reason = "incomplete_response";
     } catch (error) {
       reason =
@@ -110,6 +121,7 @@ async function generateCompletion({
           : "provider_unavailable";
     } finally {
       clearTimeout(timer);
+      clearTimeout(bodyTimer);
     }
   }
   return { response: null, source: "profile", reason };
