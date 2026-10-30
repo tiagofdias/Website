@@ -817,7 +817,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.2', version: '2.2' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.3', version: '2.3' });
 });
 
 // Database Knowledge Synthesizer:
@@ -1746,34 +1746,14 @@ ${projectsContext || 'Multiple enterprise and open-source applications built wit
     });
     aiResponse = completion.response || '';
 
-    // Intelligent Database Knowledge Synthesizer fallback
-    // If OpenRouter is unavailable, rate-limited, or times out, synthesize a smart answer from real database records!
+    // Keep fallback metadata until navigation variables have been initialized below.
+    let profileReference = null;
     if (!aiResponse) {
-      console.warn('• OpenRouter API unavailable. Synthesizing intelligent response from database knowledge base...');
-      const synthesized = synthesizeDatabaseResponse({
-        message,
-        projects,
-        certifications,
-        proExps,
-        education,
-        aboutData,
-        aboutText,
-        aboutEmail,
-        articles
+      profileReference = synthesizeDatabaseResponse({
+        message, projects, certifications, proExps, education,
+        aboutData, aboutText, aboutEmail, articles,
       });
-      aiResponse = synthesized.response;
-      if (synthesized.scrollTarget && !scrollTarget) {
-        scrollTarget = synthesized.scrollTarget;
-      }
-      if (synthesized.shouldExpandTimeline) {
-        shouldExpandTimeline = true;
-      }
-      if (synthesized.aboutTab && !aboutTab) {
-        aboutTab = synthesized.aboutTab;
-      }
-      if (synthesized.actionButtons && !actionButtons) {
-        actionButtons = synthesized.actionButtons;
-      }
+      aiResponse = profileReference.response;
     }
 
     // Detect language from the message
@@ -2117,6 +2097,13 @@ ${projectsContext || 'Multiple enterprise and open-source applications built wit
           action: matchedCertification.pdfPath
         }
       ];
+    }
+
+    if (profileReference) {
+      scrollTarget = profileReference.scrollTarget || scrollTarget;
+      shouldExpandTimeline = profileReference.shouldExpandTimeline || shouldExpandTimeline;
+      aboutTab = profileReference.aboutTab || aboutTab;
+      actionButtons = profileReference.actionButtons || actionButtons;
     }
 
     // Log AI chat interaction to database
