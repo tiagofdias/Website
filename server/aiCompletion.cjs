@@ -34,6 +34,8 @@ async function generateCompletion({
     return { response: null, source: "profile", reason: "not_configured" };
   const started = Date.now();
   let reason = "provider_unavailable";
+  // Status counts explain exhausted routes without exposing API keys or raw errors.
+  const providerStatusCounts = {};
   const conversation = Array.isArray(history)
     ? history
         .filter(
@@ -97,6 +99,8 @@ async function generateCompletion({
       }
       const data = await response.json();
       if (!response.ok || data.error) {
+        const status = Number(response.status) || 0;
+        providerStatusCounts[status] = (providerStatusCounts[status] || 0) + 1;
         if (response.status === 401) {
           reason = "provider_configuration";
           continue;
@@ -124,7 +128,8 @@ async function generateCompletion({
       clearTimeout(bodyTimer);
     }
   }
-  return { response: null, source: "profile", reason };
+  if (providerStatusCounts[429]) reason = "provider_rate_limited";
+  return { response: null, source: "profile", reason, providerStatusCounts };
 }
 
 module.exports = { generateCompletion, cleanCompletion };

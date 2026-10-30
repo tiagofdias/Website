@@ -82,7 +82,16 @@ test("reports provider fallback without calling it an AI response", async () => 
   });
   assert.equal(invalid.source, "profile");
   assert.equal(invalid.reason, "provider_configuration");
+  assert.deepEqual(invalid.providerStatusCounts, {401: 9});
   assert.equal(calls, 9);
+});
+
+test("identifies rate limits when paid routes lack credit and free routes are throttled", async () => {
+  let calls = 0;
+  const result = await generateCompletion({ ...settings, models: ["paid", "free"], fetchImpl: async () => ({ok: false, status: ++calls === 1 ? 402 : 429, json: async () => ({error: {message: "Not included in diagnostics"}})}) });
+  assert.equal(result.reason, "provider_rate_limited");
+  assert.deepEqual(result.providerStatusCounts, {402: 1, 429: 1});
+  assert.equal(calls, 2);
 });
 test("aborts provider body reads within the total retry budget", async () => {
   const start = Date.now();

@@ -818,7 +818,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.8', version: '2.8' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.9', version: '2.9' });
 });
 
 // Database Knowledge Synthesizer:
@@ -2148,6 +2148,7 @@ Keep ordinary answers under 160 words, and finish the answer within that space. 
       model: completion.model || null,
       finishReason: completion.finishReason || null,
       unavailableReason: completion.reason || null,
+      providerStatusCounts: completion.providerStatusCounts || null,
       scrollTarget: scrollTarget,
       shouldExpandTimeline: shouldExpandTimeline,
       aboutTab: aboutTab,
