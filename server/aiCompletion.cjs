@@ -1,14 +1,10 @@
-// Original portfolio order, restored from commit 8b4a61c.
+// The original portfolio's automatic free route first; no paid model attempts.
 const DEFAULT_MODELS = [
-  "deepseek/deepseek-chat",
-  "google/gemini-2.0-flash-001",
-  "meta-llama/llama-3.3-70b-instruct",
   "openrouter/free",
-  "nvidia/nemotron-3.5-lightning:free",
-  "google/gemma-4-31b-it:free",
-  "google/gemma-4-26b-a4b-it:free",
-  "minimax/minimax-m3.1-flash:free",
   "liquid/lfm-2.5-2.6b:free",
+  "nvidia/nemotron-3.5-lightning:free",
+  "google/gemma-4-26b-a4b-it:free",
+  "google/gemma-4-31b-it:free",
 ];
 
 function cleanCompletion(choice) {

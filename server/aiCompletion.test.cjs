@@ -82,15 +82,23 @@ test("reports provider fallback without calling it an AI response", async () => 
   });
   assert.equal(invalid.source, "profile");
   assert.equal(invalid.reason, "provider_configuration");
-  assert.deepEqual(invalid.providerStatusCounts, {401: 9});
-  assert.equal(calls, 9);
+  assert.deepEqual(invalid.providerStatusCounts, { 401: 5 });
+  assert.equal(calls, 5);
 });
 
 test("identifies rate limits when paid routes lack credit and free routes are throttled", async () => {
   let calls = 0;
-  const result = await generateCompletion({ ...settings, models: ["paid", "free"], fetchImpl: async () => ({ok: false, status: ++calls === 1 ? 402 : 429, json: async () => ({error: {message: "Not included in diagnostics"}})}) });
+  const result = await generateCompletion({
+    ...settings,
+    models: ["paid", "free"],
+    fetchImpl: async () => ({
+      ok: false,
+      status: ++calls === 1 ? 402 : 429,
+      json: async () => ({ error: { message: "Not included in diagnostics" } }),
+    }),
+  });
   assert.equal(result.reason, "provider_rate_limited");
-  assert.deepEqual(result.providerStatusCounts, {402: 1, 429: 1});
+  assert.deepEqual(result.providerStatusCounts, { 402: 1, 429: 1 });
   assert.equal(calls, 2);
 });
 test("aborts provider body reads within the total retry budget", async () => {
@@ -187,7 +195,7 @@ test("lets a provider finish within the original per-attempt window", async () =
   assert.equal(result.source, "llm");
 });
 
-test("reaches the original ninth route after all earlier routes fail", async () => {
+test("tries the free router first and reaches the last free route after failures", async () => {
   const attempted = [];
   const result = await generateCompletion({
     ...settings,
@@ -197,7 +205,7 @@ test("reaches the original ninth route after all earlier routes fail", async () 
       attempted.push(body.model);
       assert.equal(body.temperature, 0.7);
       assert.equal(body.max_tokens, 800);
-      return attempted.length < 9
+      return attempted.length < 5
         ? {
             ok: false,
             status: attempted.length === 1 ? 401 : 429,
@@ -209,9 +217,13 @@ test("reaches the original ninth route after all earlier routes fail", async () 
     },
   });
   assert.equal(result.source, "llm");
-  assert.equal(attempted.length, 9);
-  assert.equal(attempted[1], "google/gemini-2.0-flash-001");
-  assert.equal(attempted[8], "liquid/lfm-2.5-2.6b:free");
+  assert.equal(attempted.length, 5);
+  assert.equal(attempted[0], "openrouter/free");
+  assert.equal(attempted[1], "liquid/lfm-2.5-2.6b:free");
+  assert.equal(attempted[4], "google/gemma-4-31b-it:free");
+  assert.ok(
+    attempted.every((id) => id === "openrouter/free" || id.endsWith(":free")),
+  );
   assert.match(result.response, /cannot confirm his age/);
 });
 

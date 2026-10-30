@@ -11,6 +11,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const fetch = require('node-fetch');
 const { generateCompletion } = require('./aiCompletion.cjs');
+const { createPublicAnswerService } = require('./publicAnswerService.cjs');
 const { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } = require('@simplewebauthn/server');
 const { PasskeyCredential } = require('./models');
 const { extractImagesFromPdfLinks } = require('./pdfExtractor');
@@ -301,6 +302,28 @@ async function downloadImagesFromDriveLinks(driveLinks) {
 }
 
 const { Project, Certification, ProExp, Education, Article, About, AIChatLog, VisitorLog, Settings } = require('./models');
+const getPublicAnswers = createPublicAnswerService({
+  loadRecords: async () => {
+    const [projects, experience, education, certifications] = await Promise.all([
+      Project.find({ enabled: true }).select('_id projectid name description tags source_code_link2 order').sort({ order: 1, _id: 1 }).lean(),
+      ProExp.find({ enabled: true }).select('title company_name date points order').sort({ order: 1, _id: 1 }).lean(),
+      Education.find({ enabled: true }).select('title company_name date order').sort({ order: 1, _id: 1 }).lean(),
+      Certification.find({ enabled: true }).select('name description tags order').sort({ order: 1, _id: 1 }).lean(),
+    ]);
+    return { projects, experience, education, certifications };
+  },
+  readCache: async () => (await Settings.findOne({ key: 'PORTFOLIO_PUBLIC_ANSWERS' }).lean())?.value,
+  writeCache: value => Settings.findOneAndUpdate({ key: 'PORTFOLIO_PUBLIC_ANSWERS' }, { value, description: 'Public saved answers derived from portfolio records' }, { upsert: true }),
+});
+app.get('/api/chat/answers', async (_req, res) => {
+  try {
+    res.set('Cache-Control', 'public, max-age=30');
+    res.json(await getPublicAnswers());
+  } catch (error) {
+    console.error('Saved answers unavailable:', error.message);
+    res.status(503).json({ error: 'Saved answers temporarily unavailable' });
+  }
+});
 // Projects CRUD
  app.get('/api/projects', async (req, res) => {
   try {
@@ -818,7 +841,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.9', version: '2.9' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 3.0', version: '3.0' });
 });
 
 // Database Knowledge Synthesizer:
@@ -1749,11 +1772,11 @@ Keep ordinary answers under 160 words, and finish the answer within that space. 
 4. **Action Buttons Awareness**: The interface supplies contextual project, CV, and contact buttons separately. Do not duplicate them in a footer. When the visitor explicitly asks for a link, use a complete Markdown link with its real destination, never an empty or partial link.
 5. **Language Match**: Always respond in the language the visitor used (English, Portuguese, Spanish, French, etc.).`;
 
-    // Preserve the original full provider chain and its 20-second attempt windows.
+    // Use free routing with the original 20-second connection windows.
     let OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
     const apiKeySetting = await Settings.findOne({ key: 'OPENROUTER_API_KEY' }).catch(() => null);
     if (apiKeySetting?.value?.trim()) OPENROUTER_API_KEY = apiKeySetting.value.trim();
-    const configuredModels = process.env.OPENROUTER_MODELS?.split(',').map(model => model.trim()).filter(Boolean);
+    const configuredModels = process.env.OPENROUTER_MODELS?.split(',').map(model => model.trim()).filter(model => model === 'openrouter/free' || model.endsWith(':free'));
     const completion = await generateCompletion({
       apiKey: OPENROUTER_API_KEY, system: contextPrompt, message, history,
       fetchImpl: fetch, ...(configuredModels?.length ? { models: configuredModels } : {}),
