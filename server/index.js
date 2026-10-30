@@ -817,7 +817,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.4', version: '2.4' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.5', version: '2.5' });
 });
 
 // Database Knowledge Synthesizer:
@@ -1725,14 +1725,25 @@ Visitors are actively browsing this website and chatting with you through the ch
 ## TIAGO'S PROJECTS:
 ${projectsContext || 'Multiple enterprise and open-source applications built with modern stacks (Condomix, Sonar, Automix, Blood-Pressure-Monitor, Bulky_MVC, Comparador-DIGI).'}
 
+## CURRENT OWNER-MANAGED RECORDS (take precedence over summaries above):
+Reference date: ${new Date().toISOString().slice(0, 10)}.
+Biography: ${aboutText || 'Not supplied.'}
+Professional experience:
+${experienceContext || 'No additional records supplied.'}
+Education:
+${educationContext || 'No additional records supplied.'}
+Certifications:
+${certificationsContext || 'No additional records supplied.'}
+Preserve qualification completion status stated in the biography and records. Do not invent an expected graduation date or describe an awarded degree as still in progress. If completion status is not documented, leave it unspecified.
+
 ## CRITICAL BEHAVIOR & REASONING RULES:
 1. **Real LLM Intelligence & Out-of-the-Box Inquiries**: You are a genuinely smart AI machine, NOT a keyword matcher. When users ask out-of-the-box, hypothetical, or complex questions (e.g. "Is he looking for remote jobs?", "Can he build web scrapers in Python?", "Would he be a great tech lead?", "Compare .NET and Node.js for his stack", "Explain how his master's thesis ties into his current work", "Tell me a joke about coding"):
    - Think and reason deeply based on his comprehensive background.
    - For career/availability questions: Tiago is based in Lisbon, Portugal, but is actively open to **100% Remote**, **Hybrid**, or **Relocation** opportunities worldwide. Warmly invite them to get in touch via email (${aboutEmail || 'tiagodias.cl@gmail.com'}) or LinkedIn.
    - For technical questions: Analyze his stack (.NET 8, Python, LLMs, React, Node.js, MongoDB, Docker, Enterprise Banking experience) and give a thoughtful, reasoned technical evaluation of his competence.
 2. **Third-Person Perspective**: Always refer to Tiago in the third person ("he", "his", "Tiago"). You are speaking TO the visitor ABOUT Tiago.
-3. **Tone & Style**: Warm, professional, articulate, and concise (typically 2 to 4 well-structured sentences). Highlight key terms with **bold text** where helpful.
-4. **Action Buttons Awareness**: Interactive action buttons (LinkedIn, GitHub, CV download, Project links) appear automatically below your message when relevant. ${willShowActionButtons ? 'ABSOLUTELY DO NOT write out raw URLs or links in your text response—the interactive buttons will handle it seamlessly!' : 'Guide visitors naturally to download his CV or connect on LinkedIn.'}
+3. **Tone & Style**: Be professional, factual, and concise. Use real Markdown paragraphs and lists with line breaks, never a dense paragraph of inline bullet markers. For a recruiter briefing, use three short bullets: current work, strengths, and relevant experience (roughly 100-140 words). No emoji. Do not append contact details or promotional link footers unless the visitor asks for them. Highlight only key terms with **bold text**.
+4. **Action Buttons Awareness**: The interface supplies contextual project, CV, and contact buttons separately. Do not duplicate them in a footer. When the visitor explicitly asks for a link, use a complete Markdown link with its real destination, never an empty or partial link.
 5. **Language Match**: Always respond in the language the visitor used (English, Portuguese, Spanish, French, etc.).`;
 
     // Keep provider retries within the browser request budget and reject truncated replies.
@@ -1912,19 +1923,7 @@ ${projectsContext || 'Multiple enterprise and open-source applications built wit
       ];
       console.log('  → Detected: LinkedIn mention - adding contact buttons');
       
-      // Strip LinkedIn URLs from response - be aggressive!
-      console.log('Original response with LinkedIn URL:', aiResponse);
-      aiResponse = aiResponse.replace(/https?:\/\/[^\s]+/gi, ''); // Remove ALL URLs
-      aiResponse = aiResponse.replace(/www\.[^\s]+/gi, ''); // Remove www. URLs
-      // Remove phrases like "através do LinkedIn em" or "via LinkedIn at"
-      aiResponse = aiResponse.replace(/(através|via|at|em|no|on|in)\s+(do\s+)?LinkedIn\s+(em|at|in)?/gi, '');
-      aiResponse = aiResponse.replace(/conectar através do/gi, 'conectar com ele via');
-      aiResponse = aiResponse.replace(/contactá-lo através do/gi, 'contactá-lo no');
-      // Clean up punctuation
-      aiResponse = aiResponse.replace(/\s*\.\s*\./g, '.'); // Fix double periods
-      aiResponse = aiResponse.replace(/\s*\.\s*Também/gi, '. Também'); // Fix spacing
-      aiResponse = aiResponse.replace(/\s+/g, ' ').trim();
-      console.log('After URL stripping:', aiResponse);
+      // Navigation buttons are metadata. Preserve the Markdown response verbatim.
     }
     
     // Detect if AI mentions specific projects (add project buttons)
@@ -1963,9 +1962,7 @@ ${projectsContext || 'Multiple enterprise and open-source applications built wit
           });
         }
         
-        // Strip GitHub URLs from response when project buttons shown
-        aiResponse = aiResponse.replace(/https?:\/\/[^\s]+github[^\s]*/gi, '');
-        aiResponse = aiResponse.replace(/\s+/g, ' ').trim();
+        // Keep source links and list structure intact in the response body.
       }
     }
     
