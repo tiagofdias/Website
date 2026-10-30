@@ -41,7 +41,7 @@ Live validation after deployment: backend version 3.0 served 31 saved topics in 
 
 Public projects and the admin editor open a shared media gallery containing all screenshots and the demo video. Visitors can switch via thumbnails, previous/next buttons or arrow keys, zoom screenshots, reset Fit, and inspect actual pixel size. Zoomed screenshots support mouse dragging and touch scrolling. The active underlying video unmounts while the gallery is open. Escape closes only the gallery and restores focus.
 
-The archive gives media a taller column beside project details on large desktops and crops the inline screenshot around its center; the gallery preserves the complete image with Fit. Direct videos and original Drive uploads autoplay muted; /preview embeds are used only as a fallback. The saved Pluxee Drive demo was tested in a real browser: playback advanced past five seconds after Play, with readyState 4 and no video error. Provider content and sharing settings remain external dependencies.
+The archive gives media a taller column beside project details on large desktops and fits the entire inline screenshot without cropping; the gallery preserves the complete image with Fit. Direct videos and original Drive uploads autoplay muted; /preview embeds are used only as a fallback. The saved Pluxee Drive demo was tested in a real browser: playback advanced past five seconds after Play, with readyState 4 and no video error. Provider content and sharing settings remain external dependencies.
 
 Regression checks: verify-media-gallery.mjs, verify-image-previews.mjs, verify-media-and-ai.mjs, verify-work-viewport.mjs and verify-admin-workspace.mjs.
 
