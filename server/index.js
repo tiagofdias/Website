@@ -358,6 +358,7 @@ const { Project, Certification, ProExp, Education, Article, About, AIChatLog, Vi
       enabled: projectData.enabled !== undefined ? projectData.enabled : true,
       tags: projectData.tags || [],
       images: projectData.images || [],
+      demo_video_url: projectData.demo_video_url || '',
       pdf_links: projectData.pdf_links || [],
       source_code_link: projectData.source_code_link || '',
       source_code_link2: projectData.source_code_link2 || '',
@@ -417,7 +418,7 @@ app.put('/api/projects/:id', auth, async (req, res) => {
     const project = await Project.findByIdAndUpdate(
       req.params.id, 
       projectData, 
-      { new: true }
+      { new: true, runValidators: true }
     );
     res.json(project);
 
@@ -817,7 +818,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.7', version: '2.7' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.8', version: '2.8' });
 });
 
 // Database Knowledge Synthesizer:
@@ -1736,6 +1737,7 @@ Certifications:
 ${certificationsContext || 'No additional records supplied.'}
 Answer personal questions only from documented facts. If age or date of birth is not recorded, say that it is not documented; never infer it from education or work dates.
 Preserve qualification completion status stated in the biography and records. Do not invent an expected graduation date or describe an awarded degree as still in progress. If completion status is not documented, leave it unspecified.
+Keep ordinary answers under 160 words, and finish the answer within that space. Answer the specific question first, then at most three supporting bullets. Avoid multi-level outlines, repeated introductions, and long section headings. Only expand when the visitor explicitly requests detail; even then, finish within 400 words. Do not repeat an incomplete trailing phrase from the biography.
 
 ## CRITICAL BEHAVIOR & REASONING RULES:
 1. **Real LLM Intelligence & Out-of-the-Box Inquiries**: You are a genuinely smart AI machine, NOT a keyword matcher. When users ask out-of-the-box, hypothetical, or complex questions (e.g. "Is he looking for remote jobs?", "Can he build web scrapers in Python?", "Would he be a great tech lead?", "Compare .NET and Node.js for his stack", "Explain how his master's thesis ties into his current work", "Tell me a joke about coding"):

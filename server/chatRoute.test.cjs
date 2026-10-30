@@ -146,4 +146,5 @@ test("briefing prompt includes current records and forbids invented education st
   );
   assert.match(result.systemPrompt, /three short bullets/);
   assert.match(result.systemPrompt, /Do not append contact details/);
+  assert.match(result.systemPrompt, /ordinary answers under 160 words/);
 });

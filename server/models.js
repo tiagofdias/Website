@@ -35,6 +35,15 @@ const ProjectSchema = new mongoose.Schema({
     }
   }],
   pdf_links: [String], // Array of PDF URLs to extract images from (Google Drive or other sources)
+  demo_video_url: {
+    type: String,
+    trim: true,
+    default: '',
+    validate: {
+      validator: value => !value || /^(https?:\/\/|\/[^/])[^\s"<>]+$/i.test(value),
+      message: 'Use a public HTTP(S) video URL or a local /videos/ path.'
+    }
+  },
   source_code_link: {
     type: String,
     validate: {
