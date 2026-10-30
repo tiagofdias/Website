@@ -817,7 +817,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.5', version: '2.5' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 2.6', version: '2.6' });
 });
 
 // Database Knowledge Synthesizer:
@@ -1734,6 +1734,7 @@ Education:
 ${educationContext || 'No additional records supplied.'}
 Certifications:
 ${certificationsContext || 'No additional records supplied.'}
+Answer personal questions only from documented facts. If age or date of birth is not recorded, say that it is not documented; never infer it from education or work dates.
 Preserve qualification completion status stated in the biography and records. Do not invent an expected graduation date or describe an awarded degree as still in progress. If completion status is not documented, leave it unspecified.
 
 ## CRITICAL BEHAVIOR & REASONING RULES:
@@ -1746,7 +1747,7 @@ Preserve qualification completion status stated in the biography and records. Do
 4. **Action Buttons Awareness**: The interface supplies contextual project, CV, and contact buttons separately. Do not duplicate them in a footer. When the visitor explicitly asks for a link, use a complete Markdown link with its real destination, never an empty or partial link.
 5. **Language Match**: Always respond in the language the visitor used (English, Portuguese, Spanish, French, etc.).`;
 
-    // Keep provider retries within the browser request budget and reject truncated replies.
+    // Preserve the original full provider chain and its 20-second attempt windows.
     let OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
     const apiKeySetting = await Settings.findOne({ key: 'OPENROUTER_API_KEY' }).catch(() => null);
     if (apiKeySetting?.value?.trim()) OPENROUTER_API_KEY = apiKeySetting.value.trim();

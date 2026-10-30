@@ -1,21 +1,26 @@
+// Original portfolio order, restored from commit 8b4a61c.
 const DEFAULT_MODELS = [
   "deepseek/deepseek-chat",
+  "google/gemini-2.0-flash-001",
   "meta-llama/llama-3.3-70b-instruct",
   "openrouter/free",
+  "nvidia/nemotron-3.5-lightning:free",
+  "google/gemma-4-31b-it:free",
+  "google/gemma-4-26b-a4b-it:free",
+  "minimax/minimax-m3.1-flash:free",
+  "liquid/lfm-2.5-2.6b:free",
 ];
 
 function cleanCompletion(choice) {
-  if (!choice || !["stop", "end_turn"].includes(choice.finish_reason))
+  if (
+    !choice ||
+    ["length", "content_filter", "error"].includes(choice.finish_reason)
+  )
     return null;
   const content = choice.message?.content;
   if (typeof content !== "string") return null;
   const text = content.replace(/<think>[\s\S]*?<\/think>\s*/g, "").trim();
-  if (
-    !text ||
-    (text.match(/\*\*/g) || []).length % 2 ||
-    (text.match(/```/g) || []).length % 2
-  )
-    return null;
+  if (!text) return null;
   return text;
 }
 
@@ -26,8 +31,8 @@ async function generateCompletion({
   history,
   fetchImpl,
   models = DEFAULT_MODELS,
-  totalTimeoutMs = 28000,
-  attemptTimeoutMs = 10000,
+  attemptTimeoutMs = 20000,
+  totalTimeoutMs = models.length * attemptTimeoutMs,
 }) {
   if (!apiKey)
     return { response: null, source: "profile", reason: "not_configured" };
@@ -50,16 +55,14 @@ async function generateCompletion({
     conversation.at(-1)?.content === message.trim()
   )
     conversation.pop();
-  const candidates = [...new Set(models)].slice(0, 3);
-  for (const [index, model] of candidates.entries()) {
+  const candidates = [...new Set(models)];
+  for (const model of candidates) {
     const remaining = totalTimeoutMs - (Date.now() - started);
     if (remaining <= 0) break;
     const controller = new AbortController();
     const timer = setTimeout(
       () => controller.abort(),
-      index === candidates.length - 1
-        ? remaining
-        : Math.min(attemptTimeoutMs, remaining),
+      Math.min(attemptTimeoutMs, remaining),
     );
     try {
       const response = await fetchImpl(
@@ -81,8 +84,8 @@ async function generateCompletion({
               ...conversation,
               { role: "user", content: message },
             ],
-            temperature: 0.4,
-            max_tokens: 1200,
+            temperature: 0.7,
+            max_tokens: 800,
           }),
         },
       );
@@ -90,7 +93,7 @@ async function generateCompletion({
       if (!response.ok || data.error) {
         if (response.status === 401) {
           reason = "provider_configuration";
-          break;
+          continue;
         }
         if (response.status === 402 || response.status === 403)
           reason = "provider_configuration";

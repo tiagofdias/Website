@@ -13,7 +13,7 @@ const settings = {
   history: [],
 };
 
-test("rejects truncated or unfinished completions", () => {
+test("rejects explicit truncation without treating Markdown style as provider failure", () => {
   assert.equal(
     cleanCompletion({
       message: { content: "A full-looking sentence." },
@@ -26,7 +26,7 @@ test("rejects truncated or unfinished completions", () => {
       message: { content: "An unfinished **bold answer" },
       finish_reason: "stop",
     }),
-    null,
+    "An unfinished **bold answer",
   );
   assert.equal(
     cleanCompletion({
@@ -81,7 +81,7 @@ test("reports provider fallback without calling it an AI response", async () => 
   });
   assert.equal(invalid.source, "profile");
   assert.equal(invalid.reason, "provider_configuration");
-  assert.equal(calls, 1);
+  assert.equal(calls, 9);
 });
 test("aborts provider body reads within the total retry budget", async () => {
   const start = Date.now();
@@ -132,12 +132,12 @@ test("still tries the free route when a paid model has no credits", async () => 
   assert.deepEqual(attempted, ["paid-model", "openrouter/free"]);
 });
 
-test("lets the final provider finish within the remaining overall budget", async () => {
+test("lets a provider finish within the original per-attempt window", async () => {
   const result = await generateCompletion({
     ...settings,
     models: ["paid-model", "openrouter/free"],
     totalTimeoutMs: 180,
-    attemptTimeoutMs: 20,
+    attemptTimeoutMs: 80,
     fetchImpl: async (_, options) => {
       if (JSON.parse(options.body).model === "paid-model")
         return {
@@ -173,6 +173,47 @@ test("lets the final provider finish within the remaining overall budget", async
           }),
       };
     },
+  });
+  assert.equal(result.source, "llm");
+});
+
+test("reaches the original ninth route after all earlier routes fail", async () => {
+  const attempted = [];
+  const result = await generateCompletion({
+    ...settings,
+    message: "How old is he?",
+    fetchImpl: async (_, options) => {
+      const body = JSON.parse(options.body);
+      attempted.push(body.model);
+      assert.equal(body.temperature, 0.7);
+      assert.equal(body.max_tokens, 800);
+      return attempted.length < 9
+        ? {
+            ok: false,
+            status: attempted.length === 1 ? 401 : 429,
+            json: async () => ({ error: { message: "Route unavailable" } }),
+          }
+        : reply(
+            "His date of birth is not documented, so I cannot confirm his age.",
+          );
+    },
+  });
+  assert.equal(result.source, "llm");
+  assert.equal(attempted.length, 9);
+  assert.equal(attempted[1], "google/gemini-2.0-flash-001");
+  assert.equal(attempted[8], "liquid/lfm-2.5-2.6b:free");
+  assert.match(result.response, /cannot confirm his age/);
+});
+
+test("accepts a valid text response without optional finish metadata", async () => {
+  const result = await generateCompletion({
+    ...settings,
+    fetchImpl: async () => ({
+      ok: true,
+      json: async () => ({
+        choices: [{ message: { content: "A valid provider answer." } }],
+      }),
+    }),
   });
   assert.equal(result.source, "llm");
 });
