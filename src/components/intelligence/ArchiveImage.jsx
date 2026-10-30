@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { imageSources } from "../../utils/imageSources";
 export default function ArchiveImage({ src, alt }) {
   const [state, setState] = useState("loading");
+  const [attempt, setAttempt] = useState(0);
+  const sources = imageSources(src);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
@@ -28,10 +31,14 @@ export default function ArchiveImage({ src, alt }) {
         </span>
       )}
       <img
-        src={src}
+        src={sources[attempt]}
         alt={alt}
         onLoad={loaded}
-        onError={() => setState("error")}
+        referrerPolicy="no-referrer"
+        onError={() => {
+          if (attempt + 1 < sources.length) setAttempt(attempt + 1);
+          else setState("error");
+        }}
         style={{ opacity: state === "ready" ? 1 : 0 }}
       />
     </>

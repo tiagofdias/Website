@@ -67,7 +67,7 @@ function CredentialViewer({ certificate, onClose }) {
       </header>
       <div className="credential-document">
         {images.length > 0 ? (
-          <img
+          <ArchiveImage
             key={images[page]}
             src={images[page]}
             alt={`${certificate.name}, page ${page + 1}`}

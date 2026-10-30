@@ -318,11 +318,13 @@ export function WorkPanel({ projects, onAsk }) {
         >
           ×
         </button>
-        <img
-          key={source}
-          src={source}
-          alt={project?.name || "Project screenshot"}
-        />
+        <div className="archive-lightbox-media">
+          <ArchiveImage
+            key={source}
+            src={source}
+            alt={project?.name || "Project screenshot"}
+          />
+        </div>
       </dialog>
     </section>
   );

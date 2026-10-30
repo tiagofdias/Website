@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Field, Icon } from "./AdminUI";
+import { Button, Field, Icon, Modal } from "./AdminUI";
 import { safeMedia } from "./adminConfig";
+import ArchiveImage from "../intelligence/ArchiveImage";
 export const FormSection = ({ title, description, children }) => (
   <section className="cms-form-section">
     <div className="cms-section-heading">
@@ -11,6 +12,7 @@ export const FormSection = ({ title, description, children }) => (
   </section>
 );
 function SourceList({ label, values = [], onChange, kind = "source", hint }) {
+  const [preview, setPreview] = useState(null);
   return (
     <div className="cms-source-list">
       <div className="cms-label-row">
@@ -23,7 +25,19 @@ function SourceList({ label, values = [], onChange, kind = "source", hint }) {
       {values.map((value, index) => (
         <div className="cms-source-row" key={index}>
           {kind === "screenshot" && safeMedia(value) && (
-            <img src={value} alt={`Screenshot ${index + 1}`} loading="lazy" />
+            <button
+              type="button"
+              className="cms-image-preview"
+              aria-label={`Preview screenshot ${index + 1}`}
+              onClick={() => setPreview({ source: value, index })}
+            >
+              <ArchiveImage
+                key={value}
+                src={value}
+                alt={`Screenshot ${index + 1}`}
+              />
+              <span className="cms-preview-caption">Enlarge ↗</span>
+            </button>
           )}
           <Field
             label={`${kind[0].toUpperCase() + kind.slice(1)} ${index + 1} URL`}
@@ -57,6 +71,35 @@ function SourceList({ label, values = [], onChange, kind = "source", hint }) {
       >
         Add {kind}
       </Button>
+      {preview && (
+        <Modal
+          titleId="cms-image-preview-title"
+          className="cms-image-dialog"
+          onClose={() => setPreview(null)}
+        >
+          <header className="cms-modal-header">
+            <h2 id="cms-image-preview-title">Screenshot {preview.index + 1}</h2>
+            <button
+              type="button"
+              className="cms-icon-button"
+              aria-label="Close image preview"
+              onClick={() => setPreview(null)}
+            >
+              <Icon name="close" />
+            </button>
+          </header>
+          <div className="cms-image-dialog-media">
+            <ArchiveImage
+              key={preview.source}
+              src={preview.source}
+              alt={`Screenshot ${preview.index + 1}, full preview`}
+            />
+          </div>
+          <p className="cms-help">
+            Google Drive images must be shared with “Anyone with the link”.
+          </p>
+        </Modal>
+      )}
     </div>
   );
 }

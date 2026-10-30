@@ -2406,3 +2406,26 @@
 .cms-editor-body {
   scroll-padding-block: 12px;
 }
+.cms-image-preview {
+  position: relative;
+  flex: 0 0 112px;
+  width: 112px;
+  height: 94px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #52718a;
+  border-radius: 6px;
+  background: #0b1723;
+  cursor: zoom-in;
+}
+.cms-image-preview img { width: 100%; height: 100%; object-fit: contain; }
+.cms-image-preview .archive-preview-status { padding: 8px; font-size: 11px; text-align: center; flex-direction: column; gap: 4px; }
+.cms-preview-caption { position: absolute; bottom: 0; inset-inline: 0; padding: 3px; background: #0a1524e8; color: #9fe9ff; font-size: 11px; }
+.cms-image-dialog { width: min(1000px, calc(100vw - 32px)); }
+.cms-image-dialog-media { position: relative; min-height: 180px; height: min(65dvh, 700px); margin: 20px; background: #071019; }
+.cms-image-dialog-media img { width: 100%; height: 100%; object-fit: contain; }
+.cms-image-dialog > .cms-help { margin: 0 20px 20px; }
+@media(max-width: 600px) {
+  .cms-source-row > .cms-image-preview { flex-basis: 100%; width: 100%; height: 150px; }
+  .cms-source-row > .cms-field { flex: 1; min-width: 0; }
+}
