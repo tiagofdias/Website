@@ -12,6 +12,7 @@ const path = require('path');
 const fetch = require('node-fetch');
 const { generateCompletion } = require('./aiCompletion.cjs');
 const { createPublicAnswerService } = require('./publicAnswerService.cjs');
+const profileQuestions = import('./profileQuestions.mjs');
 const { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } = require('@simplewebauthn/server');
 const { PasskeyCredential } = require('./models');
 const { extractImagesFromPdfLinks } = require('./pdfExtractor');
@@ -809,7 +810,7 @@ app.delete('/api/cv', auth, async (req, res) => {
 
 // Test endpoint
 app.get('/api/chat', (req, res) => {
-  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 3.1', version: '3.1' });
+  res.json({ message: 'Chat endpoint is working. Use POST to send messages. Version: 3.2', version: '3.2' });
 });
 
 // Database Knowledge Synthesizer:
@@ -1185,6 +1186,15 @@ app.post('/api/chat', async (req, res) => {
     
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const { profileQuestionKey, resolveProfileQuestion } = await profileQuestions;
+    if (typeof message !== 'string') return res.status(400).json({ error: 'Message must be text' });
+    const knownTopic = profileQuestionKey(message);
+    if (knownTopic) {
+      const snapshot = knownTopic === 'age' ? null : await getPublicAnswers();
+      const directAnswer = resolveProfileQuestion(message, snapshot?.answers);
+      if (directAnswer) return res.json(directAnswer);
     }
 
     console.log(`Got message: ${message}`);

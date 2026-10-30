@@ -15,6 +15,8 @@ const model = (rows) => ({
 async function runChat(completion, fallback, options = {}) {
   let handler, systemPrompt;
   const context = {
+    profileQuestions: options.direct ? import("./profileQuestions.mjs") : Promise.resolve({profileQuestionKey: () => null}),
+    getPublicAnswers: async () => ({answers:{experience:{response:"Verified career",source:"saved"}}}),
     app: {
       post: (_, callback) => {
         handler = callback;
@@ -60,7 +62,7 @@ async function runChat(completion, fallback, options = {}) {
   };
   await handler(
     {
-      body: { message: "Tell me about his experience.", history: [] },
+      body: { message: options.message || "Tell me about his experience.", history: [] },
       headers: {},
       connection: { remoteAddress: "127.0.0.1" },
       get: () => "",
@@ -147,4 +149,14 @@ test("briefing prompt includes current records and forbids invented education st
   assert.match(result.systemPrompt, /three short bullets/);
   assert.match(result.systemPrompt, /Do not append contact details/);
   assert.match(result.systemPrompt, /ordinary answers under 160 words/);
+});
+
+test("direct questions bypass model generation in the real route", async () => {
+  const age = await runChat(null, null, {direct:true,message:"how old is he"});
+  assert.equal(age.payload.source,"saved");
+  assert.match(age.payload.response,/not documented/);
+  assert.equal(age.systemPrompt,undefined);
+  const career = await runChat(null,null,{direct:true});
+  assert.equal(career.payload.response,"Verified career");
+  assert.equal(career.systemPrompt,undefined);
 });
