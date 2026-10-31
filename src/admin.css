@@ -1520,52 +1520,6 @@
   max-width: 350px;
   overflow-wrap: anywhere;
 }
-.cms-conversations {
-  padding: 26px;
-  margin-top: 24px;
-}
-.cms-conversations > .cms-field {
-  max-width: 600px;
-}
-.cms-log-row {
-  display: flex;
-  align-items: center;
-  gap: 25px;
-  justify-content: space-between;
-  width: 100%;
-  text-align: left;
-  padding: 18px 0 !important;
-  border-top: 1px solid #2b4155 !important;
-}
-.cms-log-row > span:first-child {
-  min-width: 0;
-}
-.cms-log-row strong {
-  font-size: 15px;
-  font-weight: 500;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.8;
-}
-.cms-log-row small {
-  display: block;
-  font-size: 12px;
-  color: #91acc2;
-  margin-top: 8px;
-}
-.cms-log-row > span:last-child {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: var(--cms-accent);
-  white-space: nowrap;
-}
-.cms-log-row:hover strong {
-  color: var(--cms-accent);
-}
 .cms-pagination {
   display: flex;
   justify-content: space-between;
@@ -1580,9 +1534,6 @@
 .cms-pagination > div {
   display: flex;
   gap: 10px;
-}
-.cms-conversation-modal {
-  width: 760px;
 }
 .cms-preserve-text {
   white-space: pre-wrap;
@@ -2078,18 +2029,6 @@
   .cms-health {
     font-size: 12px;
   }
-  .cms-conversations {
-    padding: 22px 18px;
-  }
-  .cms-log-row {
-    gap: 14px;
-  }
-  .cms-log-row strong {
-    font-size: 14px;
-  }
-  .cms-log-row > span:last-child {
-    font-size: 12px;
-  }
   .cms-pagination {
     flex-direction: column;
     align-items: flex-start;
@@ -2277,46 +2216,6 @@
 .cms-status.hidden {
   display: inline-flex;
 }
-.cms-log-answer {
-  font-size: 16px;
-  line-height: 1.9;
-  color: #c3d7e7;
-  overflow-wrap: anywhere;
-}
-.cms-log-answer h1,
-.cms-log-answer h2,
-.cms-log-answer h3,
-.cms-log-answer h4,
-.cms-log-answer p,
-.cms-log-answer li {
-  font-size: 16px;
-  line-height: 1.9;
-}
-.cms-log-answer > * + * {
-  margin-top: 16px;
-}
-.cms-log-answer ul,
-.cms-log-answer ol {
-  padding-left: 24px;
-}
-.cms-log-answer ul {
-  list-style: disc;
-}
-.cms-log-answer ol {
-  list-style: decimal;
-}
-.cms-log-answer a {
-  color: var(--cms-accent);
-  text-decoration: underline;
-}
-.cms-log-answer pre {
-  max-width: 100%;
-  overflow: auto;
-  background: #0b1420;
-  padding: 14px;
-  border: 1px solid var(--cms-line);
-  border-radius: 6px;
-}
 .cms-confirm-modal .cms-inline-error {
   margin-top: 18px;
 }
@@ -2429,3 +2328,4 @@
   .cms-source-row > .cms-image-preview { flex-basis: 100%; width: 100%; height: 150px; }
   .cms-source-row > .cms-field { flex: 1; min-width: 0; }
 }
+.cms-settings-grid { grid-template-columns:minmax(0,1fr); max-width:800px; }

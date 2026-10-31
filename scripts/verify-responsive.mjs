@@ -55,22 +55,9 @@ try {
       await page.locator("h1").waitFor();
       assert.deepEqual(await page.evaluate(overflow), [], `${width}px ${view}`);
     }
-    await page
-      .getByRole("button", { name: "Open AI assistant", exact: true })
-      .click();
-    await page.locator(".ai-console[open]").waitFor();
-    assert.deepEqual(
-      await page.evaluate(overflow),
-      [],
-      `${width}px AI console`,
-    );
-    await page
-      .getByRole("button", { name: "Explore role fit", exact: true })
-      .click();
-    assert.deepEqual(await page.evaluate(overflow), [], `${width}px role fit`);
-    await page.keyboard.press("Escape");
+    assert.equal(await page.locator(".ai-console,.command-strip").count(),0);
     console.log(
-      `PASS ${width}px: all six views, AI console, role-fit panel; third-party domains blocked`,
+      `PASS ${width}px: all six views, assistant removed; third-party domains blocked`,
     );
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -85,8 +72,7 @@ try {
     1,
   );
   await page.keyboard.press("Control+k");
-  await page.locator(".ai-console[open]").waitFor();
-  await page.keyboard.press("Escape");
+  assert.equal(await page.locator(".ai-console").count(),0);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(base);
   assert.equal(await page.locator(".neural-canvas").count(), 1);
@@ -100,7 +86,7 @@ try {
   await noJS.close();
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: reduced motion, pause/resume, keyboard AI shortcut, no-JavaScript CV/contact fallback; no browser errors.",
+    "PASS: reduced motion, pause/resume, retired keyboard shortcut, no-JavaScript CV/contact fallback; no browser errors.",
   );
 } finally {
   await browser.close();

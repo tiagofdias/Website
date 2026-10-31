@@ -145,29 +145,6 @@ const AboutSchema = new mongoose.Schema({
   PDFCV: { type: String, default: "" } // Move PDFCV here as a top-level field
 });
 
-// AI Chat Log Schema for tracking chat interactions
-const AIChatLogSchema = new mongoose.Schema({
-  ip: {
-    type: String,
-    required: true
-  },
-  userQuestion: {
-    type: String,
-    required: true
-  },
-  aiResponse: {
-    type: String,
-    required: true
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now
-  },
-  userAgent: String,
-  responseTime: Number, // in milliseconds
-  tokenCount: Number
-}, { timestamps: true });
-
 // Visitor Log Schema for tracking website visitors
 const VisitorLogSchema = new mongoose.Schema({
   // Basic Info
@@ -300,7 +277,6 @@ module.exports = {
   Education: mongoose.model('Education', EducationSchema),
   Article: mongoose.model('Article', ArticleSchema),
   About: mongoose.model('About', AboutSchema),
-  AIChatLog: mongoose.model('AIChatLog', AIChatLogSchema),
   VisitorLog: mongoose.model('VisitorLog', VisitorLogSchema),
   Settings: mongoose.model('Settings', SettingsSchema),
   PasskeyCredential: mongoose.model('PasskeyCredential', PasskeyCredentialSchema)

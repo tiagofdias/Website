@@ -33,11 +33,11 @@ export const sectionInfo = {
   },
   statistics: {
     label: "Analytics",
-    description: "Understand your visitors and review AI conversations.",
+    description: "Understand your visitors and portfolio traffic.",
   },
   settings: {
     label: "Settings",
-    description: "Manage AI configuration and account security.",
+    description: "Manage your account security and passkeys.",
   },
 };
 export const emptyForms = {

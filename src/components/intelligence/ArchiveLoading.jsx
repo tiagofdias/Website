@@ -26,7 +26,7 @@ export default function ArchiveLoading({ kind }) {
           <>
             Open a project. Explore the interface.
             <br />
-            Ask the AI about the engineering behind it.
+            Explore the engineering behind each project.
           </>
         ) : (
           "Choose a certification. Explore the original credential and the skills behind it."

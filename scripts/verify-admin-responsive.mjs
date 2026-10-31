@@ -52,7 +52,7 @@ try {
       await page.locator(".cms-loading").waitFor({ state: "detached" });
       await page.locator("h1").waitFor();
       if (section === "settings")
-        await page.getByText("Saved key configured", { exact: true }).waitFor();
+        await page.getByRole("heading", {name:"Account security",exact:true}).waitFor();
       assert.deepEqual(
         await page.evaluate(overflow),
         [],

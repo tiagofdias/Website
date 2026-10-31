@@ -167,20 +167,7 @@ try {
     .getByRole("button", { name: "Analytics", exact: true })
     .click();
   await page.getByText("Traffic over time", { exact: true }).waitFor();
-  await page.locator(".cms-log-row").first().click();
-  await page
-    .getByRole("heading", { name: "Question & answer", exact: true })
-    .waitFor();
-  await page
-    .getByRole("button", { name: "Close conversation", exact: true })
-    .click();
-  await page
-    .getByRole("searchbox", { name: "Search conversation logs", exact: true })
-    .fill("experience with RAG");
-  await page.waitForFunction(
-    () => document.querySelectorAll(".cms-log-row").length === 1,
-  );
-  assert.equal(await page.locator(".cms-log-row").count(), 1);
+  assert.equal(await page.getByText("AI conversations", {exact:true}).count(),0);
   await page.screenshot({
     path: "docs/design/admin-analytics.png",
     fullPage: true,
@@ -189,24 +176,8 @@ try {
     .getByRole("navigation", { name: "Admin workspace sections" })
     .getByRole("button", { name: "Settings", exact: true })
     .click();
-  await page.getByText("Saved key configured", { exact: true }).waitFor();
-  assert.equal(
-    await page
-      .getByLabel("Replacement OpenRouter API key", { exact: true })
-      .inputValue(),
-    "",
-  );
-  await page
-    .getByLabel("Replacement OpenRouter API key", { exact: true })
-    .fill("test-replacement-not-a-real-key");
-  await page.getByRole("button", { name: "Save API key", exact: true }).click();
-  await page.getByText("AI configuration saved.", { exact: true }).waitFor();
-  assert.equal(
-    await page
-      .getByLabel("Replacement OpenRouter API key", { exact: true })
-      .inputValue(),
-    "",
-  );
+  await page.getByRole("heading",{name:"Account security",exact:true}).waitFor();
+  assert.equal(await page.getByText("AI configuration",{exact:true}).count(),0);
   // Failed destructive actions remain visible in the confirmation dialog.
   await page.goto("http://127.0.0.1:5173/admin?section=projects");
   await page.locator(".cms-record").first().waitFor();
@@ -283,7 +254,7 @@ try {
   assert.equal(state.articles[0].image_url, "/favicon.svg");
   assert.deepEqual(errors, []);
   console.log(
-    "PASS admin search/status, edit/save/error recovery, dirty guard, ordering, publish/hide, create/video, safe delete, selective import, certification media preservation, profile/CV upload, analytics/logs, masked key replacement; mocked writes only",
+    "PASS admin search/status, edit/save/error recovery, dirty guard, ordering, publish/hide, create/video, safe delete, selective import, certification media preservation, profile/CV upload, visitor analytics and account security; mocked writes only",
   );
 } catch (error) {
   throw error;

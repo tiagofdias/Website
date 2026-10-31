@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import NeuralField from "./intelligence/NeuralField";
-import AIConsole from "./intelligence/AIConsole";
 import CertificationsPanel from "./intelligence/CertificationsPanel";
 import {
   AboutPanel,
@@ -14,7 +13,6 @@ import {
 import usePortfolioContent from "../hooks/usePortfolioContent";
 import useArchiveContent, { prefetchArchive } from "../hooks/useArchiveContent";
 import ArchiveLoading from "./intelligence/ArchiveLoading";
-import useSavedAnswers from "../hooks/useSavedAnswers";
 import {
   fallbackAbout,
   fallbackProjects,
@@ -31,9 +29,6 @@ const views = [
   ["certifications", "05", "Certifications", "Credentials & learning"],
 ];
 const allowed = new Set([...views.map((item) => item[0]), "contact"]);
-const introPrompt =
-  "Give me a 30-second recruiter briefing on Tiago: current work, main technical strengths, and relevant experience. Be concise and use only documented facts.";
-
 export default function Portfolio({ resume = false }) {
   const location = useLocation(),
     navigate = useNavigate();
@@ -59,28 +54,9 @@ export default function Portfolio({ resume = false }) {
     cv = usePortfolioContent("cv", fallbackAbout, resume);
   const projects = projectArchive.items,
     certifications = certificationArchive.items;
-  const savedAnswers = useSavedAnswers({
-    about,
-    projects,
-    experience,
-    education,
-    certifications,
-  });
-  const [session, setSession] = useState(null),
-    [query, setQuery] = useState(""),
-    [paused, setPaused] = useState(false),
+  const [paused, setPaused] = useState(false),
     [menu, setMenu] = useState(false);
-  const counter = useRef(0),
-    input = useRef(null),
-    main = useRef(null);
-  const openAI = (prompt = "", mode = "ask", displayValue, answerKey) =>
-    setSession({
-      id: ++counter.current,
-      prompt,
-      mode,
-      displayValue,
-      answerKey,
-    });
+  const main = useRef(null);
   const go = (target) => {
     if (target === "work" || target === "certifications")
       prefetchArchive(target === "work" ? "projects" : "certifications");
@@ -97,33 +73,11 @@ export default function Portfolio({ resume = false }) {
   }, [view, resume]);
   useEffect(() => {
     const key = (event) => {
-      const editable =
-        /INPUT|TEXTAREA|SELECT/.test(event.target.tagName) ||
-        event.target.isContentEditable;
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        openAI();
-      }
       if (event.key === "Escape") setMenu(false);
-      if (
-        event.key === "/" &&
-        !editable &&
-        !document.querySelector("dialog[open]")
-      ) {
-        event.preventDefault();
-        input.current?.focus();
-      }
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  const submit = (event) => {
-    event.preventDefault();
-    if (query.trim()) {
-      openAI(query);
-      setQuery("");
-    } else openAI();
-  };
   return (
     <div
       className={`intelligence-site view-${resume ? "cv" : view}${!resume && (view === "work" || view === "certifications") ? " archive-view" : ""}`}
@@ -208,19 +162,8 @@ export default function Portfolio({ resume = false }) {
                   <br className="wide-break" /> us rethink what’s possible.
                 </p>
               </div>
-              <button
-                className="intro-brief"
-                onClick={() =>
-                  openAI(
-                    introPrompt,
-                    "ask",
-                    "Give me a 30-second introduction.",
-                    "intro",
-                  )
-                }
-              >
-                <span className="play-mark">▷</span> Get the 30-second brief{" "}
-                <span>↗</span>
+              <button className="intro-brief" onClick={() => go("work")}>
+                Explore selected work <span aria-hidden="true">&#8599;</span>
               </button>
             </div>
             <div className="neural-installation">
@@ -228,7 +171,7 @@ export default function Portfolio({ resume = false }) {
                 <div className="field-cross cross-top">+</div>
                 <div className="field-cross cross-bottom">+</div>
                 <div className="neural-orbit" />
-                <NeuralField paused={paused || !!session} active={!!session} />
+                <NeuralField paused={paused} />
                 <div className="installation-label micro">
                   <span className="signal" /> HUMAN × MACHINE{" "}
                   <span className="faint">/ IN CONTINUOUS EVOLUTION</span>
@@ -263,19 +206,16 @@ export default function Portfolio({ resume = false }) {
                 <span>Full-stack engineering</span>
                 <span>Intelligent automation</span>
               </div>
-              <button
-                className="fit-prompt"
-                onClick={() => openAI("", "match")}
-              >
+              <button className="fit-prompt" onClick={() => go("contact")}>
                 <span>BUILDING A TEAM?</span>
                 <strong>
-                  Explore the fit <b>↗</b>
+                  Get in touch <b>↗</b>
                 </strong>
               </button>
             </aside>
             <div className="stage-footer">
               <span className="micro">
-                A PORTFOLIO YOU CAN HAVE A CONVERSATION WITH.
+                EXPLORE THE WORK. MEET THE ENGINEER.
               </span>
               <div>
                 <External href="https://github.com/tiagofdias">
@@ -289,17 +229,17 @@ export default function Portfolio({ resume = false }) {
           </section>
         ) : view === "work" ? (
           projectArchive.ready ? (
-            <WorkPanel projects={projects} onAsk={openAI} />
+            <WorkPanel projects={projects} />
           ) : (
             <ArchiveLoading kind="work" />
           )
         ) : view === "experience" ? (
-          <ExperiencePanel experience={experience} onAsk={openAI} />
+          <ExperiencePanel experience={experience} />
         ) : view === "about" ? (
           <AboutPanel
             about={about}
             education={education}
-            onAsk={openAI}
+
             onNavigate={go}
           />
         ) : view === "certifications" ? (
@@ -309,39 +249,10 @@ export default function Portfolio({ resume = false }) {
             <ArchiveLoading kind="certifications" />
           )
         ) : (
-          <ContactPanel
-            email={about.email || fallbackAbout.email}
-            onMatch={() => openAI("", "match")}
-          />
+          <ContactPanel email={about.email || fallbackAbout.email} />
         )}
       </main>
       <div className="interface-bottom">
-        <div className="command-strip">
-          <div className="command-label">
-            <span className="command-star">✳</span>
-            <span>
-              MEET MY AI<small>YOUR CURIOSITY. THE STARTING POINT.</small>
-            </span>
-          </div>
-          <form onSubmit={submit} className="command-input">
-            <label htmlFor="command-question" className="sr-only">
-              Ask a question about Tiago
-            </label>
-            <input
-              ref={input}
-              id="command-question"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Ask a question"
-              maxLength={3000}
-            />
-            <kbd>/</kbd>
-            <button aria-label="Open AI assistant">↗</button>
-          </form>
-          <button className="command-fit" onClick={() => openAI("", "match")}>
-            Match a role <span>↗</span>
-          </button>
-        </div>
         <nav className="explorer-dock" aria-label="Portfolio sections">
           {views.map(([id, num, label, detail]) => (
             <button
@@ -386,13 +297,6 @@ export default function Portfolio({ resume = false }) {
           </div>
         </nav>
       </div>
-      <AIConsole
-        session={session}
-        onClose={() => setSession(null)}
-        onNavigate={go}
-        email={about.email || fallbackAbout.email}
-        savedAnswers={savedAnswers}
-      />
     </div>
   );
 }

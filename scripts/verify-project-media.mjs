@@ -144,52 +144,6 @@ try {
   console.log(
     "PASS playable videos autoplay muted on first/selected project, controls, gallery switching, unmount, search, live primary CTA and media failure fallback",
   );
-  let count = 0,
-    requests = [];
-  await page.route("**/api/chat", (r) => {
-    requests.push(r.request().postDataJSON());
-    return r.fulfill({
-      json:
-        ++count === 1
-          ? {
-              source: "profile",
-              response: "Unrelated profile biography",
-              unavailableReason: "provider_unavailable",
-            }
-          : {
-              source: "llm",
-              response:
-                "## A heading\n\nA paragraph.\n\n- A list item.\n\n**A strong phrase.**",
-            },
-    });
-  });
-  await page
-    .getByRole("button", { name: "Open AI assistant", exact: true })
-    .click();
-  await page
-    .getByLabel("Ask Tiago’s AI", { exact: true })
-    .fill("Explain your AI work");
-  await page
-    .getByRole("button", { name: "Send question", exact: true })
-    .click();
-  await page.locator(".ai-message.assistant").waitFor();
-  assert.equal(await page.getByText("Unrelated profile biography").count(), 0);
-  assert.match(await page.locator(".ai-message.assistant").last().innerText(), /Profile reference/);
-  await page.locator("#ai-question").fill("Explain the technical architecture in detail");
-  await page.getByRole("button", { name: "Send question", exact: true }).click();
-  await page.waitForFunction(() => document.querySelectorAll(".ai-message.assistant").length === 2);
-  assert.equal(requests.length, 2);
-  assert.equal(await page.locator(".ai-message.user").count(), 2);
-  const sizes = await page
-    .locator(
-      ".ai-markdown h2,.ai-markdown p,.ai-markdown li,.ai-markdown strong",
-    )
-    .evaluateAll((es) => es.map((e) => getComputedStyle(e).fontSize));
-  assert.ok(sizes.every((size) => size === "16px"));
-  await page.screenshot({ path: "docs/design/ai-consistent-type.png" });
-  console.log(
-    "PASS provider failure shows labeled reference rather than unrelated biography; subsequent requests work; every answer text element uses 16px",
-  );
   await page.addInitScript(() => {
     const enc = (x) => btoa(JSON.stringify(x));
     localStorage.setItem(

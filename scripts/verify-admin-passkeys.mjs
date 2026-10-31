@@ -38,7 +38,7 @@ try {
     route.fulfill({ json: { verified: true, token: adminToken } }),
   );
   await page.goto("http://localhost:5173/admin?section=settings");
-  await page.getByText("Saved key configured", { exact: true }).waitFor();
+  await page.getByRole("heading",{name:"Account security",exact:true}).waitFor();
   await page
     .getByRole("button", { name: "Register passkey", exact: true })
     .click();

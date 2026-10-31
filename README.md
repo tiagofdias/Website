@@ -45,7 +45,6 @@ Demo: [https://tiago-dias.onrender.com/](https://tiago-dias.onrender.com/)
 
 ### Prerequisites
 - MongoDB Atlas account (free tier available)
-- OpenRouter API key
 - GitHub account
 
 ### Backend Deployment (Node.js API)
@@ -75,7 +74,6 @@ Demo: [https://tiago-dias.onrender.com/](https://tiago-dias.onrender.com/)
        - `PORT` = `10000`
        - `MONGO_URI` = Your MongoDB Atlas connection string
        - `JWT_SECRET` = Any secure random string
-       - `OPENROUTER_API_KEY` = Your OpenRouter API key
        - `NODE_ENV` = `production`
 
 ### Frontend Deployment (React/Vite)

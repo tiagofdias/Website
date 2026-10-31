@@ -14,8 +14,6 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
-      - key: OPENROUTER_API_KEY
-        sync: false
       - key: NODE_ENV
         value: production
     healthCheckPath: /api/about

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { CORRECT_EMAIL, LINKEDIN_URL, GITHUB_URL } from "../utils/aiKnowledgeEngine";
+import { CORRECT_EMAIL, LINKEDIN_URL, GITHUB_URL } from "../utils/contactDetails";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.js?url";
 

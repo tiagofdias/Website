@@ -8,7 +8,6 @@ import emailjs from "@emailjs/browser";
 import portrait from "../../assets/tiago.png";
 import ArchiveImage from "./ArchiveImage";
 import useArchiveDescription from "./useArchiveDescription";
-import { projectAnswerKey } from "../../../server/publicAnswers.mjs";
 
 export const External = ({ href, children, ...props }) => (
   <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
@@ -31,7 +30,7 @@ const imagesOf = (project) =>
     Boolean,
   );
 
-export function WorkPanel({ projects, onAsk }) {
+export function WorkPanel({ projects }) {
   const [selected, setSelected] = useState(null),
     [imageSelection, setImageSelection] = useState({ project: null, index: 0 }),
     [query, setQuery] = useState(""),
@@ -83,7 +82,7 @@ export function WorkPanel({ projects, onAsk }) {
       >
         Open a project. Explore the interface.
         <br />
-        Ask the AI about the engineering behind it.
+        Explore the engineering behind each project.
       </SectionTitle>
       <div className="archive-layout">
         <MobileArchivePicker
@@ -282,26 +281,6 @@ export function WorkPanel({ projects, onAsk }) {
                     Open live project <span aria-hidden="true">↗</span>
                   </External>
                 )}
-                <button
-                  className="line-link project-ai-button"
-                  aria-label="Ask AI about this project"
-                  onClick={() =>
-                    onAsk(
-                      `Explain the engineering behind Tiago’s ${project.name} project. What does it demonstrate, and which technologies are involved? Stick to documented facts.`,
-                      "ask",
-                      `Tell me about ${project.name}`,
-                      projectAnswerKey(project),
-                    )
-                  }
-                >
-                  <span className="project-ai-label">
-                    ✳ Ask AI about this project
-                  </span>
-                  <span className="project-ai-label-compact" aria-hidden="true">
-                    Ask AI
-                  </span>
-                  <span>↗</span>
-                </button>
                 {project.source_code_link && (
                   <External
                     className="line-link"
@@ -339,7 +318,7 @@ export function WorkPanel({ projects, onAsk }) {
   );
 }
 
-export function ExperiencePanel({ experience, onAsk }) {
+export function ExperiencePanel({ experience }) {
   const [expanded, setExpanded] = useState(0);
   return (
     <section className="explorer-panel career-panel">
@@ -372,19 +351,9 @@ export function ExperiencePanel({ experience, onAsk }) {
             <span>Build it better.</span>
           </h2>
           <p>AI, software, and the work it takes to make them useful.</p>
-          <button
-            className="line-link"
-            onClick={() =>
-              onAsk(
-                "Summarize Tiago’s career progression and the strongest evidence of his experience with generative AI. Distinguish internships from full-time work.",
-                "ask",
-                "Give me a career brief",
-                "experience",
-              )
-            }
-          >
-            Ask AI for the career brief ↗
-          </button>
+          <Link className="line-link" to="/cv">
+            Read my CV &#8599;
+          </Link>
         </aside>
         <div className="career-timeline">
           {experience.map((job, index) => (
@@ -429,7 +398,7 @@ export function ExperiencePanel({ experience, onAsk }) {
   );
 }
 
-export function AboutPanel({ about, education, onAsk, onNavigate }) {
+export function AboutPanel({ about, education, onNavigate }) {
   return (
     <section className="explorer-panel">
       <SectionTitle
@@ -490,19 +459,6 @@ export function AboutPanel({ about, education, onAsk, onNavigate }) {
               ))}
             </div>
           </div>
-          <button
-            className="line-link"
-            onClick={() =>
-              onAsk(
-                "What are Tiago’s strongest technical skills, and what documented work supports them?",
-                "ask",
-                "What are your technical strengths?",
-                "skills",
-              )
-            }
-          >
-            Ask AI about my technical strengths ↗
-          </button>
         </div>
       </div>
       <div className="toolkit-heading">
@@ -534,7 +490,7 @@ export function AboutPanel({ about, education, onAsk, onNavigate }) {
   );
 }
 
-export function ContactPanel({ email, onMatch }) {
+export function ContactPanel({ email }) {
   const [status, setStatus] = useState("idle"),
     [copied, setCopied] = useState(false);
   const submit = async (event) => {
@@ -615,12 +571,6 @@ export function ContactPanel({ email, onMatch }) {
             <External href="https://github.com/tiagofdias">GitHub ↗</External>
             <Link to="/cv">CV ↗</Link>
           </div>
-          <button className="role-fit-link" onClick={onMatch}>
-            <span>RECRUITING FOR SOMETHING SPECIFIC?</span>
-            <strong>
-              Explore the role with my AI <b>↗</b>
-            </strong>
-          </button>
         </div>
         <form className="connection-form" onSubmit={submit}>
           <span className="micro cyan">DIRECT LINE / TIAGO DIAS</span>

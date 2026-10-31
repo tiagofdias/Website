@@ -6,7 +6,6 @@ import Works from './Works';
 import Blog from "./Blog";
 import Contact from './Contact';
 import Footer from "./Footer";
-import ChatWidget from "./ChatWidget";
 import Portal from './Portal';
 import Modal from './Modal';
 
@@ -19,7 +18,6 @@ export {
   Blog,
   Contact,
   Footer,
-  ChatWidget,
   Portal,
   Modal,
 }

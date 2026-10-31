@@ -1,18 +1,6 @@
 import { useEffect, useState } from "react";
-import { Button, Field, Icon, Modal } from "./AdminUI";
-import ReactMarkdown from "react-markdown";
-import remarkBreaks from "remark-breaks";
+import { Button } from "./AdminUI";
 const formatNumber = (value) => Number(value || 0).toLocaleString();
-const date = (value) =>
-  value && Number.isFinite(new Date(value).getTime())
-    ? new Date(value).toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "Not available";
 const duration = (value) =>
   Number(value) >= 60
     ? `${Math.floor(value / 60)}m ${Math.round(value % 60)}s`
@@ -97,50 +85,27 @@ function TrafficChart({ rows = [] }) {
 }
 export default function AdminAnalytics({ request }) {
   const [period, setPeriod] = useState("week"),
-    [page, setPage] = useState(1),
-    [search, setSearch] = useState(""),
     [refresh, setRefresh] = useState(0),
     [visitors, setVisitors] = useState(null),
-    [stats, setStats] = useState(null),
     [loading, setLoading] = useState(true),
-    [error, setError] = useState(""),
-    [conversation, setConversation] = useState(null);
+    [error, setError] = useState("");
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
     setError("");
-    const timer = setTimeout(
-      () =>
-        Promise.all([
-          request(`/visitor-analytics?period=${period}`, {
-            signal: controller.signal,
-          }),
-          request(
-            `/statistics?page=${page}&limit=20&search=${encodeURIComponent(search)}`,
-            { signal: controller.signal },
-          ),
-        ])
-          .then(([a, b]) => {
-            setVisitors(a);
-            setStats(b);
-          })
-          .catch((e) => {
-            if (!controller.signal.aborted) setError(e.message);
-          })
-          .finally(() => {
-            if (!controller.signal.aborted) setLoading(false);
-          }),
-      search ? 300 : 0,
-    );
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [request, period, page, search, refresh]);
-  const summary = visitors?.summary || {},
-    logs = stats?.chatLogs?.logs || [],
-    pagination = stats?.chatLogs?.pagination || {},
-    pages = Math.max(1, pagination.totalPages || 1);
+    request(`/visitor-analytics?period=${period}`, {
+      signal: controller.signal,
+    })
+      .then(setVisitors)
+      .catch((error) => {
+        if (!controller.signal.aborted) setError(error.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [request, period, refresh]);
+  const summary = visitors?.summary || {};
   return (
     <div className="cms-analytics">
       <div className="cms-toolbar">
@@ -156,7 +121,6 @@ export default function AdminAnalytics({ request }) {
               aria-pressed={period === value}
               onClick={() => {
                 setPeriod(value);
-                setPage(1);
               }}
             >
               {value[0].toUpperCase() + value.slice(1)}
@@ -179,14 +143,14 @@ export default function AdminAnalytics({ request }) {
           </button>
         </div>
       )}
-      {loading && !stats ? (
+      {loading && !visitors ? (
         <div className="cms-loading" role="status">
           Loading analytics…
         </div>
-      ) : !stats ? (
+      ) : !visitors ? (
         <div className="cms-empty cms-panel">
           <h2>Analytics are unavailable</h2>
-          <p>Try refreshing to load your visitor data and conversations.</p>
+          <p>Try refreshing to load your visitor data.</p>
         </div>
       ) : (
         <>
@@ -194,11 +158,15 @@ export default function AdminAnalytics({ request }) {
             {[
               ["Unique visitors", summary.uniqueVisitors, "Selected period"],
               ["Page views", summary.totalPageViews, "Selected period"],
-              ["AI conversations", stats?.summary?.totalChats, "All time"],
               [
-                "Average AI response",
-                `${((stats?.summary?.avgResponseTime || 0) / 1000).toFixed(1)}s`,
-                "All time",
+                "Returning visitors",
+                summary.returningVisitors,
+                "Selected period",
+              ],
+              [
+                "Average visit",
+                duration(summary.avgTimeOnPage),
+                "Selected period",
               ],
             ].map(([label, value, note]) => (
               <div className="cms-stat" key={label}>
@@ -210,20 +178,7 @@ export default function AdminAnalytics({ request }) {
               </div>
             ))}
           </div>
-          <div className="cms-health">
-            <span
-              className={`cms-status ${stats?.health?.status === "healthy" ? "published" : "hidden"}`}
-            >
-              {stats?.health?.status === "healthy"
-                ? "Service healthy"
-                : "Service status needs attention"}
-            </span>
-            <span>Last heartbeat: {date(stats?.health?.lastPing)}</span>
-            <span>Average visit: {duration(summary.avgTimeOnPage)}</span>
-            <span>
-              Returning visitors: {formatNumber(summary.returningVisitors)}
-            </span>
-          </div>
+
           <TrafficChart rows={visitors?.visitorsOverTime} />
           <div className="cms-breakdown-grid">
             <Breakdown
@@ -290,131 +245,7 @@ export default function AdminAnalytics({ request }) {
               </div>
             </details>
           )}
-          <section className="cms-panel cms-conversations">
-            <div className="cms-section-heading">
-              <h3>AI conversations</h3>
-              <p>
-                Search questions and responses, then open a conversation to read
-                it in full.
-              </p>
-            </div>
-            <Field
-              label="Search conversation logs"
-              type="search"
-              placeholder="Search chat logs"
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                setPage(1);
-              }}
-            />
-            {loading && (
-              <p className="cms-help" role="status">
-                Updating results…
-              </p>
-            )}
-            {logs.length ? (
-              <div className="cms-log-list">
-                {logs.map((log) => (
-                  <button
-                    key={log._id}
-                    className="cms-log-row"
-                    onClick={() => setConversation(log)}
-                  >
-                    <span>
-                      <strong>{log.userQuestion}</strong>
-                      <small>
-                        {date(log.timestamp)} · {log.ip || "Unknown visitor"}
-                      </small>
-                    </span>
-                    <span>
-                      {((log.responseTime || 0) / 1000).toFixed(1)}s{" "}
-                      <Icon name="arrow" size={18} />
-                    </span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="cms-empty compact">
-                <h3>No conversations found</h3>
-                <p>
-                  {search
-                    ? "Try a different question or search term."
-                    : "Live AI conversations will appear here."}
-                </p>
-              </div>
-            )}
-            <div className="cms-pagination">
-              <span>
-                {formatNumber(pagination.total)} conversations · Page {page} of{" "}
-                {pages}
-              </span>
-              <div>
-                <Button
-                  disabled={page <= 1 || loading}
-                  onClick={() => setPage((value) => value - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  disabled={page >= pages || loading}
-                  onClick={() => setPage((value) => value + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          </section>
         </>
-      )}
-      {conversation && (
-        <Modal
-          className="cms-conversation-modal"
-          titleId="cms-conversation-title"
-          onClose={() => setConversation(null)}
-        >
-          <header className="cms-modal-header">
-            <div>
-              <span className="cms-overline">CONVERSATION LOG</span>
-              <h2 id="cms-conversation-title">Question & answer</h2>
-            </div>
-            <button
-              className="cms-icon-button"
-              aria-label="Close conversation"
-              onClick={() => setConversation(null)}
-            >
-              <Icon name="close" />
-            </button>
-          </header>
-          <div className="cms-modal-body">
-            <p className="cms-muted">
-              {date(conversation.timestamp)} · {conversation.ip}
-            </p>
-            <h3>Visitor question</h3>
-            <p className="cms-preserve-text">{conversation.userQuestion}</p>
-            <h3>Assistant response</h3>
-            <div className="cms-log-answer">
-              <ReactMarkdown
-                remarkPlugins={[remarkBreaks]}
-                components={{
-                  a: ({ href, children }) => (
-                    <a href={href} target="_blank" rel="noreferrer">
-                      {children}
-                    </a>
-                  ),
-                }}
-              >
-                {conversation.aiResponse}
-              </ReactMarkdown>
-            </div>
-            {conversation.userAgent && (
-              <details className="cms-details">
-                <summary>Visitor device details</summary>
-                <p className="cms-preserve-text">{conversation.userAgent}</p>
-              </details>
-            )}
-          </div>
-        </Modal>
       )}
     </div>
   );
