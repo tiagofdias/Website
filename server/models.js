@@ -270,7 +270,15 @@ const PasskeyCredentialSchema = new mongoose.Schema({
   }
 });
 
+const AdminAccountSchema = new mongoose.Schema({
+  _id: {type:String,required:true},
+  username: {type:String,required:true},
+  passwordHash: {type:String,required:true,select:false},
+  credentialVersion: {type:Number,required:true,min:1},
+}, {timestamps:true});
+
 module.exports = {
+  AdminAccount: mongoose.model('AdminAccount',AdminAccountSchema),
   Project: mongoose.model('Project', ProjectSchema),
   Certification: mongoose.model('Certification', CertificationSchema),
   ProExp: mongoose.model('ProExp', ProExpSchema),

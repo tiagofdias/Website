@@ -12,7 +12,8 @@ const path = require('path');
 const fetch = require('node-fetch');
 const { originalProjectVideo } = require('./projectVideo.cjs');
 const { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } = require('@simplewebauthn/server');
-const { PasskeyCredential } = require('./models');
+const { PasskeyCredential, AdminAccount } = require('./models');
+const { ACCOUNT_ID, createAdminAccount, createAttemptLimit } = require('./adminAccount.cjs');
 const { extractImagesFromPdfLinks } = require('./pdfExtractor');
 const healthMonitor = require('./healthMonitor');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -41,6 +42,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+// Keep credential requests small while allowing larger content uploads.
+app.use(['/api/login', '/api/admin/account'], express.json({ limit: '16kb' }));
 // Increase payload limit to handle base64 images (default is 100kb)
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(express.json({ limit: '50mb' })); // Add express built-in JSON parser as backup
@@ -53,21 +56,33 @@ app.use((req, res, next) => {
 
 const SECRET = process.env.JWT_SECRET;
 
-// Dummy user for login
-const USER = { 
-  username: process.env.ADMIN_USERNAME, 
-  password: process.env.ADMIN_PASSWORD 
-};
-
-// Login endpoint
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === USER.username && password === USER.password) {
-    const token = jwt.sign({ username }, SECRET, { expiresIn: '1h' });
-    res.json({ token });
-  } else {
-    res.status(401).json({ error: 'Invalid credentials' });
-  }
+const adminAccount = createAdminAccount({
+  bootstrapUsername:process.env.ADMIN_USERNAME,
+  bootstrapPassword:process.env.ADMIN_PASSWORD,
+  load:()=>AdminAccount.findOne({_id:ACCOUNT_ID}).select('+passwordHash').lean(),
+  replace:async(previous,next)=>{
+    if(previous.bootstrap){
+      try { await AdminAccount.create({_id:ACCOUNT_ID,...next}); return true; }
+      catch(error){if(error.code===11000)return false;throw error;}
+    }
+    return !!await AdminAccount.findOneAndUpdate({_id:ACCOUNT_ID,credentialVersion:previous.credentialVersion},{$set:next},{new:true});
+  },
+  signToken:claims=>jwt.sign(claims,SECRET,{expiresIn:'1h'}),
+});
+const loginAttempts=createAttemptLimit();
+const credentialAttempts=createAttemptLimit();
+const accountFailure=(res,error)=>res.status(error.status||503).json({error:error.status?error.message:'Account settings are temporarily unavailable. Please try again.'});
+app.post('/api/login',loginAttempts,async(req,res)=>{
+  try{res.set('Cache-Control','no-store');res.json(await adminAccount.login(req.body?.username,req.body?.password));}
+  catch(error){accountFailure(res,error)}
+});
+app.get('/api/admin/account',auth,async(req,res)=>{
+  try{res.set('Cache-Control','no-store');res.json(await adminAccount.currentIdentity());}
+  catch(error){accountFailure(res,error)}
+});
+app.put('/api/admin/account',auth,credentialAttempts,async(req,res)=>{
+  try{res.set('Cache-Control','no-store');res.json(await adminAccount.change(req.body));}
+  catch(error){accountFailure(res,error)}
 });
 
 // Passkey configuration
@@ -80,15 +95,15 @@ let currentRegistrationChallenge;
 let currentAuthenticationChallenge;
 
 // Middleware to protect routes
-function auth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.sendStatus(401);
-  const token = authHeader.split(' ')[1];
-  jwt.verify(token, SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
+async function auth(req,res,next){
+  const match=/^Bearer (.+)$/i.exec(req.headers.authorization||'');
+  if(!match)return res.sendStatus(401);
+  let claims;
+  try{claims=jwt.verify(match[1],SECRET);}catch{return res.sendStatus(401);}
+  try{
+    if(!await adminAccount.validSession(claims))return res.sendStatus(401);
+    req.user=claims;next();
+  }catch(error){accountFailure(res,error)}
 }
 
 // WebAuthn Registration (Requires Auth since only admin should register their key)
@@ -96,7 +111,7 @@ app.get('/api/webauthn/generate-registration-options', auth, async (req, res) =>
   try {
     const user = {
       id: 'admin-user-id',
-      username: USER.username,
+      username: (await adminAccount.currentIdentity()).username,
     };
 
     const options = await generateRegistrationOptions({
@@ -205,7 +220,7 @@ app.post('/api/webauthn/verify-authentication', async (req, res) => {
       await cred.save();
 
       // Issue JWT
-      const token = jwt.sign({ username: USER.username }, SECRET, { expiresIn: '1h' });
+      const token = await adminAccount.issueToken();
       res.json({ verified: true, token });
     } else {
       res.status(400).json({ error: 'Verification failed' });

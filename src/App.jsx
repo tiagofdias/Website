@@ -30,7 +30,11 @@ export default function App() {
             element={
               <div className="admin-shell">
                 {token ? (
-                  <AdminPanel token={token} onLogout={logout} />
+                  <AdminPanel
+                    token={token}
+                    onLogout={logout}
+                    onTokenChange={login}
+                  />
                 ) : (
                   <AdminLogin onLogin={login} />
                 )}

@@ -74,6 +74,8 @@ Demo: [https://tiago-dias.onrender.com/](https://tiago-dias.onrender.com/)
        - `PORT` = `10000`
        - `MONGO_URI` = Your MongoDB Atlas connection string
        - `JWT_SECRET` = Any secure random string
+       - `ADMIN_USERNAME` = Initial admin username
+       - `ADMIN_PASSWORD` = Initial admin password
        - `NODE_ENV` = `production`
 
 ### Frontend Deployment (React/Vite)
@@ -115,3 +117,7 @@ npm install
 npm run dev
 ```
 
+
+## Admin sign-in settings
+
+Open Admin > Settings > Sign-in details to change the username and/or password. Confirm with the current password. Passwords must contain 12-128 characters; leave the new-password fields blank to keep the existing password. After the first update, hashed database credentials replace the initial environment credentials. Existing passkeys remain valid, and other sessions are signed out.

@@ -2329,3 +2329,5 @@
   .cms-source-row > .cms-field { flex: 1; min-width: 0; }
 }
 .cms-settings-grid { grid-template-columns:minmax(0,1fr); max-width:800px; }
+.cms-credentials-fields { min-width:0; margin:0; padding:0; border:0; }
+.cms-credentials-fields > .cms-check { margin:8px 0 18px; }

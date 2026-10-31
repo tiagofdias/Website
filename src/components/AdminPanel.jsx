@@ -25,7 +25,7 @@ const sections = [
   "about",
   "articles",
 ];
-export default function AdminPanel({ token, onLogout }) {
+export default function AdminPanel({ token, onLogout, onTokenChange }) {
   const [params, setParams] = useSearchParams();
   const section = sectionInfo[params.get("section")]
       ? params.get("section")
@@ -612,6 +612,7 @@ export default function AdminPanel({ token, onLogout }) {
               notify={notify}
               onRegisterPasskey={registerPasskey}
               passkeyBusy={passkeyBusy}
+              onCredentialsChanged={onTokenChange}
             />
           ) : (
             <>

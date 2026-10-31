@@ -130,6 +130,7 @@ export async function adminMocks(page, { authenticated = true } = {}) {
       state.fail.delete(`${method} ${path}`);
       return route.fulfill({ status: 500, json: { error: fail } });
     }
+    if (path === "/admin/account") return route.fulfill({json:{username:"test-owner",credentialVersion:1}});
     if (path === "/login")
       return route.fulfill({ json: { token: adminToken } });
     if (path === "/settings/OPENROUTER_API_KEY")

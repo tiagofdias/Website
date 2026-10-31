@@ -13,6 +13,7 @@ The admin route uses the portfolio's Poppins typography and navy/cyan palette, w
 - Confirm deletion with the record name. A failed delete leaves the record and confirmation available.
 - Manage demo videos, screenshot URLs/uploads, Drive imports, credential PDFs/images, structured biography parts, languages, skills images, and the CV. Large unchanged media fields are omitted from updates.
 - Review visitor metrics, traffic, referral/device/browser/OS/country/language breakdowns.
+- Change the admin username and/or password in Settings after confirming the current password. Leave the new password blank for a username-only update.
 - Register a passkey, sign in with password or passkey, and sign out.
 
 Editor dialogs track the visual viewport to keep controls and the focused input visible with a mobile keyboard. Native modal focus handling restores focus to the initiating control. Buttons used on touch screens have 44px targets.
@@ -44,3 +45,11 @@ No real portfolio entries or passkeys are changed by the verification scripts.
 - `node --test server/certificationUpdate.test.cjs`: regression cases for safe credential updates.
 - `node scripts/verify-project-media.mjs` and `node scripts/verify-without-assistant.mjs`: public portfolio, media and assistant-removal checks.
 - Scoped ESLint checks pass with `react/prop-types` excluded, consistent with the repository's existing plain-JSX component style. The full repository lint baseline was not changed.
+
+## Sign-in credentials
+
+Settings includes the current username, current-password confirmation, optional new password (12-128 characters), and confirmation. The API never returns a password or hash. Incorrect current passwords and failed saves keep the draft and do not replace credentials. Successful updates renew the current browser token and invalidate older sessions. Passkey records and the stable WebAuthn user handle remain unchanged.
+
+The initial account still uses ADMIN_USERNAME and ADMIN_PASSWORD from the server environment until the first successful update. That update creates a dedicated AdminAccount record with a salted scrypt hash and a credential version. Subsequent logins use the database record exclusively; the original environment password is no longer accepted. The account uses a fixed MongoDB primary key and version-checked atomic updates to avoid concurrent overwrites. Sign-in/change attempts are throttled in memory per server process.
+
+Verified using server/adminAccount.test.cjs, server/adminAccountRoute.test.cjs and scripts/verify-admin-credentials.mjs, including migration, session invalidation, failed writes, concurrency, changed credentials, mobile layout and passkeys. Browser writes are mocked; verification does not change real credentials.
