@@ -554,9 +554,8 @@ export function ContactPanel({ email }) {
             ↗
           </span>
           <p>
-            A role worth exploring. A challenge worth solving.
-            <br />
-            Or just a good conversation about what comes next.
+            I’m open to new opportunities, with a preference for hybrid or
+            remote roles.
           </p>
           <a className="direct-email" href={`mailto:${email}`}>
             {email} ↗

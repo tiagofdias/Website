@@ -3157,3 +3157,5 @@ body {
 .intelligence-site main { padding-bottom:110px; }
 @media(max-width:680px) { .intelligence-site main { padding-bottom:calc(88px + env(safe-area-inset-bottom)); } }
 @media(min-width:1024px) and (min-height:700px) { .intelligence-site main { padding-bottom:0; } }
+.fit-prompt > .availability-label { color:var(--cyan); }
+.fit-prompt > .work-preference { display:block; margin-top:6px; color:var(--dim); font-size:14px; line-height:1.6; letter-spacing:0; }

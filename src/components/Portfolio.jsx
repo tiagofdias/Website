@@ -207,7 +207,10 @@ export default function Portfolio({ resume = false }) {
                 <span>Intelligent automation</span>
               </div>
               <button className="fit-prompt" onClick={() => go("contact")}>
-                <span>BUILDING A TEAM?</span>
+                <span className="availability-label">OPEN TO WORK</span>
+                <small className="work-preference">
+                  Hybrid or remote preferred
+                </small>
                 <strong>
                   Get in touch <b>↗</b>
                 </strong>
