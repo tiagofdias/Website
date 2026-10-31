@@ -1,5 +1,6 @@
 import MediaViewer from "./MediaViewer";
 import MobileArchivePicker from "./MobileArchivePicker";
+import useMediaFrame from "../../hooks/useMediaFrame";
 import ProjectVideo from "./ProjectVideo";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -58,6 +59,9 @@ export function WorkPanel({ projects, onAsk }) {
     ? project.demo_video_url
     : null;
   const playingVideo = video && showVideo && !videoFailed;
+  const { frameRef, onDimensions } = useMediaFrame(
+    playingVideo ? video : source,
+  );
   useEffect(() => {
     setShowVideo(true);
     setVideoFailed(false);
@@ -149,7 +153,10 @@ export function WorkPanel({ projects, onAsk }) {
         </div>
         {project ? (
           <article className="project-stage">
-            <div className="project-window">
+            <div
+              className="project-window adaptive-media-window"
+              ref={frameRef}
+            >
               <div className="project-window-bar">
                 <span>
                   <i />
@@ -174,6 +181,7 @@ export function WorkPanel({ projects, onAsk }) {
                   <ProjectVideo
                     key={`${project._id || project.name}:${video}`}
                     source={video}
+                    onDimensions={onDimensions}
                     title={project.name}
                     poster={images[0]}
                     onError={() => setVideoFailed(true)}
@@ -188,6 +196,7 @@ export function WorkPanel({ projects, onAsk }) {
                   <ArchiveImage
                     key={`${project._id || project.name}:${source}`}
                     src={source}
+                    onDimensions={onDimensions}
                     alt={`${project.name} interface screenshot`}
                   />
                 </button>

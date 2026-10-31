@@ -62,3 +62,9 @@ Verified mobile flows at 320/390/600/820/960px with scripts/verify-mobile-archiv
 At desktop sizes (1024px wide and 700px high or larger), Home, Career, About, Contact and CV now share the same bounded header/main/dock frame as the archives. Home scales its headline, art and introduction to the available height. Career scrolls its timeline; the complete About section scrolls in the main content area. Contact keeps its form and action visible, and the CV viewer occupies the remaining height. Navigating sections resets the main content scroll. Smaller screens retain their natural mobile layout.
 
 Verified with scripts/verify-desktop-sections.mjs at seven desktop sizes from 1024?700 to 1920?1080, plus existing mobile, responsive and archive checks. Long content is preserved; the navigation does not cover the main panel.
+
+## Adaptive preview proportions
+
+Project and credential preview frames size themselves to the loaded image dimensions or decoded video metadata. They use the available column width and remaining viewport height as bounds rather than stretching to fill the entire column. Portrait frames narrow and landscape frames become shallower; media remains contained without cropping. Frame calculations repeat on selection changes and container resizing, including wrapped gallery controls. The enlarged gallery still opens in Fit mode.
+
+Verified with landscape, portrait and square images/credential pages, plus real generated landscape/portrait WebM clips at mobile, laptop and wide desktop sizes in scripts/verify-adaptive-media.mjs.

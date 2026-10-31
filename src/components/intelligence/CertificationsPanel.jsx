@@ -2,6 +2,7 @@
 import { External, SectionTitle } from "./ExplorerPanels";
 import ArchiveImage from "./ArchiveImage";
 import MobileArchivePicker from "./MobileArchivePicker";
+import useMediaFrame from "../../hooks/useMediaFrame";
 import useArchiveDescription from "./useArchiveDescription";
 
 const categoryOf = (cert) =>
@@ -124,6 +125,7 @@ export default function CertificationsPanel({ certifications }) {
   const certificateKey = certificate?._id || certificate?.name;
   const page = pageSelection.key === certificateKey ? pageSelection.index : 0;
   const setPage = (index) => setPageSelection({ key: certificateKey, index });
+  const { frameRef, onDimensions } = useMediaFrame(images[page] || images[0]);
   const { descriptionRef, detailsButton, detailsDialog } =
     useArchiveDescription(
       certificate?.name,
@@ -212,7 +214,10 @@ export default function CertificationsPanel({ certifications }) {
         </div>
         {certificate ? (
           <article className="project-stage credential-stage">
-            <div className="project-window">
+            <div
+              className="project-window adaptive-media-window"
+              ref={frameRef}
+            >
               <div className="project-window-bar">
                 <span>
                   <i />
@@ -237,6 +242,7 @@ export default function CertificationsPanel({ certifications }) {
                   <ArchiveImage
                     key={`${certificateKey}:${images[page] || images[0]}`}
                     src={images[page] || images[0]}
+                    onDimensions={onDimensions}
                     alt={`${certificate.name}, page ${page + 1}`}
                   />
                 </button>

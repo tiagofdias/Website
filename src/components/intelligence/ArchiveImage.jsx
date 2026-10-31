@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { imageSources } from "../../utils/imageSources";
-export default function ArchiveImage({ src, alt, fullResolution = false }) {
+export default function ArchiveImage({
+  src,
+  alt,
+  fullResolution = false,
+  onDimensions,
+}) {
   const [state, setState] = useState("loading");
   const [attempt, setAttempt] = useState(0);
   const sources = imageSources(src, fullResolution);
@@ -18,7 +23,11 @@ export default function ArchiveImage({ src, alt, fullResolution = false }) {
     } catch {
       /* Some formats have already decoded at the load event. */
     }
-    if (mounted.current) setState(image.naturalWidth ? "ready" : "error");
+    if (mounted.current) {
+      if (image.naturalWidth)
+        onDimensions?.(image.naturalWidth, image.naturalHeight);
+      setState(image.naturalWidth ? "ready" : "error");
+    }
   };
   return (
     <>

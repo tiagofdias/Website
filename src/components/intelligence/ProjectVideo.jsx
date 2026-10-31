@@ -8,6 +8,7 @@ export default function ProjectVideo({
   onError,
   className = "",
   label,
+  onDimensions,
 }) {
   const video = projectVideo(source);
   const [preview, setPreview] = useState(false);
@@ -32,6 +33,12 @@ export default function ProjectVideo({
       controls
       preload="metadata"
       aria-label={label || `${title} demo video`}
+      onLoadedMetadata={(event) =>
+        onDimensions?.(
+          event.currentTarget.videoWidth,
+          event.currentTarget.videoHeight,
+        )
+      }
       onError={() => {
         if (video.type === "drive") setPreview(true);
         else onError?.();
