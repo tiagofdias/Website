@@ -11,6 +11,7 @@ import {
   WorkPanel,
 } from "./intelligence/ExplorerPanels";
 import usePortfolioContent from "../hooks/usePortfolioContent";
+import useVideoPreload from "../hooks/useVideoPreload";
 import useArchiveContent, { prefetchArchive } from "../hooks/useArchiveContent";
 import ArchiveLoading from "./intelligence/ArchiveLoading";
 import {
@@ -57,6 +58,29 @@ export default function Portfolio({ resume = false }) {
   const [paused, setPaused] = useState(false),
     [menu, setMenu] = useState(false);
   const main = useRef(null);
+  const warmVideo = useVideoPreload();
+  useEffect(() => {
+    if (resume || view !== "home" || navigator.connection?.saveData) return;
+    let active = true;
+    const prepare = async () => {
+      const items = await prefetchArchive("projects");
+      if (!active) return;
+      items.filter((item) => item.demo_video_url).slice(0, 2)
+        .forEach((item) => warmVideo(item.demo_video_url));
+    };
+    // Wait for the initial page to render before spending bandwidth on demos.
+    const timer = setTimeout(() => {
+      if ("requestIdleCallback" in window) {
+        idle = window.requestIdleCallback(prepare, { timeout: 1500 });
+      } else prepare();
+    }, 800);
+    let idle;
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      if (idle !== undefined) window.cancelIdleCallback(idle);
+    };
+  }, [resume, view, warmVideo]);
   const go = (target) => {
     if (target === "work" || target === "certifications")
       prefetchArchive(target === "work" ? "projects" : "certifications");
@@ -232,7 +256,7 @@ export default function Portfolio({ resume = false }) {
           </section>
         ) : view === "work" ? (
           projectArchive.ready ? (
-            <WorkPanel projects={projects} />
+            <WorkPanel projects={projects} warmVideo={warmVideo} />
           ) : (
             <ArchiveLoading kind="work" />
           )

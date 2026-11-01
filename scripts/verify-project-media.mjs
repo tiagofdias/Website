@@ -75,7 +75,12 @@ try {
     r.fulfill({ status: 503, body: "offline" }),
   );
   await page.route("**/api/projects", (r) => r.fulfill({ json: projects }));
-  await page.goto("http://127.0.0.1:5173/#work");
+  const homepageBuffer = page.waitForRequest("**/test-demo.webm");
+  await page.goto("http://127.0.0.1:5173/#home");
+  await homepageBuffer;
+  assert.equal(await page.locator("video").count(), 0,
+    "Homepage prepares demos without displaying or playing a video");
+  await page.getByRole("button", { name: /Explore selected work/ }).click();
   await page.waitForFunction(() => {
     const v = document.querySelector(".project-demo-video");
     return v && !v.paused && v.currentTime > 0;

@@ -1,7 +1,6 @@
 import MediaViewer from "./MediaViewer";
 import MobileArchivePicker from "./MobileArchivePicker";
 import useMediaFrame from "../../hooks/useMediaFrame";
-import useVideoPreload from "../../hooks/useVideoPreload";
 import ProjectVideo from "./ProjectVideo";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -31,8 +30,7 @@ const imagesOf = (project) =>
     Boolean,
   );
 
-export function WorkPanel({ projects }) {
-  const warmVideo = useVideoPreload();
+export function WorkPanel({ projects, warmVideo }) {
   const [selected, setSelected] = useState(null),
     [imageSelection, setImageSelection] = useState({ project: null, index: 0 }),
     [query, setQuery] = useState(""),

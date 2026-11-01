@@ -32,7 +32,7 @@ function load(endpoint) {
 }
 export function prefetchArchive(endpoint) {
   if (endpoint === "projects" || endpoint === "certifications")
-    load(endpoint).catch(() => {});
+    return load(endpoint).catch(() => []);
 }
 export default function useArchiveContent(endpoint, fallback, enabled) {
   const [state, setState] = useState(() => ({
