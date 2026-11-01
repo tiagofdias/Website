@@ -1,6 +1,7 @@
 import MediaViewer from "./MediaViewer";
 import MobileArchivePicker from "./MobileArchivePicker";
 import useMediaFrame from "../../hooks/useMediaFrame";
+import useVideoPreload from "../../hooks/useVideoPreload";
 import ProjectVideo from "./ProjectVideo";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -31,6 +32,7 @@ const imagesOf = (project) =>
   );
 
 export function WorkPanel({ projects }) {
+  const warmVideo = useVideoPreload();
   const [selected, setSelected] = useState(null),
     [imageSelection, setImageSelection] = useState({ project: null, index: 0 }),
     [query, setQuery] = useState(""),
@@ -58,6 +60,13 @@ export function WorkPanel({ projects }) {
     ? project.demo_video_url
     : null;
   const playingVideo = video && showVideo && !videoFailed;
+  useEffect(() => {
+    const index = projects.indexOf(project);
+    const next = projects.slice(index + 1).find((item) => item.demo_video_url);
+    // Let the selected demo get its first frame before competing for bandwidth.
+    const timer = setTimeout(() => warmVideo(next?.demo_video_url), 1500);
+    return () => clearTimeout(timer);
+  }, [projects, project, warmVideo]);
   const { frameRef, onDimensions } = useMediaFrame(
     playingVideo ? video : source,
   );
@@ -89,6 +98,7 @@ export function WorkPanel({ projects }) {
           items={projects}
           selected={project}
           label="project"
+          onIntent={(item) => warmVideo(item.demo_video_url)}
           onSelect={(item) => {
             setQuery("");
             setSelected(item._id || item.projectid || item.name);
@@ -126,6 +136,9 @@ export function WorkPanel({ projects }) {
                   setVideoFailed(false);
                 }}
                 aria-pressed={project === item}
+                onPointerEnter={() => warmVideo(item.demo_video_url)}
+                onFocus={() => warmVideo(item.demo_video_url)}
+                onTouchStart={() => warmVideo(item.demo_video_url)}
               >
                 <span className="micro">
                   {String(index + 1).padStart(2, "0")}

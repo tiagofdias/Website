@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 const keyOf = (item) => item?._id || item?.projectid || item?.name;
-function PickerSheet({ items, selected, label, onSelect, onClose }) {
+function PickerSheet({ items, selected, label, onSelect, onClose, onIntent }) {
   const dialog = useRef(null),
     id = useId(),
     [query, setQuery] = useState("");
@@ -91,6 +91,9 @@ function PickerSheet({ items, selected, label, onSelect, onClose }) {
             type="button"
             key={keyOf(item)}
             aria-pressed={keyOf(item) === keyOf(selected)}
+            onPointerEnter={() => onIntent?.(item)}
+            onFocus={() => onIntent?.(item)}
+            onTouchStart={() => onIntent?.(item)}
             className={keyOf(item) === keyOf(selected) ? "selected" : ""}
             onClick={() => {
               onSelect(item);
@@ -130,6 +133,7 @@ export default function MobileArchivePicker({
   selected,
   label,
   onSelect,
+  onIntent,
 }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -166,6 +170,8 @@ export default function MobileArchivePicker({
           type="button"
           disabled={items.length < 2}
           onClick={() => move(-1)}
+          onPointerEnter={() => onIntent?.(items[(Math.max(0, index) - 1 + items.length) % items.length])}
+          onFocus={() => onIntent?.(items[(Math.max(0, index) - 1 + items.length) % items.length])}
           aria-label={`Previous ${label}`}
         >
           ← Previous
@@ -181,6 +187,8 @@ export default function MobileArchivePicker({
           type="button"
           disabled={items.length < 2}
           onClick={() => move(1)}
+          onPointerEnter={() => onIntent?.(items[(Math.max(0, index) + 1) % items.length])}
+          onFocus={() => onIntent?.(items[(Math.max(0, index) + 1) % items.length])}
           aria-label={`Next ${label}`}
         >
           Next →
@@ -192,6 +200,7 @@ export default function MobileArchivePicker({
           selected={selected}
           label={label}
           onSelect={onSelect}
+          onIntent={onIntent}
           onClose={() => setOpen(false)}
         />
       )}

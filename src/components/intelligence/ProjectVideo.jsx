@@ -31,7 +31,7 @@ export default function ProjectVideo({
       playsInline
       loop
       controls
-      preload="metadata"
+      preload="auto"
       aria-label={label || `${title} demo video`}
       onLoadedMetadata={(event) =>
         onDimensions?.(
